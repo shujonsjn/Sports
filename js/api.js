@@ -5,7 +5,9 @@ let LIVE_MATCHES = {};
 let DATE_CACHE = {};
 let LAST_UPDATED = null;
 let AUTO_REFRESH_INTERVAL = null;
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+let LIVE_REFRESH_INTERVAL = null;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes for non-live
+const LIVE_REFRESH_MS = 60 * 1000; // 1 minute for live matches
 
 // Sofascore API Config
 const SOFASCORE_BASE = 'https://api.sofascore.com/api/v1';
@@ -622,7 +624,7 @@ function startAutoRefresh() {
     // Initial fetch
     autoFetchMatches();
 
-    // Set up recurring fetch every 5 minutes
+    // Set up recurring fetch every 5 minutes for all data
     if (AUTO_REFRESH_INTERVAL) {
         clearInterval(AUTO_REFRESH_INTERVAL);
     }
@@ -631,7 +633,59 @@ function startAutoRefresh() {
         autoFetchMatches();
     }, REFRESH_INTERVAL_MS);
 
-    console.log('⏰ Auto-refresh job started (every 5 minutes)');
+    // Set up 1-minute refresh for live matches
+    if (LIVE_REFRESH_INTERVAL) {
+        clearInterval(LIVE_REFRESH_INTERVAL);
+    }
+
+    LIVE_REFRESH_INTERVAL = setInterval(() => {
+        refreshLiveMatches();
+    }, LIVE_REFRESH_MS);
+
+    console.log('⏰ Auto-refresh started (5 min for schedule, 1 min for live scores)');
+}
+
+// Refresh only live match scores
+async function refreshLiveMatches() {
+    console.log('🔄 Refreshing live scores...');
+
+    const today = getTodayString();
+    try {
+        const liveData = await fetchAllSofascoreForDate(today);
+
+        // Update live matches in cache
+        if (DATE_CACHE[today]) {
+            // Update each sport's live matches
+            ['cricket', 'football', 'basketball', 'tabletennis'].forEach(sport => {
+                if (liveData[sport] && liveData[sport].length > 0) {
+                    // Merge live data - update existing and add new
+                    const existingIds = new Set(DATE_CACHE[today][sport].map(m => m.id));
+                    liveData[sport].forEach(match => {
+                        const existingIdx = DATE_CACHE[today][sport].findIndex(m => m.id === match.id);
+                        if (existingIdx >= 0) {
+                            // Update existing match score
+                            DATE_CACHE[today][sport][existingIdx] = match;
+                        } else {
+                            // Add new live match
+                            DATE_CACHE[today][sport].push(match);
+                        }
+                    });
+                }
+            });
+
+            LIVE_MATCHES = DATE_CACHE[today];
+            LAST_UPDATED = new Date();
+
+            // Update UI
+            if (typeof loadMatchesForDate === 'function') {
+                loadMatchesForDate(currentDate);
+            }
+
+            console.log(`✅ Live scores updated at ${LAST_UPDATED.toLocaleTimeString()}`);
+        }
+    } catch (e) {
+        console.log(`⚠️ Live refresh failed: ${e.message}`);
+    }
 }
 
 // Stop auto-refresh
@@ -639,8 +693,12 @@ function stopAutoRefresh() {
     if (AUTO_REFRESH_INTERVAL) {
         clearInterval(AUTO_REFRESH_INTERVAL);
         AUTO_REFRESH_INTERVAL = null;
-        console.log('⏹️ Auto-refresh stopped');
     }
+    if (LIVE_REFRESH_INTERVAL) {
+        clearInterval(LIVE_REFRESH_INTERVAL);
+        LIVE_REFRESH_INTERVAL = null;
+    }
+    console.log('⏹️ Auto-refresh stopped');
 }
 
 // Get matches for a specific date
