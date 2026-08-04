@@ -3,6 +3,7 @@
 let currentSport = 'all';
 let currentDate = getTodayString();
 let selectedMatch = null;
+let currentRenderedMatches = [];
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
@@ -55,7 +56,20 @@ async function loadMatchesForDate(dateStr) {
     currentDate = dateStr;
     updateSelectedDateDisplay(dateStr);
 
-    const matches = await fetchMatchesForDate(dateStr, currentSport);
+    // Show loading
+    const container = document.getElementById('match-list');
+    container.innerHTML = '<div class="loading">Loading matches...</div>';
+
+    // Fetch matches from cache or generate
+    await fetchMatchesForDateAPI(dateStr);
+
+    // Now get the matches and render
+    let matches = getMatchesForDate(dateStr);
+
+    if (currentSport !== 'all') {
+        matches = matches.filter(m => m.sport === currentSport);
+    }
+
     renderMatchList(matches);
 
     // Reset match details
@@ -65,22 +79,12 @@ async function loadMatchesForDate(dateStr) {
     }
 }
 
-// Fetch matches for date
-async function fetchMatchesForDate(dateStr, sport) {
-    let matches = getMatchesForDate(dateStr);
-
-    if (sport !== 'all') {
-        matches = matches.filter(m => m.sport === sport);
-    }
-
-    return matches;
-}
-
 // Render match list
 function renderMatchList(matches) {
     const container = document.getElementById('match-list');
 
     stopAllCountdowns();
+    currentRenderedMatches = matches;
 
     if (matches.length === 0) {
         container.innerHTML = `
@@ -141,8 +145,7 @@ function renderMatchList(matches) {
 
 // Select match
 function selectMatch(matchId) {
-    const matches = [...MOCK_DATA.cricket, ...MOCK_DATA.football, ...MOCK_DATA.basketball];
-    const match = matches.find(m => m.id === matchId);
+    const match = currentRenderedMatches.find(m => m.id === matchId);
 
     if (match) {
         selectedMatch = match;
@@ -151,7 +154,8 @@ function selectMatch(matchId) {
         document.querySelectorAll('.match-card').forEach(card => {
             card.classList.remove('active');
         });
-        document.querySelector(`[data-match-id="${matchId}"]`).classList.add('active');
+        const matchCard = document.querySelector(`[data-match-id="${matchId}"]`);
+        if (matchCard) matchCard.classList.add('active');
 
         renderMatchDetails(match);
     }

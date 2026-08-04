@@ -1,7 +1,8 @@
 // ===== API-Sports Integration with Auto-Update =====
 
 // Live matches data store
-let LIVE_MATCHES = [];
+let LIVE_MATCHES = {};
+let DATE_CACHE = {};
 let LAST_UPDATED = null;
 let AUTO_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -142,11 +143,11 @@ async function fetchLiveFootball() {
     return null;
 }
 
-// Generate dynamic mock data based on current date/time
-function generateDynamicMatches() {
+// Generate dynamic mock data based on any date/time
+function generateDynamicMatchesForDate(dateStr) {
     const now = new Date();
-    const today = getTodayString();
     const currentHour = now.getHours();
+    const isToday = dateStr === getTodayString();
 
     const cricketTeams = [
         ['India', 'IND', '🇮🇳', 'https://flagcdn.com/w80/in.png'],
@@ -189,83 +190,100 @@ function generateDynamicMatches() {
         'Crypto.com Arena', 'Madison Square Garden'
     ];
 
-    // Generate 5-8 cricket matches
+    // Seed random by date for consistent results
+    let seed = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+        seed = ((seed << 5) - seed) + dateStr.charCodeAt(i);
+        seed |= 0;
+    }
+    function seededRandom() {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+    }
+
+    // Generate 6 cricket matches
     const cricketMatches = [];
     for (let i = 0; i < 6; i++) {
-        const team1 = cricketTeams[Math.floor(Math.random() * cricketTeams.length)];
-        const team2 = cricketTeams.filter(t => t[0] !== team1[0])[Math.floor(Math.random() * (cricketTeams.length - 1))];
+        const t1idx = Math.floor(seededRandom() * cricketTeams.length);
+        const team1 = cricketTeams[t1idx];
+        const t2list = cricketTeams.filter((_, idx) => idx !== t1idx);
+        const team2 = t2list[Math.floor(seededRandom() * t2list.length)];
         const matchHour = 8 + (i * 3);
-        const isLive = matchHour <= currentHour && matchHour + 3 > currentHour;
-        const isFinished = matchHour + 3 <= currentHour;
+        const isLive = isToday && matchHour <= currentHour && matchHour + 3 > currentHour;
+        const isFinished = isToday && matchHour + 3 <= currentHour;
 
         cricketMatches.push({
-            id: 100 + i,
+            id: parseInt(dateStr.replace(/-/g, '')) + 100 + i,
             sport: 'cricket',
             icon: '🏏',
             team1: { name: team1[0], short: team1[1], flag: team1[2], logo: team1[3] },
             team2: { name: team2[0], short: team2[1], flag: team2[2], logo: team2[3] },
-            league: cricketLeagues[Math.floor(Math.random() * cricketLeagues.length)],
-            venue: venues[Math.floor(Math.random() * venues.length)],
-            date: today,
+            league: cricketLeagues[Math.floor(seededRandom() * cricketLeagues.length)],
+            venue: venues[Math.floor(seededRandom() * venues.length)],
+            date: dateStr,
             time: `${String(matchHour).padStart(2, '0')}:00`,
             status: isLive ? 'live' : isFinished ? 'finished' : 'upcoming',
             score: {
-                team1: isLive || isFinished ? Math.floor(Math.random() * 200) + 100 : 0,
-                team2: isLive || isFinished ? Math.floor(Math.random() * 200) + 100 : 0
+                team1: isLive || isFinished ? Math.floor(seededRandom() * 200) + 100 : 0,
+                team2: isLive || isFinished ? Math.floor(seededRandom() * 200) + 100 : 0
             }
         });
     }
 
-    // Generate 5-8 football matches
+    // Generate 6 football matches
     const footballMatches = [];
     for (let i = 0; i < 6; i++) {
-        const team1 = footballTeams[Math.floor(Math.random() * footballTeams.length)];
-        const team2 = footballTeams.filter(t => t[0] !== team1[0])[Math.floor(Math.random() * (footballTeams.length - 1))];
+        const t1idx = Math.floor(seededRandom() * footballTeams.length);
+        const team1 = footballTeams[t1idx];
+        const t2list = footballTeams.filter((_, idx) => idx !== t1idx);
+        const team2 = t2list[Math.floor(seededRandom() * t2list.length)];
         const matchHour = 14 + (i * 2);
-        const isLive = matchHour <= currentHour && matchHour + 2 > currentHour;
-        const isFinished = matchHour + 2 <= currentHour;
+        const isLive = isToday && matchHour <= currentHour && matchHour + 2 > currentHour;
+        const isFinished = isToday && matchHour + 2 <= currentHour;
 
         footballMatches.push({
-            id: 200 + i,
+            id: parseInt(dateStr.replace(/-/g, '')) + 200 + i,
             sport: 'football',
             icon: '⚽',
             team1: { name: team1[0], short: team1[1], flag: team1[2], logo: team1[3] },
             team2: { name: team2[0], short: team2[1], flag: team2[2], logo: team2[3] },
-            league: footballLeagues[Math.floor(Math.random() * footballLeagues.length)],
-            venue: venues[Math.floor(Math.random() * venues.length)],
-            date: today,
+            league: footballLeagues[Math.floor(seededRandom() * footballLeagues.length)],
+            venue: venues[Math.floor(seededRandom() * venues.length)],
+            date: dateStr,
             time: `${String(matchHour).padStart(2, '0')}:00`,
             status: isLive ? 'live' : isFinished ? 'finished' : 'upcoming',
             score: {
-                team1: isLive || isFinished ? Math.floor(Math.random() * 5) : 0,
-                team2: isLive || isFinished ? Math.floor(Math.random() * 5) : 0
+                team1: isLive || isFinished ? Math.floor(seededRandom() * 5) : 0,
+                team2: isLive || isFinished ? Math.floor(seededRandom() * 5) : 0
             }
         });
     }
 
-    // Generate 4-6 basketball matches
+    // Generate 5 basketball matches
     const basketballMatches = [];
     for (let i = 0; i < 5; i++) {
-        const team1 = basketballTeams[Math.floor(Math.random() * basketballTeams.length)];
-        const team2 = basketballTeams.filter(t => t[0] !== team1[0])[Math.floor(Math.random() * (basketballTeams.length - 1))];
+        const t1idx = Math.floor(seededRandom() * basketballTeams.length);
+        const team1 = basketballTeams[t1idx];
+        const t2list = basketballTeams.filter((_, idx) => idx !== t1idx);
+        const team2 = t2list[Math.floor(seededRandom() * t2list.length)];
         const matchHour = 15 + (i * 2);
-        const isLive = matchHour <= currentHour && matchHour + 2 > currentHour;
-        const isFinished = matchHour + 2 <= currentHour;
+        const isLive = isToday && matchHour <= currentHour && matchHour + 2 > currentHour;
+        const isFinished = isToday && matchHour + 2 <= currentHour;
 
         basketballMatches.push({
-            id: 300 + i,
+            id: parseInt(dateStr.replace(/-/g, '')) + 300 + i,
             sport: 'basketball',
             icon: '🏀',
             team1: { name: team1[0], short: team1[1], flag: team1[2], logo: team1[3] },
             team2: { name: team2[0], short: team2[1], flag: team2[2], logo: team2[3] },
-            league: basketballLeagues[Math.floor(Math.random() * basketballLeagues.length)],
-            venue: venues[Math.floor(Math.random() * venues.length)],
-            date: today,
+            league: basketballLeagues[Math.floor(seededRandom() * basketballLeagues.length)],
+            venue: venues[Math.floor(seededRandom() * venues.length)],
+            date: dateStr,
             time: `${String(matchHour).padStart(2, '0')}:00`,
             status: isLive ? 'live' : isFinished ? 'finished' : 'upcoming',
             score: {
-                team1: isLive || isFinished ? Math.floor(Math.random() * 80) + 80 : 0,
-                team2: isLive || isFinished ? Math.floor(Math.random() * 80) + 80 : 0
+                team1: isLive || isFinished ? Math.floor(seededRandom() * 80) + 80 : 0,
+                team2: isLive || isFinished ? Math.floor(seededRandom() * 80) + 80 : 0
             }
         });
     }
@@ -277,23 +295,30 @@ function generateDynamicMatches() {
     };
 }
 
-// Auto-fetch and update all matches
+// Legacy function - generates for today
+function generateDynamicMatches() {
+    return generateDynamicMatchesForDate(getTodayString());
+}
+
+// Auto-fetch and update all matches for today and upcoming days
 async function autoFetchMatches() {
     console.log('🔄 Auto-fetching live matches...');
 
-    // Try to fetch from real APIs first
-    const cricketData = await fetchLiveCricket();
-    const footballData = await fetchLiveFootball();
+    // Fetch for today and next 7 days
+    for (let i = 0; i <= 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
 
-    // Generate dynamic data for demo
-    const dynamicData = generateDynamicMatches();
+        if (!DATE_CACHE[dateStr] || i === 0) {
+            const dynamicData = generateDynamicMatchesForDate(dateStr);
+            DATE_CACHE[dateStr] = dynamicData;
+        }
+    }
 
-    // Merge data
-    LIVE_MATCHES = {
-        cricket: cricketData || dynamicData.cricket,
-        football: footballData || dynamicData.football,
-        basketball: dynamicData.basketball
-    };
+    // Set today's live matches
+    const today = getTodayString();
+    LIVE_MATCHES = DATE_CACHE[today];
 
     LAST_UPDATED = new Date();
     console.log(`✅ Matches updated at ${LAST_UPDATED.toLocaleTimeString()}`);
@@ -304,6 +329,50 @@ async function autoFetchMatches() {
     }
 
     return LIVE_MATCHES;
+}
+
+// Fetch matches for a specific date
+async function fetchMatchesForDateAPI(dateStr) {
+    // Check cache first
+    if (DATE_CACHE[dateStr]) {
+        console.log(`📦 Using cached data for ${dateStr}`);
+        return DATE_CACHE[dateStr];
+    }
+
+    console.log(`🌐 Fetching matches for ${dateStr}...`);
+
+    // Try to fetch from real APIs first
+    let cricketData = null;
+    let footballData = null;
+
+    try {
+        cricketData = await fetchLiveCricket();
+    } catch (e) {
+        console.log('Cricket API not available');
+    }
+
+    try {
+        footballData = await fetchLiveFootball();
+    } catch (e) {
+        console.log('Football API not available');
+    }
+
+    // Generate dynamic data for this date
+    const dynamicData = generateDynamicMatchesForDate(dateStr);
+
+    // Merge: use real data if available, otherwise generated
+    const result = {
+        cricket: cricketData || dynamicData.cricket,
+        football: footballData || dynamicData.football,
+        basketball: dynamicData.basketball
+    };
+
+    // Cache the result
+    DATE_CACHE[dateStr] = result;
+
+    console.log(`✅ Fetched and cached ${result.cricket.length + result.football.length + result.basketball.length} matches for ${dateStr}`);
+
+    return result;
 }
 
 // Start auto-refresh job
@@ -334,7 +403,17 @@ function stopAutoRefresh() {
 
 // Get matches for a specific date
 function getMatchesForDate(dateStr) {
-    // If we have live data, use it
+    // Check cache first
+    if (DATE_CACHE[dateStr]) {
+        const allMatches = [
+            ...DATE_CACHE[dateStr].cricket,
+            ...DATE_CACHE[dateStr].football,
+            ...DATE_CACHE[dateStr].basketball
+        ];
+        return allMatches.filter(match => match.date === dateStr);
+    }
+
+    // Check live matches
     if (LIVE_MATCHES.cricket && LIVE_MATCHES.cricket.length > 0) {
         const allMatches = [
             ...LIVE_MATCHES.cricket,
@@ -355,11 +434,14 @@ function getMatchesForDate(dateStr) {
 
 // Get all matches
 function getAllMatches() {
-    if (LIVE_MATCHES.cricket && LIVE_MATCHES.cricket.length > 0) {
+    const today = getTodayString();
+    const todayData = DATE_CACHE[today] || LIVE_MATCHES;
+
+    if (todayData && todayData.cricket && todayData.cricket.length > 0) {
         return [
-            ...LIVE_MATCHES.cricket,
-            ...LIVE_MATCHES.football,
-            ...LIVE_MATCHES.basketball
+            ...todayData.cricket,
+            ...todayData.football,
+            ...todayData.basketball
         ];
     }
     return [
