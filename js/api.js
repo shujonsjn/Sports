@@ -22,6 +22,7 @@ const SPORT_MAP = {
     'football': 'football',
     'cricket': 'cricket',
     'basketball': 'basketball',
+    'tabletennis': 'table-tennis',
     'tennis': 'tennis',
     'ice-hockey': 'ice-hockey',
     'baseball': 'baseball'
@@ -144,10 +145,24 @@ function convertSofascoreEvent(event, sport) {
     const startTime = event.startTimestamp ? new Date(event.startTimestamp * 1000) : new Date();
     const time = startTime.toTimeString().slice(0, 5);
 
+    // Sport icon mapping
+    const sportIcons = {
+        'football': '⚽',
+        'cricket': '🏏',
+        'basketball': '🏀',
+        'table-tennis': '🏓',
+        'tennis': '🎾',
+        'ice-hockey': '🏒',
+        'baseball': '⚾'
+    };
+
+    // Map sport name for internal use
+    const sportName = sport === 'table-tennis' ? 'tabletennis' : sport;
+
     return {
         id: event.id || Date.now(),
-        sport: sport,
-        icon: sport === 'football' ? '⚽' : sport === 'cricket' ? '🏏' : sport === 'basketball' ? '🏀' : '🏟️',
+        sport: sportName,
+        icon: sportIcons[sport] || '🏟️',
         team1: {
             name: homeTeam.name || 'Home Team',
             short: homeTeam.nameCode || homeTeam.shortName || 'HOME',
@@ -175,8 +190,8 @@ function convertSofascoreEvent(event, sport) {
 
 // Fetch all sports from Sofascore for a date
 async function fetchAllSofascoreForDate(date) {
-    const sports = ['football', 'basketball', 'cricket'];
-    const results = { cricket: [], football: [], basketball: [] };
+    const sports = ['football', 'basketball', 'cricket', 'table-tennis'];
+    const results = { cricket: [], football: [], basketball: [], tabletennis: [] };
 
     // Fetch in parallel
     const promises = sports.map(async (sport) => {
@@ -341,14 +356,32 @@ function generateDynamicMatchesForDate(dateStr) {
         ['Chicago Bulls', 'CHI', '🇺🇸', 'https://flagcdn.com/w80/us.png']
     ];
 
+    const tabletennisTeams = [
+        ['Fan Zhendong', 'FAN', '🇨🇳', 'https://flagcdn.com/w80/cn.png'],
+        ['Ma Long', 'MA', '🇨🇳', 'https://flagcdn.com/w80/cn.png'],
+        ['Xu Xin', 'XU', '🇨🇳', 'https://flagcdn.com/w80/cn.png'],
+        ['Tomokazu Harimoto', 'HAR', '🇯🇵', 'https://flagcdn.com/w80/jp.png'],
+        ['Jun Mizutani', 'MIZ', '🇯🇵', 'https://flagcdn.com/w80/jp.png'],
+        ['Timo Boll', 'BOL', '🇩🇪', 'https://flagcdn.com/w80/de.png'],
+        ['Dimitrij Ovtcharov', 'OVT', '🇩🇪', 'https://flagcdn.com/w80/de.png'],
+        ['Truls Moregardh', 'MOR', '🇸🇪', 'https://flagcdn.com/w80/se.png'],
+        ['Mattias Falck', 'FAL', '🇸🇪', 'https://flagcdn.com/w80/se.png'],
+        ['Wang Chuqin', 'WAN', '🇨🇳', 'https://flagcdn.com/w80/cn.png'],
+        ['Liang Jingkun', 'LIA', '🇨🇳', 'https://flagcdn.com/w80/cn.png'],
+        ['Lin Gaoyuan', 'LIN', '🇨🇳', 'https://flagcdn.com/w80/cn.png']
+    ];
+
     const cricketLeagues = ['ICC World Cup 2026', 'IPL 2026', 'Asia Cup 2026', 'T20 World Cup', 'BBL 2026'];
     const footballLeagues = ['Premier League', 'La Liga', 'Bundesliga', 'Serie A', 'Champions League'];
     const basketballLeagues = ['NBA 2025-26', 'EuroLeague', 'NCAA'];
+    const tabletennisLeagues = ['WTT Champions', 'WTT Star Contender', 'ITTF World Tour', 'Olympics 2028', 'WTT Grand Smash'];
 
     const venues = [
         'National Stadium', 'Wankhede Stadium', 'Lord\'s Cricket Ground',
         'Old Trafford', 'Camp Nou', 'Allianz Arena', 'Stamford Bridge',
-        'Crypto.com Arena', 'Madison Square Garden'
+        'Crypto.com Arena', 'Madison Square Garden',
+        'Olympic Sports Center', 'Tokyo Metropolitan Gymnasium',
+        'Düsseldorf Arena', 'Budapest Sports Arena'
     ];
 
     // Seed random by date for consistent results
@@ -449,10 +482,45 @@ function generateDynamicMatchesForDate(dateStr) {
         });
     }
 
+    // Generate 8 table tennis matches
+    const tabletennisMatches = [];
+    for (let i = 0; i < 8; i++) {
+        const t1idx = Math.floor(seededRandom() * tabletennisTeams.length);
+        const team1 = tabletennisTeams[t1idx];
+        const t2list = tabletennisTeams.filter((_, idx) => idx !== t1idx);
+        const team2 = t2list[Math.floor(seededRandom() * t2list.length)];
+        const matchHour = 10 + (i * 2);
+        const isLive = isToday && matchHour <= currentHour && matchHour + 1 > currentHour;
+        const isFinished = isToday && matchHour + 1 <= currentHour;
+
+        // Table tennis uses set scores (best of 5/7)
+        const setsPlayed = isLive || isFinished ? Math.floor(seededRandom() * 4) + 1 : 0;
+        const team1Sets = Math.ceil(setsPlayed / 2);
+        const team2Sets = setsPlayed - team1Sets;
+
+        tabletennisMatches.push({
+            id: parseInt(dateStr.replace(/-/g, '')) + 400 + i,
+            sport: 'tabletennis',
+            icon: '🏓',
+            team1: { name: team1[0], short: team1[1], flag: team1[2], logo: team1[3] },
+            team2: { name: team2[0], short: team2[1], flag: team2[2], logo: team2[3] },
+            league: tabletennisLeagues[Math.floor(seededRandom() * tabletennisLeagues.length)],
+            venue: venues[Math.floor(seededRandom() * venues.length)],
+            date: dateStr,
+            time: `${String(matchHour).padStart(2, '0')}:00`,
+            status: isLive ? 'live' : isFinished ? 'finished' : 'upcoming',
+            score: {
+                team1: isLive || isFinished ? team1Sets : 0,
+                team2: isLive || isFinished ? team2Sets : 0
+            }
+        });
+    }
+
     return {
         cricket: cricketMatches,
         football: footballMatches,
-        basketball: basketballMatches
+        basketball: basketballMatches,
+        tabletennis: tabletennisMatches
     };
 }
 
@@ -474,9 +542,10 @@ async function autoFetchMatches() {
             cricket: todayData.cricket.length > 0 ? todayData.cricket : generateDynamicMatchesForDate(today).cricket,
             football: todayData.football.length > 0 ? todayData.football : generateDynamicMatchesForDate(today).football,
             basketball: todayData.basketball.length > 0 ? todayData.basketball : generateDynamicMatchesForDate(today).basketball,
-            source: (todayData.cricket.length + todayData.football.length + todayData.basketball.length) > 0 ? 'sofascore' : 'generated'
+            tabletennis: todayData.tabletennis.length > 0 ? todayData.tabletennis : generateDynamicMatchesForDate(today).tabletennis,
+            source: (todayData.cricket.length + todayData.football.length + todayData.basketball.length + todayData.tabletennis.length) > 0 ? 'sofascore' : 'generated'
         };
-        console.log(`📊 Today's data: Football ${DATE_CACHE[today].football.length}, Cricket ${DATE_CACHE[today].cricket.length}, Basketball ${DATE_CACHE[today].basketball.length}`);
+        console.log(`📊 Today's data: Football ${DATE_CACHE[today].football.length}, Cricket ${DATE_CACHE[today].cricket.length}, Basketball ${DATE_CACHE[today].basketball.length}, Table Tennis ${DATE_CACHE[today].tabletennis.length}`);
     } catch (e) {
         console.log(`⚠️ Sofascore fetch failed, using generated data: ${e.message}`);
         DATE_CACHE[today] = generateDynamicMatchesForDate(today);
@@ -581,7 +650,8 @@ function getMatchesForDate(dateStr) {
         const allMatches = [
             ...DATE_CACHE[dateStr].cricket,
             ...DATE_CACHE[dateStr].football,
-            ...DATE_CACHE[dateStr].basketball
+            ...DATE_CACHE[dateStr].basketball,
+            ...(DATE_CACHE[dateStr].tabletennis || [])
         ];
         return allMatches.filter(match => match.date === dateStr);
     }
@@ -591,7 +661,8 @@ function getMatchesForDate(dateStr) {
         const allMatches = [
             ...LIVE_MATCHES.cricket,
             ...LIVE_MATCHES.football,
-            ...LIVE_MATCHES.basketball
+            ...LIVE_MATCHES.basketball,
+            ...(LIVE_MATCHES.tabletennis || [])
         ];
         return allMatches.filter(match => match.date === dateStr);
     }
@@ -600,7 +671,8 @@ function getMatchesForDate(dateStr) {
     const allMatches = [
         ...MOCK_DATA.cricket,
         ...MOCK_DATA.football,
-        ...MOCK_DATA.basketball
+        ...MOCK_DATA.basketball,
+        ...(MOCK_DATA.tabletennis || [])
     ];
     return allMatches.filter(match => match.date === dateStr);
 }
@@ -614,13 +686,15 @@ function getAllMatches() {
         return [
             ...todayData.cricket,
             ...todayData.football,
-            ...todayData.basketball
+            ...todayData.basketball,
+            ...(todayData.tabletennis || [])
         ];
     }
     return [
         ...MOCK_DATA.cricket,
         ...MOCK_DATA.football,
-        ...MOCK_DATA.basketball
+        ...MOCK_DATA.basketball,
+        ...(MOCK_DATA.tabletennis || [])
     ];
 }
 
@@ -748,6 +822,47 @@ const MOCK_DATA = {
             time: '22:00',
             status: 'live',
             score: { team1: 98, team2: 102 }
+        }
+    ],
+    tabletennis: [
+        {
+            id: 9,
+            sport: 'tabletennis',
+            icon: '🏓',
+            team1: { name: 'Fan Zhendong', short: 'FAN', flag: '🇨🇳', logo: 'https://flagcdn.com/w80/cn.png' },
+            team2: { name: 'Tomokazu Harimoto', short: 'HAR', flag: '🇯🇵', logo: 'https://flagcdn.com/w80/jp.png' },
+            league: 'WTT Champions 2026',
+            venue: 'Olympic Sports Center, Beijing',
+            date: getTodayString(),
+            time: '10:00',
+            status: 'upcoming',
+            score: { team1: 0, team2: 0 }
+        },
+        {
+            id: 10,
+            sport: 'tabletennis',
+            icon: '🏓',
+            team1: { name: 'Ma Long', short: 'MA', flag: '🇨🇳', logo: 'https://flagcdn.com/w80/cn.png' },
+            team2: { name: 'Timo Boll', short: 'BOL', flag: '🇩🇪', logo: 'https://flagcdn.com/w80/de.png' },
+            league: 'WTT Star Contender 2026',
+            venue: 'Düsseldorf Arena, Düsseldorf',
+            date: getTodayString(),
+            time: '12:00',
+            status: 'live',
+            score: { team1: 3, team2: 2 }
+        },
+        {
+            id: 11,
+            sport: 'tabletennis',
+            icon: '🏓',
+            team1: { name: 'Wang Chuqin', short: 'WAN', flag: '🇨🇳', logo: 'https://flagcdn.com/w80/cn.png' },
+            team2: { name: 'Truls Moregardh', short: 'MOR', flag: '🇸🇪', logo: 'https://flagcdn.com/w80/se.png' },
+            league: 'ITTF World Tour 2026',
+            venue: 'Budapest Sports Arena, Budapest',
+            date: getTodayString(),
+            time: '14:00',
+            status: 'upcoming',
+            score: { team1: 0, team2: 0 }
         }
     ]
 };
