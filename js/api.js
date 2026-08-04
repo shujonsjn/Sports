@@ -7,6 +7,26 @@ let LAST_UPDATED = null;
 let AUTO_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
+// Sofascore API Config
+const SOFASCORE_BASE = 'https://api.sofascore.com/api/v1';
+const SOFASCORE_HEADERS = {
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Referer': 'https://www.sofascore.com/',
+    'Origin': 'https://www.sofascore.com'
+};
+
+// Sport mapping for Sofascore
+const SPORT_MAP = {
+    'football': 'football',
+    'cricket': 'cricket',
+    'basketball': 'basketball',
+    'tennis': 'tennis',
+    'ice-hockey': 'ice-hockey',
+    'baseball': 'baseball'
+};
+
 // Country flags mapping
 const COUNTRY_FLAGS = {
     'India': { flag: '🇮🇳', logo: 'https://flagcdn.com/w80/in.png' },
@@ -49,17 +69,158 @@ function getCountryInfo(teamName) {
     return COUNTRY_FLAGS[teamName] || { flag: '🏳️', logo: 'https://flagcdn.com/w80/un.png' };
 }
 
-// Free APIs for live sports data
-const FREE_APIS = {
-    cricket: {
-        url: 'https://cricket32.p.rapidapi.com/schedule',
-        host: 'cricket32.p.rapidapi.com'
-    },
-    football: {
-        url: 'https://v3.football.api-sports.io/fixtures?live',
-        host: 'v3.football.api-sports.io'
+// ===== Sofascore API Functions =====
+
+// Fetch scheduled events from Sofascore for a specific sport and date
+async function fetchSofascoreScheduled(sport, date) {
+    try {
+        const url = `${SOFASCORE_BASE}/sport/${sport}/scheduled-events/${date}`;
+        console.log(`🌐 Fetching Sofascore: ${url}`);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: SOFASCORE_HEADERS
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.events || [];
+    } catch (error) {
+        console.log(`⚠️ Sofascore ${sport} fetch failed: ${error.message}`);
+        return [];
     }
-};
+}
+
+// Fetch live events from Sofascore for a specific sport
+async function fetchSofascoreLive(sport) {
+    try {
+        const url = `${SOFASCORE_BASE}/sport/${sport}/events/live`;
+        console.log(`🌐 Fetching Sofascore LIVE: ${url}`);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: SOFASCORE_HEADERS
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.events || [];
+    } catch (error) {
+        console.log(`⚠️ Sofascore ${sport} live fetch failed: ${error.message}`);
+        return [];
+    }
+}
+
+// Convert Sofascore event to our format
+function convertSofascoreEvent(event, sport) {
+    const homeTeam = event.homeTeam || {};
+    const awayTeam = event.awayTeam || {};
+    const homeScore = event.homeScore || {};
+    const awayScore = event.awayScore || {};
+    const tournament = event.tournament || {};
+    const venue = event.venue || {};
+
+    // Get country info
+    const homeInfo = getCountryInfo(homeTeam.name);
+    const awayInfo = getCountryInfo(awayTeam.name);
+
+    // Determine status
+    let status = 'upcoming';
+    if (event.status) {
+        const statusCode = event.status.code;
+        if (statusCode === 0) status = 'upcoming';
+        else if (statusCode === 1) status = 'live';
+        else if (statusCode === 3 || statusCode === 70) status = 'finished';
+        else if (statusCode === 40) status = 'live';
+    }
+
+    // Format time
+    const startTime = event.startTimestamp ? new Date(event.startTimestamp * 1000) : new Date();
+    const time = startTime.toTimeString().slice(0, 5);
+
+    return {
+        id: event.id || Date.now(),
+        sport: sport,
+        icon: sport === 'football' ? '⚽' : sport === 'cricket' ? '🏏' : sport === 'basketball' ? '🏀' : '🏟️',
+        team1: {
+            name: homeTeam.name || 'Home Team',
+            short: homeTeam.nameCode || homeTeam.shortName || 'HOME',
+            flag: homeInfo.flag,
+            logo: homeInfo.logo
+        },
+        team2: {
+            name: awayTeam.name || 'Away Team',
+            short: awayTeam.nameCode || awayTeam.shortName || 'AWAY',
+            flag: awayInfo.flag,
+            logo: awayInfo.logo
+        },
+        league: tournament.name || 'Unknown League',
+        venue: venue.stadium ? venue.stadium.name : (venue.city ? venue.city.name : 'Unknown Venue'),
+        date: date || startTime.toISOString().split('T')[0],
+        time: time,
+        status: status,
+        score: {
+            team1: homeScore.current || homeScore.display || 0,
+            team2: awayScore.current || awayScore.display || 0
+        },
+        sofascoreId: event.id
+    };
+}
+
+// Fetch all sports from Sofascore for a date
+async function fetchAllSofascoreForDate(date) {
+    const sports = ['football', 'basketball', 'cricket'];
+    const results = { cricket: [], football: [], basketball: [] };
+
+    // Fetch in parallel
+    const promises = sports.map(async (sport) => {
+        const events = await fetchSofascoreScheduled(sport, date);
+        const converted = events.map(e => convertSofascoreEvent(e, sport));
+        return { sport, converted };
+    });
+
+    const allResults = await Promise.allSettled(promises);
+
+    allResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+            const { sport, converted } = result.value;
+            results[sport] = converted;
+        }
+    });
+
+    // Also fetch live events for today
+    const today = getTodayString();
+    if (date === today) {
+        const livePromises = sports.map(async (sport) => {
+            const events = await fetchSofascoreLive(sport);
+            return { sport, events };
+        });
+
+        const liveResults = await Promise.allSettled(livePromises);
+
+        liveResults.forEach(result => {
+            if (result.status === 'fulfilled') {
+                const { sport, events } = result.value;
+                const converted = events.map(e => convertSofascoreEvent(e, sport));
+                // Merge live events (avoid duplicates by ID)
+                const existingIds = new Set(results[sport].map(m => m.id));
+                converted.forEach(match => {
+                    if (!existingIds.has(match.id)) {
+                        results[sport].push(match);
+                    }
+                });
+            }
+        });
+    }
+
+    return results;
+}
 
 // Fetch live cricket data from ESPN Cricinfo (free)
 async function fetchLiveCricket() {
@@ -302,26 +463,43 @@ function generateDynamicMatches() {
 
 // Auto-fetch and update all matches for today and upcoming days
 async function autoFetchMatches() {
-    console.log('🔄 Auto-fetching live matches...');
+    console.log('🔄 Auto-fetching live matches from Sofascore...');
 
-    // Fetch for today and next 7 days
-    for (let i = 0; i <= 7; i++) {
+    const today = getTodayString();
+
+    // Fetch today's data from Sofascore
+    try {
+        const todayData = await fetchAllSofascoreForDate(today);
+        DATE_CACHE[today] = {
+            cricket: todayData.cricket.length > 0 ? todayData.cricket : generateDynamicMatchesForDate(today).cricket,
+            football: todayData.football.length > 0 ? todayData.football : generateDynamicMatchesForDate(today).football,
+            basketball: todayData.basketball.length > 0 ? todayData.basketball : generateDynamicMatchesForDate(today).basketball,
+            source: (todayData.cricket.length + todayData.football.length + todayData.basketball.length) > 0 ? 'sofascore' : 'generated'
+        };
+        console.log(`📊 Today's data: Football ${DATE_CACHE[today].football.length}, Cricket ${DATE_CACHE[today].cricket.length}, Basketball ${DATE_CACHE[today].basketball.length}`);
+    } catch (e) {
+        console.log(`⚠️ Sofascore fetch failed, using generated data: ${e.message}`);
+        DATE_CACHE[today] = generateDynamicMatchesForDate(today);
+        DATE_CACHE[today].source = 'generated';
+    }
+
+    // Cache next 7 days with generated data (will be fetched on demand)
+    for (let i = 1; i <= 7; i++) {
         const date = new Date();
         date.setDate(date.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
 
-        if (!DATE_CACHE[dateStr] || i === 0) {
-            const dynamicData = generateDynamicMatchesForDate(dateStr);
-            DATE_CACHE[dateStr] = dynamicData;
+        if (!DATE_CACHE[dateStr]) {
+            DATE_CACHE[dateStr] = generateDynamicMatchesForDate(dateStr);
+            DATE_CACHE[dateStr].source = 'generated';
         }
     }
 
     // Set today's live matches
-    const today = getTodayString();
     LIVE_MATCHES = DATE_CACHE[today];
 
     LAST_UPDATED = new Date();
-    console.log(`✅ Matches updated at ${LAST_UPDATED.toLocaleTimeString()}`);
+    console.log(`✅ Matches updated at ${LAST_UPDATED.toLocaleTimeString()} (source: ${DATE_CACHE[today].source})`);
 
     // Update UI if available
     if (typeof loadMatchesForDate === 'function') {
@@ -331,46 +509,41 @@ async function autoFetchMatches() {
     return LIVE_MATCHES;
 }
 
-// Fetch matches for a specific date
+// Fetch matches for a specific date from Sofascore
 async function fetchMatchesForDateAPI(dateStr) {
-    // Check cache first
-    if (DATE_CACHE[dateStr]) {
+    // Check cache first (unless it's today)
+    const today = getTodayString();
+    if (DATE_CACHE[dateStr] && dateStr !== today) {
         console.log(`📦 Using cached data for ${dateStr}`);
         return DATE_CACHE[dateStr];
     }
 
-    console.log(`🌐 Fetching matches for ${dateStr}...`);
+    console.log(`🌐 Fetching matches for ${dateStr} from Sofascore...`);
 
-    // Try to fetch from real APIs first
-    let cricketData = null;
-    let footballData = null;
-
+    // Fetch from Sofascore
+    let sofascoreData = null;
     try {
-        cricketData = await fetchLiveCricket();
+        sofascoreData = await fetchAllSofascoreForDate(dateStr);
+        console.log(`📊 Sofascore data: Football ${sofascoreData.football.length}, Cricket ${sofascoreData.cricket.length}, Basketball ${sofascoreData.basketball.length}`);
     } catch (e) {
-        console.log('Cricket API not available');
+        console.log(`⚠️ Sofascore fetch failed: ${e.message}`);
     }
 
-    try {
-        footballData = await fetchLiveFootball();
-    } catch (e) {
-        console.log('Football API not available');
-    }
-
-    // Generate dynamic data for this date
+    // Generate fallback data for this date
     const dynamicData = generateDynamicMatchesForDate(dateStr);
 
-    // Merge: use real data if available, otherwise generated
+    // Merge: use Sofascore data if available, otherwise generated
     const result = {
-        cricket: cricketData || dynamicData.cricket,
-        football: footballData || dynamicData.football,
-        basketball: dynamicData.basketball
+        cricket: (sofascoreData && sofascoreData.cricket.length > 0) ? sofascoreData.cricket : dynamicData.cricket,
+        football: (sofascoreData && sofascoreData.football.length > 0) ? sofascoreData.football : dynamicData.football,
+        basketball: (sofascoreData && sofascoreData.basketball.length > 0) ? sofascoreData.basketball : dynamicData.basketball,
+        source: (sofascoreData && (sofascoreData.cricket.length + sofascoreData.football.length + sofascoreData.basketball.length) > 0) ? 'sofascore' : 'generated'
     };
 
     // Cache the result
     DATE_CACHE[dateStr] = result;
 
-    console.log(`✅ Fetched and cached ${result.cricket.length + result.football.length + result.basketball.length} matches for ${dateStr}`);
+    console.log(`✅ Fetched and cached ${result.cricket.length + result.football.length + result.basketball.length} matches for ${dateStr} (source: ${result.source})`);
 
     return result;
 }

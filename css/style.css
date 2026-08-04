@@ -82,6 +82,21 @@ body {
     50% { opacity: 0.5; }
 }
 
+.source-badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+
+.source-badge.sofascore {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--live-green);
+    animation: pulse 2s infinite;
+}
+
 /* ===== Navigation ===== */
 .nav {
     background: var(--bg-card);

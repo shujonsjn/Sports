@@ -41,7 +41,14 @@ function updateSelectedDateDisplay(dateStr) {
     const dateElement = document.getElementById('selected-date');
     const date = new Date(dateStr + 'T00:00:00');
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    dateElement.textContent = date.toLocaleDateString('en-US', options);
+    const dateText = date.toLocaleDateString('en-US', options);
+
+    // Check if we have Sofascore data for this date
+    const cached = DATE_CACHE[dateStr];
+    const source = cached ? cached.source : 'loading';
+    const sourceBadge = source === 'sofascore' ? ' <span class="source-badge sofascore">LIVE</span>' : '';
+
+    dateElement.innerHTML = dateText + sourceBadge;
 }
 
 // Refresh calendar (no events needed)
