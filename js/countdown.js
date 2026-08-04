@@ -91,10 +91,15 @@ function updateCountdownDisplay(matchId, matchDateTime) {
         if (remaining === null) {
             countdownEl.textContent = 'LIVE';
             countdownEl.classList.add('live');
+            // Clear interval when match goes live to prevent memory leak
+            stopCountdown(matchId);
         } else {
             countdownEl.textContent = formatCountdown(remaining);
             countdownEl.classList.remove('live');
         }
+    } else {
+        // Element not found, clear interval
+        stopCountdown(matchId);
     }
 }
 

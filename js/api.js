@@ -72,6 +72,11 @@ function getCountryInfo(teamName) {
     return COUNTRY_FLAGS[teamName] || { flag: '🏳️', logo: 'https://flagcdn.com/w80/un.png' };
 }
 
+// Set API key (for future use)
+function setApiKey(key) {
+    console.log('API key set (not used in current version)');
+}
+
 // ===== Sofascore API Functions =====
 
 // Fetch scheduled events from Sofascore for a specific sport and date
@@ -237,88 +242,6 @@ async function fetchAllSofascoreForDate(date) {
     }
 
     return results;
-}
-
-// Fetch live cricket data from ESPN Cricinfo (free)
-async function fetchLiveCricket() {
-    try {
-        // Using a free cricket API endpoint
-        const response = await fetch('https://api.cricapi.com/v1/currentMatches?apikey=demo');
-        if (response.ok) {
-            const data = await response.json();
-            if (data && data.data) {
-                return data.data.map(match => ({
-                    id: match.id || Date.now(),
-                    sport: 'cricket',
-                    icon: '🏏',
-                    team1: {
-                        name: match.teams?.[0] || 'Team 1',
-                        short: match.teams?.[0]?.substring(0, 3).toUpperCase() || 'T1',
-                        ...getCountryInfo(match.teams?.[0])
-                    },
-                    team2: {
-                        name: match.teams?.[1] || 'Team 2',
-                        short: match.teams?.[1]?.substring(0, 3).toUpperCase() || 'T2',
-                        ...getCountryInfo(match.teams?.[1])
-                    },
-                    league: match.name || 'Unknown League',
-                    venue: match.venue || 'Unknown Venue',
-                    date: match.date ? match.date.split('T')[0] : getTodayString(),
-                    time: match.date ? new Date(match.date).toTimeString().slice(0, 5) : '00:00',
-                    status: match.matchStarted ? 'live' : 'upcoming',
-                    score: {
-                        team1: match.score?.[0]?.r || 0,
-                        team2: match.score?.[1]?.r || 0
-                    }
-                }));
-            }
-        }
-    } catch (e) {
-        console.log('Cricket API not available, using demo data');
-    }
-    return null;
-}
-
-// Fetch live football data (free API)
-async function fetchLiveFootball() {
-    try {
-        // Using free football API
-        const response = await fetch('https://api.football-data.org/v4/matches', {
-            headers: { 'X-Auth-Token': 'demo' }
-        });
-        if (response.ok) {
-            const data = await response.json();
-            if (data && data.matches) {
-                return data.matches.map(match => ({
-                    id: match.id || Date.now(),
-                    sport: 'football',
-                    icon: '⚽',
-                    team1: {
-                        name: match.homeTeam?.name || 'Team 1',
-                        short: match.homeTeam?.tla || 'T1',
-                        ...getCountryInfo(match.homeTeam?.name)
-                    },
-                    team2: {
-                        name: match.awayTeam?.name || 'Team 2',
-                        short: match.awayTeam?.tla || 'T2',
-                        ...getCountryInfo(match.awayTeam?.name)
-                    },
-                    league: match.competition?.name || 'Unknown League',
-                    venue: match.venue || 'Unknown Venue',
-                    date: match.utcDate ? match.utcDate.split('T')[0] : getTodayString(),
-                    time: match.utcDate ? new Date(match.utcDate).toTimeString().slice(0, 5) : '00:00',
-                    status: match.status === 'IN_PLAY' ? 'live' : 'upcoming',
-                    score: {
-                        team1: match.score?.fullTime?.home || 0,
-                        team2: match.score?.fullTime?.away || 0
-                    }
-                }));
-            }
-        }
-    } catch (e) {
-        console.log('Football API not available, using demo data');
-    }
-    return null;
 }
 
 // Generate dynamic mock data based on any date/time
@@ -608,7 +531,8 @@ async function fetchMatchesForDateAPI(dateStr) {
         cricket: (sofascoreData && sofascoreData.cricket.length > 0) ? sofascoreData.cricket : dynamicData.cricket,
         football: (sofascoreData && sofascoreData.football.length > 0) ? sofascoreData.football : dynamicData.football,
         basketball: (sofascoreData && sofascoreData.basketball.length > 0) ? sofascoreData.basketball : dynamicData.basketball,
-        source: (sofascoreData && (sofascoreData.cricket.length + sofascoreData.football.length + sofascoreData.basketball.length) > 0) ? 'sofascore' : 'generated'
+        tabletennis: (sofascoreData && sofascoreData.tabletennis.length > 0) ? sofascoreData.tabletennis : dynamicData.tabletennis,
+        source: (sofascoreData && (sofascoreData.cricket.length + sofascoreData.football.length + sofascoreData.basketball.length + sofascoreData.tabletennis.length) > 0) ? 'sofascore' : 'generated'
     };
 
     // Cache the result

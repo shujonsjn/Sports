@@ -325,18 +325,12 @@ body {
     background: rgba(233, 69, 96, 0.1);
 }
 
-.fc .fc-daygrid-day:hover {
-    background: rgba(233, 69, 96, 0.08);
-}
-
 /* ===== Match List ===== */
 .match-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     padding-right: 0.5rem;
-}
-    border-radius: 3px;
 }
 
 .match-list::-webkit-scrollbar-thumb {
