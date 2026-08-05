@@ -60,8 +60,8 @@ async function loadMatchesForDate(dateStr) {
     const container = document.getElementById('match-list');
     container.innerHTML = '<div class="loading">Loading matches...</div>';
 
-    // Fetch matches from cache or generate
-    await fetchMatchesForDateAPI(dateStr);
+    // Fetch matches from API
+    await autoFetchMatches();
 
     // Now get the matches and render
     let matches = getMatchesForDate(dateStr);
