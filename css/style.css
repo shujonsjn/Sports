@@ -526,6 +526,16 @@ body {
     animation: pulse-green 1s infinite;
 }
 
+.match-score {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
 .match-status {
     font-size: 0.7rem;
     padding: 0.2rem 0.6rem;

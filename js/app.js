@@ -123,9 +123,12 @@ function renderMatchList(matches) {
                 </div>
                 <div class="match-time-section">
                     <div class="match-time">${match.time}</div>
-                    <div class="match-countdown ${status === 'live' ? 'live' : ''}">
-                        ${status === 'live' ? 'LIVE' : formatCountdown(remaining)}
-                    </div>
+                    ${status === 'finished' ? 
+                        `<div class="match-score">${match.score.team1} - ${match.score.team2}</div>` :
+                        `<div class="match-countdown ${status === 'live' ? 'live' : ''}">
+                            ${status === 'live' ? 'LIVE' : formatCountdown(remaining)}
+                        </div>`
+                    }
                     <span class="match-status ${status}">
                         ${status.charAt(0).toUpperCase() + status.slice(1)}
                     </span>
