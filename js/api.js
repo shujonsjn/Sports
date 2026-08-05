@@ -82,13 +82,11 @@ function setApiKey(key) {
 // Fetch scheduled events from Sofascore for a specific sport and date
 async function fetchSofascoreScheduled(sport, date) {
     try {
-        const url = `${SOFASCORE_BASE}/sport/${sport}/scheduled-events/${date}`;
-        console.log(`🌐 Fetching Sofascore: ${url}`);
+        const targetUrl = `${SOFASCORE_BASE}/sport/${sport}/scheduled-events/${date}`;
+        const proxyUrl = `/proxy?url=${encodeURIComponent(targetUrl)}`;
+        console.log(`🌐 Fetching Sofascore via proxy: ${targetUrl}`);
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: SOFASCORE_HEADERS
-        });
+        const response = await fetch(proxyUrl);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -105,13 +103,11 @@ async function fetchSofascoreScheduled(sport, date) {
 // Fetch live events from Sofascore for a specific sport
 async function fetchSofascoreLive(sport) {
     try {
-        const url = `${SOFASCORE_BASE}/sport/${sport}/events/live`;
-        console.log(`🌐 Fetching Sofascore LIVE: ${url}`);
+        const targetUrl = `${SOFASCORE_BASE}/sport/${sport}/events/live`;
+        const proxyUrl = `/proxy?url=${encodeURIComponent(targetUrl)}`;
+        console.log(`🌐 Fetching Sofascore LIVE via proxy: ${targetUrl}`);
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: SOFASCORE_HEADERS
-        });
+        const response = await fetch(proxyUrl);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
