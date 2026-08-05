@@ -6,7 +6,7 @@ let LAST_UPDATED = null;
 let AUTO_REFRESH_INTERVAL = null;
 let LIVE_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-const LIVE_REFRESH_MS = 60 * 1000;
+const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
 const PROXY_BASE = '/api';
 
