@@ -103,46 +103,80 @@ function renderMatchList(matches) {
         return;
     }
 
-    container.innerHTML = matches.map(match => {
-        const status = getMatchStatus(match);
-        const matchDateTime = getMatchDateTime(match.date, match.time);
-        const remaining = calculateRemaining(matchDateTime);
-        const isActive = selectedMatch && selectedMatch.id === match.id;
+    // Group matches by league
+    const groupedByLeague = {};
+    matches.forEach(match => {
+        const league = match.league || 'Other';
+        if (!groupedByLeague[league]) {
+            groupedByLeague[league] = [];
+        }
+        groupedByLeague[league].push(match);
+    });
 
-        return `
-            <div class="match-card ${status} ${isActive ? 'active' : ''}" 
-                 data-match-id="${match.id}"
-                 onclick="selectMatch('${match.id}')">
-                <div class="match-sport-icon">${match.icon}</div>
-                <div class="match-info">
-                    <div class="match-teams">
-                        <div class="team-item">
-                            <img src="${match.team1.logo}" alt="${match.team1.name}" class="team-logo" onerror="this.style.display='none'">
-                            <span class="team-name">${match.team1.name}</span>
-                        </div>
-                        <span class="vs-text">vs</span>
-                        <div class="team-item">
-                            <img src="${match.team2.logo}" alt="${match.team2.name}" class="team-logo" onerror="this.style.display='none'">
-                            <span class="team-name">${match.team2.name}</span>
-                        </div>
-                    </div>
-                    <div class="match-league">${match.league}</div>
+    // Sort leagues by number of matches (most first)
+    const sortedLeagues = Object.keys(groupedByLeague).sort((a, b) => {
+        return groupedByLeague[b].length - groupedByLeague[a].length;
+    });
+
+    let html = '';
+    sortedLeagues.forEach(league => {
+        const leagueMatches = groupedByLeague[league];
+        const sportIcons = leagueMatches.map(m => m.icon);
+        const uniqueIcons = [...new Set(sportIcons)].join(' ');
+
+        html += `
+            <div class="league-group">
+                <div class="league-header">
+                    <span class="league-icons">${uniqueIcons}</span>
+                    <span class="league-name">${league}</span>
+                    <span class="league-count">${leagueMatches.length} match${leagueMatches.length > 1 ? 'es' : ''}</span>
                 </div>
-                <div class="match-time-section">
-                    <div class="match-time">${match.time}</div>
-                    ${status === 'finished' ? 
-                        `<div class="match-score">${match.score.team1} - ${match.score.team2}</div>` :
-                        `<div class="match-countdown ${status === 'live' ? 'live' : ''}">
-                            ${status === 'live' ? 'LIVE' : formatCountdown(remaining)}
-                        </div>`
-                    }
-                    <span class="match-status ${status}">
-                        ${status.charAt(0).toUpperCase() + status.slice(1)}
-                    </span>
+                <div class="league-matches">
+                    ${leagueMatches.map(match => {
+                        const status = getMatchStatus(match);
+                        const matchDateTime = getMatchDateTime(match.date, match.time);
+                        const remaining = calculateRemaining(matchDateTime);
+                        const isActive = selectedMatch && selectedMatch.id === match.id;
+
+                        return `
+                            <div class="match-card ${status} ${isActive ? 'active' : ''}" 
+                                 data-match-id="${match.id}"
+                                 onclick="selectMatch('${match.id}')">
+                                <div class="match-sport-icon">${match.icon}</div>
+                                <div class="match-info">
+                                    <div class="match-teams">
+                                        <div class="team-item">
+                                            <img src="${match.team1.logo}" alt="${match.team1.name}" class="team-logo" onerror="this.style.display='none'">
+                                            <span class="team-name">${match.team1.name}</span>
+                                        </div>
+                                        <span class="vs-text">vs</span>
+                                        <div class="team-item">
+                                            <img src="${match.team2.logo}" alt="${match.team2.name}" class="team-logo" onerror="this.style.display='none'">
+                                            <span class="team-name">${match.team2.name}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="match-time-section">
+                                    <div class="match-time">${match.time}</div>
+                                    ${status === 'finished' ? 
+                                        `<div class="match-score">${match.score.team1} - ${match.score.team2}</div>` :
+                                        `<div class="match-countdown ${status === 'live' ? 'live' : ''}">
+                                            ${status === 'live' ? 'LIVE' : formatCountdown(remaining)}
+                                        </div>`
+                                    }
+                                    <span class="match-status ${status}">
+                                        ${status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
-    }).join('');
+    });
+
+    container.innerHTML = html;
 
     // Start countdowns for upcoming matches
     matches.forEach(match => {
