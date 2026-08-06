@@ -12,8 +12,15 @@ document.addEventListener('DOMContentLoaded', function() {
     initHamburger();
     loadMatchesForDate(currentDate);
 
-    // Start auto-refresh job
-    startAutoRefresh();
+    // Start auto-refresh in background (no UI reload loop)
+    setInterval(async () => {
+        console.log('🔄 Auto-refreshing...');
+        await fetchAllSports();
+        const matches = getMatchesForDate(currentDate);
+        if (matches.length > 0) {
+            renderMatchList(currentSport === 'all' ? matches : matches.filter(m => m.sport === currentSport));
+        }
+    }, 5 * 60 * 1000);
 
     console.log('🚀 Sports Live Hub initialized with auto-refresh');
 });

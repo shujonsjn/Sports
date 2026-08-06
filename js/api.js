@@ -143,10 +143,6 @@ async function autoFetchMatches() {
         LAST_UPDATED = new Date();
 
         console.log(`✅ Matches updated: Football ${data.football.length}, Cricket ${data.cricket.length}, Basketball ${data.basketball.length}, Tennis ${data.tabletennis.length}`);
-
-        if (typeof loadMatchesForDate === 'function') {
-            loadMatchesForDate(currentDate);
-        }
     } catch (e) {
         console.log(`⚠️ Fetch failed: ${e.message}`);
     }
@@ -210,9 +206,6 @@ function startAutoRefresh() {
                 DATE_CACHE[today].tabletennis = data.tabletennis;
                 LIVE_MATCHES = DATE_CACHE[today];
                 LAST_UPDATED = new Date();
-                if (typeof loadMatchesForDate === 'function') {
-                    loadMatchesForDate(currentDate);
-                }
             }
             console.log(`✅ Live scores updated at ${LAST_UPDATED.toLocaleTimeString()}`);
         } catch (e) {
