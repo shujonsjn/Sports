@@ -200,7 +200,7 @@ function renderMatchDetails(match) {
                 <div class="detail-team-name">${match.team1.name}</div>
             </div>
             <div class="detail-score-center">
-                ${status === 'live' ? 
+                ${(status === 'live' || status === 'finished') ? 
                     `<div class="detail-score">
                         <span class="score-team1">${match.score.team1}</span>
                         <span class="score-divider">-</span>
@@ -227,7 +227,7 @@ function renderMatchDetails(match) {
                 <span class="detail-label">📍 Venue</span>
                 <span class="detail-value">${match.venue}</span>
             </div>
-            ${status === 'live' ? `
+            ${(status === 'live' || status === 'finished') ? `
                 <div class="detail-row score-row">
                     <span class="detail-label">📊 Score</span>
                     <span class="detail-value score-display">
