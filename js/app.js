@@ -80,7 +80,7 @@ async function loadMatchesForDate(dateStr) {
     renderMatchList(matches);
 
     // Reset match details
-    if (selectedMatch && !matches.find(m => m.id === selectedMatch.id)) {
+    if (selectedMatch && !matches.find(m => String(m.id) === String(selectedMatch.id))) {
         selectedMatch = null;
         renderMatchDetails(null);
     }
@@ -112,7 +112,7 @@ function renderMatchList(matches) {
         return `
             <div class="match-card ${status} ${isActive ? 'active' : ''}" 
                  data-match-id="${match.id}"
-                 onclick="selectMatch(${match.id})">
+                 onclick="selectMatch('${match.id}')">
                 <div class="match-sport-icon">${match.icon}</div>
                 <div class="match-info">
                     <div class="match-teams">
@@ -155,16 +155,15 @@ function renderMatchList(matches) {
 
 // Select match
 function selectMatch(matchId) {
-    const match = currentRenderedMatches.find(m => m.id === matchId);
+    const match = currentRenderedMatches.find(m => String(m.id) === String(matchId));
 
     if (match) {
         selectedMatch = match;
 
-        // Update active states
         document.querySelectorAll('.match-card').forEach(card => {
             card.classList.remove('active');
         });
-        const matchCard = document.querySelector(`[data-match-id="${matchId}"]`);
+        const matchCard = document.querySelector(`[data-match-id="${CSS.escape(matchId)}"]`);
         if (matchCard) matchCard.classList.add('active');
 
         renderMatchDetails(match);
