@@ -240,6 +240,14 @@ function renderMatchDetails(match) {
                 </div>
             ` : ''}
         </div>
+        ${status === 'live' ? `
+            <div class="live-now-section">
+                <div class="live-now-title">🔴 Live Now</div>
+                <button class="live-now-btn" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(match.team1.name + ' vs ' + match.team2.name + ' live stream')}', '_blank')">
+                    ▶ Watch Live
+                </button>
+            </div>
+        ` : ''}
     `;
 }
 

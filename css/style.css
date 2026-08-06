@@ -808,6 +808,49 @@ body {
 
 /* ===== Responsive Design ===== */
 
+/* ===== Live Now Button ===== */
+.live-now-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.live-now-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #dc2626;
+    margin-bottom: 0.75rem;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.live-now-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.live-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
+.live-now-btn:active {
+    transform: translateY(0);
+}
+
 /* Tablet */
 @media (max-width: 1024px) {
     .main-container {
