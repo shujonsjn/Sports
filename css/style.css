@@ -1033,6 +1033,7 @@ body {
 
     .nav {
         padding: 0 1rem;
+        top: 56px;
     }
 
     .nav-content {
@@ -1163,8 +1164,7 @@ body {
 }
 
 .footer-nav a:hover {
-    color: var(--primary);
-}
+    color: var(--accent);
 }
 
 /* ===== Selection ===== */

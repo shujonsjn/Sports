@@ -16,6 +16,13 @@ const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
 let APIFOOTBALL_KEY = localStorage.getItem('apifootball_key') || '';
 
+function updateLastUpdated() {
+    const el = document.getElementById('last-updated');
+    if (el && LAST_UPDATED) {
+        el.textContent = 'Updated ' + LAST_UPDATED.toLocaleTimeString();
+    }
+}
+
 function setApiFootballKey(key) {
     APIFOOTBALL_KEY = key;
     localStorage.setItem('apifootball_key', key);
@@ -213,6 +220,7 @@ async function autoFetchMatches() {
             DATE_CACHE[today] = srcData;
             LIVE_MATCHES = srcData;
             LAST_UPDATED = new Date();
+            updateLastUpdated();
             return LIVE_MATCHES;
         }
 
@@ -227,6 +235,7 @@ async function autoFetchMatches() {
 
         LIVE_MATCHES = DATE_CACHE[today];
         LAST_UPDATED = new Date();
+        updateLastUpdated();
 
         console.log(`✅ Matches updated: Football ${data.football.length}, Cricket ${data.cricket.length}, Basketball ${data.basketball.length}, Tennis ${data.tabletennis?.length || 0}`);
     } catch (e) {
@@ -237,7 +246,7 @@ async function autoFetchMatches() {
             DATE_CACHE[today] = srcData;
             LIVE_MATCHES = srcData;
             LAST_UPDATED = new Date();
-        } catch (e2) {
+            updateLastUpdated();
             console.log(`⚠️ Both APIs failed: ${e2.message}`);
         }
     }
@@ -314,6 +323,7 @@ async function fetchSportSRC(dateStr) {
         }
     }
 
+    results.source = 'sportsrc';
     setCachedData(dateStr, results);
     return results;
 }
