@@ -273,21 +273,19 @@ function getMatchesForDate(dateStr) {
     
     if (DATE_CACHE[dateStr]) {
         const cache = DATE_CACHE[dateStr];
-        if (cache && cache.cricket) {
-            return [
-                ...cache.cricket,
-                ...cache.football,
-                ...cache.basketball,
-                ...(cache.tabletennis || [])
-            ].filter(m => m.date === dateStr);
-        }
+        return [
+            ...(cache.cricket || []),
+            ...(cache.football || []),
+            ...(cache.basketball || []),
+            ...(cache.tabletennis || [])
+        ].filter(m => m.date === dateStr);
     }
     
-    if (dateStr === today && LIVE_MATCHES && LIVE_MATCHES.cricket) {
+    if (dateStr === today && LIVE_MATCHES) {
         return [
-            ...LIVE_MATCHES.cricket,
-            ...LIVE_MATCHES.football,
-            ...LIVE_MATCHES.basketball,
+            ...(LIVE_MATCHES.cricket || []),
+            ...(LIVE_MATCHES.football || []),
+            ...(LIVE_MATCHES.basketball || []),
             ...(LIVE_MATCHES.tabletennis || [])
         ].filter(m => m.date === dateStr);
     }
