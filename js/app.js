@@ -12,9 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initHamburger();
     loadMatchesForDate(currentDate);
 
-    // Start auto-refresh in background (no UI reload loop)
+    // Auto-refresh only for today's data
     setInterval(async () => {
-        console.log('🔄 Auto-refreshing...');
+        // Only auto-refresh if viewing today
+        if (currentDate !== getTodayString()) return;
+        
+        console.log('🔄 Auto-refreshing today...');
         await fetchAllSports();
         const matches = getMatchesForDate(currentDate);
         if (matches.length > 0) {
@@ -67,8 +70,12 @@ async function loadMatchesForDate(dateStr) {
     const container = document.getElementById('match-list');
     container.innerHTML = '<div class="loading">Loading matches...</div>';
 
-    // Fetch matches from API
-    await autoFetchMatches();
+    const today = getTodayString();
+
+    // Only fetch from API if viewing today
+    if (dateStr === today) {
+        await autoFetchMatches();
+    }
 
     // Now get the matches and render
     let matches = getMatchesForDate(dateStr);
@@ -94,10 +101,12 @@ function renderMatchList(matches) {
     currentRenderedMatches = matches;
 
     if (matches.length === 0) {
+        const today = getTodayString();
+        const isPastDate = currentDate < today;
         container.innerHTML = `
             <div class="no-matches">
-                <span class="icon">📭</span>
-                <p>No matches scheduled for this date</p>
+                <span class="icon">${isPastDate ? '📅' : '📭'}</span>
+                <p>${isPastDate ? 'No historical data available for past dates' : 'No matches scheduled for this date'}</p>
             </div>
         `;
         return;
