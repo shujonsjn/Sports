@@ -114,7 +114,8 @@ function renderMatchList(matches) {
         container.innerHTML = `
             <div class="no-matches">
                 <span class="icon">${isPastDate ? '📅' : isFutureDate ? '⏳' : '📭'}</span>
-                <p>${isPastDate ? 'No historical data available' : isFutureDate ? 'Schedule not available yet. Check back on match day!' : 'No matches scheduled for this date'}</p>
+                <p>${isPastDate ? 'No historical data available' : isFutureDate ? 'Matches will appear on match day!' : 'No matches scheduled for this date'}</p>
+                ${isFutureDate ? '<small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">SportScore provides live data only. Schedule available on match day.</small>' : ''}
             </div>
         `;
         return;
