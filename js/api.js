@@ -8,7 +8,7 @@ let LIVE_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
-const PROXY_BASE = '/api';
+const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
 
 const SPORT_MAP = {
     'football': 'football',
@@ -78,7 +78,7 @@ function getSportIcon(sport) {
 
 async function fetchSportScore(sport, limit = 20) {
     try {
-        const url = `${PROXY_BASE}?sport=${sport}&limit=${limit}`;
+        const url = `${SPORTSCORE_BASE}/matches/?sport=${sport}&limit=${limit}`;
         console.log(`🌐 Fetching ${sport} from SportScore...`);
 
         const response = await fetch(url);
