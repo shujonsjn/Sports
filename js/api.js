@@ -8,7 +8,9 @@ let LIVE_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
-const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
+const SPORTSCORE_BASE = window.location.hostname === 'localhost' 
+    ? '/api' 
+    : 'https://sportscore.com/api/widget';
 const SPORTSRC_BASE = 'https://api.sportsrc.org';
 const APIFOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const CACHE_KEY_PREFIX = 'sportsrc_';
@@ -160,7 +162,10 @@ function getSportIcon(sport) {
 
 async function fetchSportScore(sport, limit = 20) {
     try {
-        const url = `${SPORTSCORE_BASE}/matches/?sport=${sport}&limit=${limit}`;
+        const isProxy = window.location.hostname === 'localhost';
+        const url = isProxy 
+            ? `${SPORTSCORE_BASE}?sport=${sport}&limit=${limit}`
+            : `${SPORTSCORE_BASE}/matches/?sport=${sport}&limit=${limit}`;
         console.log(`🌐 Fetching ${sport}...`);
 
         const response = await fetch(url);
