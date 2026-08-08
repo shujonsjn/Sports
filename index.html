@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Live sports scores, schedules, and match updates from around the world">
     <meta name="theme-color" content="#e94560">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Sports Live Hub - Live Scores & Schedules</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <noscript>
@@ -32,11 +34,19 @@
     <header class="header">
         <div class="header-content">
             <div class="logo">
-                <span class="logo-icon">⚽</span>
-                <h1>Sports Live Hub</h1>
+                <div class="logo-icon-wrapper">
+                    <span class="logo-icon">⚽</span>
+                </div>
+                <div class="logo-text">
+                    <h1>Sports Live Hub</h1>
+                    <span class="logo-subtitle">Real-time Scores & Schedules</span>
+                </div>
             </div>
             <div class="header-right">
-                <span class="live-badge">● LIVE</span>
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    <span>LIVE</span>
+                </div>
                 <span class="last-updated" id="last-updated"></span>
             </div>
         </div>
@@ -45,11 +55,26 @@
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-content">
-            <button class="nav-btn active" data-sport="all">🌐 All Sports</button>
-            <button class="nav-btn" data-sport="cricket">🏏 Cricket</button>
-            <button class="nav-btn" data-sport="football">⚽ Football</button>
-            <button class="nav-btn" data-sport="basketball">🏀 Basketball</button>
-            <button class="nav-btn" data-sport="tabletennis">🏓 Tennis</button>
+            <button class="nav-btn active" data-sport="all">
+                <span class="nav-icon">🌐</span>
+                <span class="nav-text">All Sports</span>
+            </button>
+            <button class="nav-btn" data-sport="cricket">
+                <span class="nav-icon">🏏</span>
+                <span class="nav-text">Cricket</span>
+            </button>
+            <button class="nav-btn" data-sport="football">
+                <span class="nav-icon">⚽</span>
+                <span class="nav-text">Football</span>
+            </button>
+            <button class="nav-btn" data-sport="basketball">
+                <span class="nav-icon">🏀</span>
+                <span class="nav-text">Basketball</span>
+            </button>
+            <button class="nav-btn" data-sport="tabletennis">
+                <span class="nav-icon">🏓</span>
+                <span class="nav-text">Tennis</span>
+            </button>
         </div>
         <button class="hamburger" id="hamburger">
             <span></span>
@@ -63,16 +88,23 @@
 
         <!-- Left Sidebar - Calendar -->
         <aside class="sidebar-left">
-            <div class="card">
-                <h3 class="card-title">📅 Select Date</h3>
+            <div class="card calendar-card">
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <h3 class="card-title">Select Date</h3>
+                </div>
                 <div id="calendar"></div>
             </div>
         </aside>
 
         <!-- Center - Match Schedule -->
         <section class="center-content">
-            <div class="card">
-                <h3 class="card-title">🏟️ Match Schedule - <span id="selected-date">Today</span></h3>
+            <div class="card schedule-card">
+                <div class="card-header">
+                    <span class="card-icon">🏟️</span>
+                    <h3 class="card-title">Match Schedule</h3>
+                    <span class="card-date" id="selected-date">Today</span>
+                </div>
                 <div id="match-list" class="match-list">
                     <!-- Matches will be loaded here -->
                 </div>
@@ -81,11 +113,14 @@
 
         <!-- Right Sidebar - Match Details -->
         <aside class="sidebar-right">
-            <div class="card">
-                <h3 class="card-title">📋 Match Details</h3>
+            <div class="card details-card">
+                <div class="card-header">
+                    <span class="card-icon">📋</span>
+                    <h3 class="card-title">Match Details</h3>
+                </div>
                 <div id="match-details" class="match-details">
                     <div class="no-selection">
-                        <span class="icon">👈</span>
+                        <div class="no-selection-icon">👈</div>
                         <p>Select a match to view details</p>
                     </div>
                 </div>
@@ -93,6 +128,21 @@
         </aside>
 
     </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="footer-logo">⚽</span>
+                <span>Sports Live Hub</span>
+            </div>
+            <div class="footer-info">
+                <span>Powered by SportScore</span>
+                <span class="footer-sep">•</span>
+                <span>Real-time Data</span>
+            </div>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
