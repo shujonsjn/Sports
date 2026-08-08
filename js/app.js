@@ -12,9 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initHamburger();
     loadMatchesForDate(currentDate);
 
-    // Auto-refresh only for today's data
+    preCacheUpcomingDays();
+
     setInterval(async () => {
-        // Only auto-refresh if viewing today
         if (currentDate !== getTodayString()) return;
         
         console.log('🔄 Auto-refreshing today...');

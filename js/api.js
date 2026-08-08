@@ -10,6 +10,30 @@ const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
 const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
 const SPORTSRC_BASE = 'https://api.sportsrc.org';
+const CACHE_KEY_PREFIX = 'sportsrc_';
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+
+function getCachedData(dateStr) {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY_PREFIX + dateStr);
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (Date.now() - data.timestamp < CACHE_DURATION_MS) {
+                return data.matches;
+            }
+        }
+    } catch (e) {}
+    return null;
+}
+
+function setCachedData(dateStr, matches) {
+    try {
+        localStorage.setItem(CACHE_KEY_PREFIX + dateStr, JSON.stringify({
+            timestamp: Date.now(),
+            matches: matches
+        }));
+    } catch (e) {}
+}
 
 const SPORT_MAP = {
     'football': 'football',
@@ -209,6 +233,12 @@ function convertSportSRCMatch(match, category) {
 }
 
 async function fetchSportSRC(dateStr) {
+    const cached = getCachedData(dateStr);
+    if (cached) {
+        console.log(`📦 Using cached data for ${dateStr}`);
+        return cached;
+    }
+
     const categories = ['football', 'cricket', 'basketball', 'tennis'];
     const results = { football: [], cricket: [], basketball: [], tabletennis: [] };
 
@@ -233,6 +263,8 @@ async function fetchSportSRC(dateStr) {
             console.log(`⚠️ SportSRC ${cat} failed: ${e.message}`);
         }
     }
+
+    setCachedData(dateStr, results);
     return results;
 }
 
@@ -273,6 +305,27 @@ async function fetchMatchesForDate(dateStr) {
     const data = await fetchSportSRC(dateStr);
     DATE_CACHE[dateStr] = data;
     return data;
+}
+
+async function preCacheUpcomingDays() {
+    const today = new Date();
+    const dates = [];
+    
+    for (let i = 1; i <= 7; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        dates.push(d.toISOString().split('T')[0]);
+    }
+    
+    console.log('📦 Pre-caching upcoming days...');
+    for (const dateStr of dates) {
+        const cached = getCachedData(dateStr);
+        if (!cached) {
+            await fetchSportSRC(dateStr);
+            await new Promise(r => setTimeout(r, 500));
+        }
+    }
+    console.log('✅ Pre-cache complete');
 }
 
 function getAllMatches() {

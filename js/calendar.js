@@ -56,27 +56,23 @@ async function loadCalendarEvents() {
 
         const allEvents = [];
 
-        for (const cat of categories) {
-            try {
-                const res = await fetch(`${SPORTSRC_BASE}?data=matches&category=${cat}`);
-                if (!res.ok) continue;
-                const json = await res.json();
-                const items = json.data || [];
-
-                items.forEach(m => {
-                    const matchDate = new Date(m.date).toISOString().split('T')[0];
-                    if (matchDate >= startDate && matchDate <= endDate) {
+        for (let d = new Date(startDate); d <= new Date(endDate); d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            const cached = getCachedData(dateStr);
+            
+            if (cached) {
+                categories.forEach(cat => {
+                    const matches = cached[cat] || cached[cat === 'tennis' ? 'tabletennis' : cat] || [];
+                    matches.forEach(m => {
                         allEvents.push({
-                            title: `${getSportIcon(cat)} ${m.teams?.home?.name || 'TBA'} vs ${m.teams?.away?.name || 'TBA'}`,
-                            date: matchDate,
+                            title: `${getSportIcon(cat)} ${m.team1?.name || 'TBA'} vs ${m.team2?.name || 'TBA'}`,
+                            date: dateStr,
                             color: cat === 'football' ? '#2563eb' : cat === 'cricket' ? '#16a34a' : cat === 'basketball' ? '#ea580c' : '#9333ea',
                             textColor: '#fff',
                             display: 'list-item'
                         });
-                    }
+                    });
                 });
-            } catch (e) {
-                console.log(`Calendar ${cat} fetch failed`);
             }
         }
 
