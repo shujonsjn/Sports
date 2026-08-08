@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Live sports scores, schedules, and match updates from around the world">
-    <meta name="theme-color" content="#e94560">
+    <meta name="description" content="Live football scores, schedules, and match updates from around the world">
+    <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Sports Live Hub - Live Scores & Schedules</title>
+    <title>Football Live Scores & Schedules | Sports Live Hub</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,22 +15,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <noscript>
-        <style>
-            .main-container { display: block; padding: 2rem; text-align: center; }
-            .noscript-msg { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        </style>
-    </noscript>
+    <style>
+        .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .nav-btn.active { background: #2563eb; }
+    </style>
 </head>
 <body>
-    <noscript>
-        <div class="noscript-msg">
-            <h2>⚠️ JavaScript Required</h2>
-            <p>Please enable JavaScript to use Sports Live Hub.</p>
-        </div>
-    </noscript>
-
-    <!-- Header -->
     <header class="header">
         <div class="header-content">
             <div class="logo">
@@ -38,7 +28,7 @@
                     <span class="logo-icon">⚽</span>
                 </div>
                 <div class="logo-text">
-                    <h1>Sports Live Hub</h1>
+                    <h1>Football Live</h1>
                     <span class="logo-subtitle">Real-time Scores & Schedules</span>
                 </div>
             </div>
@@ -52,7 +42,6 @@
         </div>
     </header>
 
-    <!-- Navigation -->
     <nav class="nav">
         <div class="nav-content">
             <a href="cricket.html" class="nav-btn" data-sport="cricket">
@@ -79,10 +68,7 @@
         </button>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-container">
-
-        <!-- Left Sidebar - Calendar -->
         <aside class="sidebar-left">
             <div class="card calendar-card">
                 <div class="card-header">
@@ -91,40 +77,26 @@
                 </div>
                 <div id="calendar"></div>
             </div>
-
-            <!-- Google Ads Placeholder -->
             <div class="ad-container">
                 <div class="ad-label">Advertisement</div>
                 <div class="ad-slot">
-                    <!-- Google AdSense Code Here -->
-                    <ins class="adsbygoogle"
-                         style="display:block"
-                         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                         data-ad-slot="XXXXXXXXXX"
-                         data-ad-format="auto"
-                         data-full-width-responsive="true"></ins>
-                    <script>
-                         (adsbygoogle = window.adsbygoogle || []).push({});
-                    </script>
+                    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
             </div>
         </aside>
 
-        <!-- Center - Match Schedule -->
         <section class="center-content">
             <div class="card schedule-card">
                 <div class="card-header">
-                    <span class="card-icon">🏟️</span>
-                    <h3 class="card-title">Match Schedule</h3>
+                    <span class="card-icon">⚽</span>
+                    <h3 class="card-title">Football Schedule</h3>
                     <span class="card-date" id="selected-date">Today</span>
                 </div>
-                <div id="match-list" class="match-list">
-                    <!-- Matches will be loaded here -->
-                </div>
+                <div id="match-list" class="match-list"></div>
             </div>
         </section>
 
-        <!-- Right Sidebar - Match Details -->
         <aside class="sidebar-right">
             <div class="card details-card">
                 <div class="card-header">
@@ -139,21 +111,13 @@
                 </div>
             </div>
         </aside>
-
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
                 <span class="footer-logo">⚽</span>
-                <span>Sports Live Hub</span>
-            </div>
-            <div class="footer-nav">
-                <a href="cricket.html">🏏 Cricket</a>
-                <a href="football.html">⚽ Football</a>
-                <a href="basketball.html">🏀 Basketball</a>
-                <a href="tennis.html">🎾 Tennis</a>
+                <span>Football Live Hub</span>
             </div>
             <div class="footer-info">
                 <span>Powered by SportSRC</span>
@@ -163,12 +127,11 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/calendar.js"></script>
     <script src="js/countdown.js"></script>
     <script src="js/app.js"></script>
-
+    <script>window.SPORT_PAGE = 'football';</script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // ===== Main Application =====
 
-let currentSport = 'football';
+let currentSport = window.SPORT_PAGE || 'football';
 let currentDate = getTodayString();
 let selectedMatch = null;
 let currentRenderedMatches = [];
@@ -32,15 +32,17 @@ document.addEventListener('DOMContentLoaded', function() {
 function initNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
     
-    // Set default active state to football
     navButtons.forEach(btn => {
-        if (btn.dataset.sport === 'football') {
+        if (btn.dataset.sport === currentSport) {
             btn.classList.add('active');
         }
     });
 
     navButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            if (this.tagName === 'A') {
+                return;
+            }
             navButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentSport = this.dataset.sport;
