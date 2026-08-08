@@ -1,6 +1,6 @@
 // ===== Main Application =====
 
-let currentSport = 'all';
+let currentSport = 'football';
 let currentDate = getTodayString();
 let selectedMatch = null;
 let currentRenderedMatches = [];
@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize navigation
 function initNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
+    
+    // Set default active state to football
+    navButtons.forEach(btn => {
+        if (btn.dataset.sport === 'football') {
+            btn.classList.add('active');
+        }
+    });
 
     navButtons.forEach(btn => {
         btn.addEventListener('click', function() {
