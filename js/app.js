@@ -172,10 +172,12 @@ function renderMatchList(matches) {
                                 <div class="match-info">
                                     <div class="match-teams">
                                         <div class="team-item">
+                                                <img src="${match.team1.logo}" alt="" class="team-logo" onerror="this.style.display='none'">
                                                 <span class="team-name">${match.team1.name}</span>
                                         </div>
                                         <span class="vs-text">vs</span>
                                         <div class="team-item">
+                                                <img src="${match.team2.logo}" alt="" class="team-logo" onerror="this.style.display='none'">
                                                 <span class="team-name">${match.team2.name}</span>
                                         </div>
                                     </div>
@@ -242,6 +244,7 @@ function renderMatchDetails(match) {
         </div>
         <div class="detail-teams">
             <div class="detail-team">
+                <img src="${match.team1.logo}" alt="" class="detail-team-logo-img" onerror="this.style.display='none'">
                 <div class="detail-team-name">${match.team1.name}</div>
             </div>
             <div class="detail-score-center">
@@ -255,6 +258,7 @@ function renderMatchDetails(match) {
                 }
             </div>
             <div class="detail-team">
+                <img src="${match.team2.logo}" alt="" class="detail-team-logo-img" onerror="this.style.display='none'">
                 <div class="detail-team-name">${match.team2.name}</div>
             </div>
         </div>
