@@ -8,7 +8,7 @@ let LIVE_REFRESH_INTERVAL = null;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
-const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
+const SPORTSCORE_BASE = '/api/matches';
 
 const SPORT_MAP = {
     'football': 'football',
@@ -78,8 +78,8 @@ function getSportIcon(sport) {
 
 async function fetchSportScore(sport, limit = 20) {
     try {
-        const url = `${SPORTSCORE_BASE}/matches/?sport=${sport}&limit=${limit}`;
-        console.log(`🌐 Fetching ${sport} from SportScore...`);
+        const url = `${SPORTSCORE_BASE}?sport=${sport}&limit=${limit}`;
+        console.log(`🌐 Fetching ${sport}...`);
 
         const response = await fetch(url);
         if (!response.ok) {
@@ -89,7 +89,7 @@ async function fetchSportScore(sport, limit = 20) {
         const data = await response.json();
         return (data.matches || []).map(m => convertSportScoreMatch(m, sport));
     } catch (error) {
-        console.log(`⚠️ SportScore ${sport} fetch failed: ${error.message}`);
+        console.log(`⚠️ ${sport} fetch failed: ${error.message}`);
         return [];
     }
 }
