@@ -327,6 +327,19 @@ body {
     font-weight: 700;
 }
 
+.fc .fc-daygrid-day.selected-date {
+    background: rgba(233, 69, 96, 0.15);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+}
+
+.fc .fc-daygrid-day.selected-date .fc-daygrid-day-number {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(233, 69, 96, 0.4);
+}
+
 .fc .fc-col-header-cell {
     padding: 0.5rem 0;
     border-radius: var(--radius-sm);
