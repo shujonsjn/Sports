@@ -173,16 +173,12 @@ function renderMatchList(matches) {
                                     </div>
                                 </div>
                                 <div class="match-time-section">
-                                    <div class="match-time">${match.time}</div>
                                     ${status === 'finished' ? 
                                         `<div class="match-score">${match.score.team1} - ${match.score.team2}</div>` :
-                                        `<div class="match-countdown ${status === 'live' ? 'live' : ''}">
-                                            ${status === 'live' ? 'LIVE' : formatCountdown(remaining)}
-                                        </div>`
+                                        status === 'live' ?
+                                            `<div class="match-countdown live">LIVE</div>` :
+                                            `<div class="match-time">${match.time}</div>`
                                     }
-                                    <span class="match-status ${status}">
-                                        ${status.charAt(0).toUpperCase() + status.slice(1)}
-                                    </span>
                                 </div>
                             </div>
                         `;
@@ -193,14 +189,6 @@ function renderMatchList(matches) {
     });
 
     container.innerHTML = html;
-
-    // Start countdowns for upcoming matches
-    matches.forEach(match => {
-        const status = getMatchStatus(match);
-        if (status === 'upcoming') {
-            startCountdown(match.id, match.date, match.time);
-        }
-    });
 }
 
 // Select match
