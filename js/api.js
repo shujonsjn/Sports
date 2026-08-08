@@ -252,7 +252,8 @@ async function autoFetchMatches() {
             LIVE_MATCHES = srcData;
             LAST_UPDATED = new Date();
             updateLastUpdated();
-            console.log(`⚠️ Both APIs failed: ${e2.message}`);
+        } catch (e2) {
+            console.log(`⚠️ SportSRC also failed: ${e2.message}`);
         }
     }
 
