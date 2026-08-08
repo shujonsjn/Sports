@@ -168,8 +168,7 @@ function renderMatchList(matches) {
                             <div class="match-card ${status} ${isActive ? 'active' : ''}" 
                                  data-match-id="${match.id}"
                                  onclick="selectMatch('${match.id}')">
-                                <div class="match-sport-icon">${match.icon}</div>
-                                <div class="match-info">
+                                 <div class="match-info">
                                     <div class="match-teams">
                                         <div class="team-item">
                                                 <img src="${match.team1.logo}" alt="" class="team-logo" onerror="this.style.display='none'">
@@ -236,7 +235,6 @@ function renderMatchDetails(match) {
 
     container.innerHTML = `
         <div class="detail-header">
-            <div class="detail-sport-icon">${match.icon}</div>
             <div class="detail-league">${match.league}</div>
             <span class="detail-status ${status}">
                 ${status.charAt(0).toUpperCase() + status.slice(1)}
