@@ -109,11 +109,12 @@ function renderMatchList(matches) {
 
     if (matches.length === 0) {
         const today = getTodayString();
-        const isPastDate = currentDate < today;
+        const isPastDate = dateStr < today;
+        const isFutureDate = dateStr > today;
         container.innerHTML = `
             <div class="no-matches">
-                <span class="icon">${isPastDate ? '📅' : '📭'}</span>
-                <p>${isPastDate ? 'No historical data available for past dates' : 'No matches scheduled for this date'}</p>
+                <span class="icon">${isPastDate ? '📅' : isFutureDate ? '⏳' : '📭'}</span>
+                <p>${isPastDate ? 'No historical data available' : isFutureDate ? 'Schedule not available yet. Check back on match day!' : 'No matches scheduled for this date'}</p>
             </div>
         `;
         return;

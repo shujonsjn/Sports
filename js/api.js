@@ -152,18 +152,32 @@ async function autoFetchMatches() {
 
 function getMatchesForDate(dateStr) {
     const today = getTodayString();
-    const cache = DATE_CACHE[dateStr] || DATE_CACHE[today] || LIVE_MATCHES;
-
-    if (cache && cache.cricket) {
+    
+    // Check cache for specific date first
+    if (DATE_CACHE[dateStr]) {
+        const cache = DATE_CACHE[dateStr];
+        if (cache && cache.cricket) {
+            const all = [
+                ...cache.cricket,
+                ...cache.football,
+                ...cache.basketball,
+                ...(cache.tabletennis || [])
+            ];
+            return all.filter(m => m.date === dateStr);
+        }
+    }
+    
+    // For today, use live matches
+    if (dateStr === today && LIVE_MATCHES && LIVE_MATCHES.cricket) {
         const all = [
-            ...cache.cricket,
-            ...cache.football,
-            ...cache.basketball,
-            ...(cache.tabletennis || [])
+            ...LIVE_MATCHES.cricket,
+            ...LIVE_MATCHES.football,
+            ...LIVE_MATCHES.basketball,
+            ...(LIVE_MATCHES.tabletennis || [])
         ];
         return all.filter(m => m.date === dateStr);
     }
-
+    
     return [];
 }
 
