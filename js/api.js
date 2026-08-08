@@ -9,6 +9,7 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
 const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
+const SPORTSRC_BASE = 'https://api.sportsrc.org';
 
 const SPORT_MAP = {
     'football': 'football',
@@ -129,6 +130,17 @@ async function autoFetchMatches() {
 
     try {
         const data = await fetchAllSports();
+        const hasData = data.football.length + data.cricket.length + data.basketball.length + (data.tabletennis?.length || 0);
+
+        if (hasData === 0) {
+            console.log('⚠️ SportScore returned no data, trying SportSRC...');
+            const today = getTodayString();
+            const srcData = await fetchSportSRC(today);
+            DATE_CACHE[today] = srcData;
+            LIVE_MATCHES = srcData;
+            LAST_UPDATED = new Date();
+            return LIVE_MATCHES;
+        }
 
         const today = getTodayString();
         DATE_CACHE[today] = {
@@ -142,43 +154,125 @@ async function autoFetchMatches() {
         LIVE_MATCHES = DATE_CACHE[today];
         LAST_UPDATED = new Date();
 
-        console.log(`✅ Matches updated: Football ${data.football.length}, Cricket ${data.cricket.length}, Basketball ${data.basketball.length}, Tennis ${data.tabletennis.length}`);
+        console.log(`✅ Matches updated: Football ${data.football.length}, Cricket ${data.cricket.length}, Basketball ${data.basketball.length}, Tennis ${data.tabletennis?.length || 0}`);
     } catch (e) {
-        console.log(`⚠️ Fetch failed: ${e.message}`);
+        console.log(`⚠️ SportScore failed: ${e.message}, trying SportSRC...`);
+        try {
+            const today = getTodayString();
+            const srcData = await fetchSportSRC(today);
+            DATE_CACHE[today] = srcData;
+            LIVE_MATCHES = srcData;
+            LAST_UPDATED = new Date();
+        } catch (e2) {
+            console.log(`⚠️ Both APIs failed: ${e2.message}`);
+        }
     }
 
     return LIVE_MATCHES;
 }
 
+function convertSportSRCMatch(match, category) {
+    const matchDate = new Date(match.date).toISOString().split('T')[0];
+    const matchTime = new Date(match.date).toTimeString().slice(0, 5);
+
+    const categoryNames = {
+        'football': 'Football',
+        'cricket': 'Cricket',
+        'basketball': 'Basketball',
+        'tennis': 'Tennis'
+    };
+
+    return {
+        id: match.id || Date.now(),
+        sport: category,
+        icon: getSportIcon(category),
+        team1: {
+            name: match.teams?.home?.name || 'Home Team',
+            short: (match.teams?.home?.name || 'HOME').slice(0, 3).toUpperCase(),
+            logo: match.teams?.home?.badge || '',
+            flag: ''
+        },
+        team2: {
+            name: match.teams?.away?.name || 'Away Team',
+            short: (match.teams?.away?.name || 'AWAY').slice(0, 3).toUpperCase(),
+            logo: match.teams?.away?.badge || '',
+            flag: ''
+        },
+        league: categoryNames[category] || category,
+        venue: '',
+        date: matchDate,
+        time: matchTime,
+        status: 'upcoming',
+        statusText: 'Scheduled',
+        score: { team1: '-', team2: '-' }
+    };
+}
+
+async function fetchSportSRC(dateStr) {
+    const categories = ['football', 'cricket', 'basketball', 'tennis'];
+    const results = { football: [], cricket: [], basketball: [], tabletennis: [] };
+
+    for (const cat of categories) {
+        try {
+            const url = `${SPORTSRC_BASE}?data=matches&category=${cat}`;
+            const res = await fetch(url);
+            if (!res.ok) continue;
+            const json = await res.json();
+            const items = json.data || json.items || json || [];
+            const dayMatches = items.filter(m => {
+                const d = new Date(m.date).toISOString().split('T')[0];
+                return d === dateStr;
+            }).map(m => convertSportSRCMatch(m, cat));
+
+            if (cat === 'tennis') {
+                results.tabletennis = dayMatches;
+            } else {
+                results[cat] = dayMatches;
+            }
+        } catch (e) {
+            console.log(`⚠️ SportSRC ${cat} failed: ${e.message}`);
+        }
+    }
+    return results;
+}
+
 function getMatchesForDate(dateStr) {
     const today = getTodayString();
     
-    // Check cache for specific date first
     if (DATE_CACHE[dateStr]) {
         const cache = DATE_CACHE[dateStr];
         if (cache && cache.cricket) {
-            const all = [
+            return [
                 ...cache.cricket,
                 ...cache.football,
                 ...cache.basketball,
                 ...(cache.tabletennis || [])
-            ];
-            return all.filter(m => m.date === dateStr);
+            ].filter(m => m.date === dateStr);
         }
     }
     
-    // For today, use live matches
     if (dateStr === today && LIVE_MATCHES && LIVE_MATCHES.cricket) {
-        const all = [
+        return [
             ...LIVE_MATCHES.cricket,
             ...LIVE_MATCHES.football,
             ...LIVE_MATCHES.basketball,
             ...(LIVE_MATCHES.tabletennis || [])
-        ];
-        return all.filter(m => m.date === dateStr);
+        ].filter(m => m.date === dateStr);
     }
     
     return [];
+}
+
+async function fetchMatchesForDate(dateStr) {
+    const today = getTodayString();
+    
+    if (dateStr === today) {
+        return await autoFetchMatches();
+    }
+    
+    const data = await fetchSportSRC(dateStr);
+    DATE_CACHE[dateStr] = data;
+    return data;
 }
 
 function getAllMatches() {

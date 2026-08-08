@@ -73,18 +73,21 @@ async function loadMatchesForDate(dateStr) {
     currentDate = dateStr;
     updateSelectedDateDisplay(dateStr);
 
-    // Show loading
     const container = document.getElementById('match-list');
     container.innerHTML = '<div class="loading">Loading matches...</div>';
 
     const today = getTodayString();
 
-    // Only fetch from API if viewing today
     if (dateStr === today) {
         await autoFetchMatches();
+    } else if (dateStr > today) {
+        try {
+            await fetchMatchesForDate(dateStr);
+        } catch (e) {
+            console.log(`⚠️ Future date fetch failed: ${e.message}`);
+        }
     }
 
-    // Now get the matches and render
     let matches = getMatchesForDate(dateStr);
 
     if (currentSport !== 'all') {
@@ -93,7 +96,6 @@ async function loadMatchesForDate(dateStr) {
 
     renderMatchList(matches);
 
-    // Reset match details
     if (selectedMatch && !matches.find(m => String(m.id) === String(selectedMatch.id))) {
         selectedMatch = null;
         renderMatchDetails(null);
@@ -109,13 +111,13 @@ function renderMatchList(matches) {
 
     if (matches.length === 0) {
         const today = getTodayString();
-        const isPastDate = dateStr < today;
-        const isFutureDate = dateStr > today;
+        const isPastDate = currentDate < today;
+        const isFutureDate = currentDate > today;
         container.innerHTML = `
             <div class="no-matches">
                 <span class="icon">${isPastDate ? '📅' : isFutureDate ? '⏳' : '📭'}</span>
-                <p>${isPastDate ? 'No historical data available' : isFutureDate ? 'Matches will appear on match day!' : 'No matches scheduled for this date'}</p>
-                ${isFutureDate ? '<small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">SportScore provides live data only. Schedule available on match day.</small>' : ''}
+                <p>${isPastDate ? 'No historical data available' : isFutureDate ? 'Fetching matches from SportSRC API...' : 'No matches scheduled for this date'}</p>
+                ${isFutureDate ? '<small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">Loading future match schedules...</small>' : ''}
             </div>
         `;
         return;

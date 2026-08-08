@@ -1165,3 +1165,8 @@ body {
     background: var(--live-green-light);
     color: var(--live-green);
 }
+
+.source-badge.sportsrc {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
