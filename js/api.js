@@ -155,12 +155,13 @@ function getMatchesForDate(dateStr) {
     const cache = DATE_CACHE[dateStr] || DATE_CACHE[today] || LIVE_MATCHES;
 
     if (cache && cache.cricket) {
-        return [
+        const all = [
             ...cache.cricket,
             ...cache.football,
             ...cache.basketball,
             ...(cache.tabletennis || [])
         ];
+        return all.filter(m => m.date === dateStr);
     }
 
     return [];
