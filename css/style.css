@@ -912,6 +912,35 @@ body {
     margin-top: 2rem;
 }
 
+/* ===== Google Ads ===== */
+.ad-container {
+    margin-top: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.ad-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-primary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.ad-slot {
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    padding: 1rem;
+}
+
 .footer-content {
     max-width: 1440px;
     margin: 0 auto;
