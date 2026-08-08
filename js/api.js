@@ -10,8 +10,58 @@ const LIVE_REFRESH_MS = 5 * 60 * 1000;
 
 const SPORTSCORE_BASE = 'https://sportscore.com/api/widget';
 const SPORTSRC_BASE = 'https://api.sportsrc.org';
+const APIFOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const CACHE_KEY_PREFIX = 'sportsrc_';
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+
+let APIFOOTBALL_KEY = localStorage.getItem('apifootball_key') || '';
+
+function setApiFootballKey(key) {
+    APIFOOTBALL_KEY = key;
+    localStorage.setItem('apifootball_key', key);
+    console.log('🔑 API-Football key saved');
+}
+
+async function fetchVenueFromAPIFootball(dateStr) {
+    if (!APIFOOTBALL_KEY) return {};
+    
+    try {
+        const res = await fetch(`${APIFOOTBALL_BASE}/fixtures?date=${dateStr}`, {
+            headers: { 'x-apisports-key': APIFOOTBALL_KEY }
+        });
+        if (!res.ok) return {};
+        const data = await res.json();
+        const venues = {};
+        (data.response || []).forEach(f => {
+            const home = f.teams?.home?.name;
+            const away = f.teams?.away?.name;
+            const venue = f.fixture?.venue?.name;
+            if (home && away && venue) {
+                venues[`${home.toLowerCase()}_vs_${away.toLowerCase()}`] = venue;
+            }
+        });
+        return venues;
+    } catch (e) {
+        console.log('⚠️ API-Football venue fetch failed:', e.message);
+        return {};
+    }
+}
+
+async function enrichMatchesWithVenue(matches, dateStr) {
+    if (!APIFOOTBALL_KEY || matches.length === 0) return matches;
+    
+    const venues = await fetchVenueFromAPIFootball(dateStr);
+    if (Object.keys(venues).length === 0) return matches;
+    
+    return matches.map(m => {
+        const key = `${m.team1.name.toLowerCase()}_vs_${m.team2.name.toLowerCase()}`;
+        const keyRev = `${m.team2.name.toLowerCase()}_vs_${m.team1.name.toLowerCase()}`;
+        return {
+            ...m,
+            venue: venues[key] || venues[keyRev] || m.venue || ''
+        };
+    });
+}
 
 function getCachedData(dateStr) {
     try {

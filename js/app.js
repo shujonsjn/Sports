@@ -96,6 +96,10 @@ async function loadMatchesForDate(dateStr) {
         matches = matches.filter(m => m.sport === currentSport);
     }
 
+    if (APIFOOTBALL_KEY && matches.length > 0) {
+        matches = await enrichMatchesWithVenue(matches, dateStr);
+    }
+
     renderMatchList(matches);
 
     if (selectedMatch && !matches.find(m => String(m.id) === String(selectedMatch.id))) {
@@ -267,6 +271,12 @@ function renderMatchDetails(match) {
                 <span class="detail-label">⏰ Time</span>
                 <span class="detail-value">${match.time}</span>
             </div>
+            ${match.venue ? `
+            <div class="detail-row">
+                <span class="detail-label">📍 Venue</span>
+                <span class="detail-value">${match.venue}</span>
+            </div>
+            ` : ''}
             ${(status === 'live' || status === 'finished') ? `
                 <div class="detail-row score-row">
                     <span class="detail-label">📊 Score</span>
