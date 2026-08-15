@@ -1,5 +1,9 @@
 node_modules/
 .env
 .DS_Store
-jobs/data/
-jobs/cache.log
+jobs/
+server.ps1
+server.js
+package.json
+render.yaml
+vercel.json
