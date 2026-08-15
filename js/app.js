@@ -214,6 +214,13 @@ function selectMatch(matchId) {
         if (matchCard) matchCard.classList.add('active');
 
         renderMatchDetails(match);
+
+        if (window.innerWidth <= 1024) {
+            const detailsSection = document.getElementById('match-details');
+            if (detailsSection) {
+                detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
     }
 }
 
@@ -236,9 +243,12 @@ function renderMatchDetails(match) {
     container.innerHTML = `
         <div class="detail-header">
             <div class="detail-league">${match.league}</div>
-            <span class="detail-status ${status}">
-                ${status.charAt(0).toUpperCase() + status.slice(1)}
-            </span>
+            <div class="detail-header-right">
+                <span class="detail-status ${status}">
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+                <button class="detail-close-btn" onclick="closeMatchDetails()">✕</button>
+            </div>
         </div>
         <div class="detail-teams">
             <div class="detail-team">
@@ -312,4 +322,20 @@ function setMyApiKey(key) {
     loadMatchesForDate(currentDate);
     refreshCalendarEvents();
     console.log('API key set! Fetching live data...');
+}
+
+function closeMatchDetails() {
+    const container = document.getElementById('match-details');
+    container.innerHTML = `
+        <div class="no-selection">
+            <span class="icon">👈</span>
+            <p>Select a match to view details</p>
+        </div>
+    `;
+    document.querySelectorAll('.match-card').forEach(card => card.classList.remove('active'));
+    selectedMatch = null;
+    if (window.innerWidth <= 1024) {
+        const matchSection = document.querySelector('.match-section');
+        if (matchSection) matchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }

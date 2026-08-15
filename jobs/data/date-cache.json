@@ -119,11 +119,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-08":  {
-                       "date":  "2026-08-08",
-                       "status":  "active",
-                       "lastUpdated":  "2026-08-08 14:05:34"
-                   },
     "2026-11-01":  {
                        "date":  "2026-11-01",
                        "status":  "pending",
@@ -349,11 +344,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2027-06-19":  {
-                       "date":  "2027-06-19",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
     "2026-11-19":  {
                        "date":  "2026-11-19",
                        "status":  "pending",
@@ -409,8 +399,8 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-13":  {
-                       "date":  "2026-08-13",
+    "2027-06-19":  {
+                       "date":  "2027-06-19",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -421,6 +411,11 @@
                    },
     "2027-01-02":  {
                        "date":  "2027-01-02",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
+    "2027-08-14":  {
+                       "date":  "2027-08-14",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -441,11 +436,6 @@
                    },
     "2027-05-19":  {
                        "date":  "2027-05-19",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
-    "2026-08-14":  {
-                       "date":  "2026-08-14",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -634,6 +624,11 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
+    "2027-08-11":  {
+                       "date":  "2027-08-11",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
     "2027-02-21":  {
                        "date":  "2027-02-21",
                        "status":  "pending",
@@ -744,11 +739,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-12":  {
-                       "date":  "2026-08-12",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
     "2027-02-22":  {
                        "date":  "2027-02-22",
                        "status":  "pending",
@@ -804,11 +794,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2027-07-09":  {
-                       "date":  "2027-07-09",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
     "2027-06-06":  {
                        "date":  "2027-06-06",
                        "status":  "pending",
@@ -841,6 +826,11 @@
                    },
     "2027-01-12":  {
                        "date":  "2027-01-12",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
+    "2027-08-12":  {
+                       "date":  "2027-08-12",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -989,11 +979,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-10":  {
-                       "date":  "2026-08-10",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
     "2026-12-29":  {
                        "date":  "2026-12-29",
                        "status":  "pending",
@@ -1014,8 +999,8 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-11":  {
-                       "date":  "2026-08-11",
+    "2027-07-09":  {
+                       "date":  "2027-07-09",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -1096,6 +1081,11 @@
                    },
     "2026-12-10":  {
                        "date":  "2026-12-10",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
+    "2027-08-15":  {
+                       "date":  "2027-08-15",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
@@ -1194,6 +1184,11 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
+    "2027-08-13":  {
+                       "date":  "2027-08-13",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
     "2027-04-07":  {
                        "date":  "2027-04-07",
                        "status":  "pending",
@@ -1231,8 +1226,8 @@
                    },
     "2026-08-15":  {
                        "date":  "2026-08-15",
-                       "status":  "pending",
-                       "lastUpdated":  null
+                       "status":  "active",
+                       "lastUpdated":  "2026-08-15 07:58:25"
                    },
     "2027-03-16":  {
                        "date":  "2027-03-16",
@@ -1469,11 +1464,6 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
-    "2026-08-09":  {
-                       "date":  "2026-08-09",
-                       "status":  "pending",
-                       "lastUpdated":  null
-                   },
     "2026-10-25":  {
                        "date":  "2026-10-25",
                        "status":  "pending",
@@ -1694,6 +1684,11 @@
                        "status":  "pending",
                        "lastUpdated":  null
                    },
+    "2027-08-10":  {
+                       "date":  "2027-08-10",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
     "2026-11-15":  {
                        "date":  "2026-11-15",
                        "status":  "pending",
@@ -1726,6 +1721,11 @@
                    },
     "2027-01-09":  {
                        "date":  "2027-01-09",
+                       "status":  "pending",
+                       "lastUpdated":  null
+                   },
+    "2027-08-09":  {
+                       "date":  "2027-08-09",
                        "status":  "pending",
                        "lastUpdated":  null
                    },
