@@ -42,26 +42,18 @@ function getMatchDateTime(date, time) {
     return new Date(`${date}T${time}:00`);
 }
 
-// Check match status based on time
+// Check provider status first; use time only as a fallback.
 function getMatchStatus(match) {
-    const matchTime = getMatchDateTime(match.date, match.time);
+    if (!match) return 'upcoming';
+    const explicit = String(match.status || '').toLowerCase();
+    const text = String(match.statusText || '').toLowerCase();
+    if (['finished','final','post','cancelled','canceled'].includes(explicit) || /\b(final|finished|ft|ended|cancelled|canceled)\b/.test(text)) return 'finished';
+    if (['live','in','in_progress','in-progress','suspended'].includes(explicit) || /\b(live|in progress|halftime|quarter|period)\b/.test(text)) return 'live';
+    const dt = getMatchDateTime(match.date, match.time);
+    if (!dt || isNaN(dt.getTime())) return 'upcoming';
     const now = new Date();
-
-    if (match.status === 'live') {
-        return 'live';
-    }
-
-    if (matchTime > now) {
-        return 'upcoming';
-    }
-
-    // Match was 3 hours ago, consider it finished
-    const threeHoursLater = new Date(matchTime.getTime() + (3 * 60 * 60 * 1000));
-    if (now > threeHoursLater) {
-        return 'finished';
-    }
-
-    return 'live';
+    if (dt > now) return 'upcoming';
+    return now > new Date(dt.getTime() + 3 * 60 * 60 * 1000) ? 'finished' : 'live';
 }
 
 // Start countdown for a match
@@ -85,7 +77,7 @@ function startCountdown(matchId, date, time) {
 // Update countdown display
 function updateCountdownDisplay(matchId, matchDateTime) {
     const remaining = calculateRemaining(matchDateTime);
-    const countdownEl = document.querySelector(`[data-match-id="${matchId}"] .match-countdown`);
+    const countdownEl = document.querySelector(`[data-match-id="${matchId}"] .mc-countdown`);
 
     if (countdownEl) {
         if (remaining === null) {

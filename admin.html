@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Live Streaming</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen" class="login-screen">
+    <div class="login-box">
+        <div class="login-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2 class="login-title">Admin Panel</h2>
+        <p class="login-sub">Live Streaming Dashboard</p>
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="login-field">
+                <label>Username</label>
+                <input type="text" id="login-user" placeholder="admin" autocomplete="username" required>
+            </div>
+            <div class="login-field">
+                <label>Password</label>
+                <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password" required>
+            </div>
+            <div id="login-error" class="login-err" style="display:none;"></div>
+            <button type="submit" class="login-submit">Sign In</button>
+        </form>
+        <a href="/" class="login-back">← Back to Site</a>
+    </div>
+</div>
+
+<!-- App -->
+<div id="admin-app" style="display:none;">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">LS</div>
+            <span class="sidebar-name">Live Streaming</span>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-label">Overview</div>
+            <a class="sidebar-link active" data-page="dashboard" onclick="showPage('dashboard')">
+                <span class="sidebar-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span> Dashboard
+            </a>
+            <div class="sidebar-label">Management</div>
+            <a class="sidebar-link" data-page="apis" onclick="showPage('apis')">
+                <span class="sidebar-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></span> API Status
+            </a>
+            <a class="sidebar-link" data-page="matches" onclick="showPage('matches')">
+                <span class="sidebar-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span> Matches
+            </a>
+            <div class="sidebar-label">System</div>
+            <a class="sidebar-link" data-page="settings" onclick="showPage('settings')">
+                <span class="sidebar-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Settings
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <a href="/" class="sidebar-link">
+                <span class="sidebar-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span> View Site
+            </a>
+        </div>
+    </aside>
+
+    <div class="main">
+        <header class="topbar">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <h2 class="topbar-title" id="page-title">Dashboard</h2>
+            <div class="topbar-right">
+                <span class="pill">Admin</span>
+                <span class="clock" id="admin-time"></span>
+                <button class="btn btn-sm btn-red" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Dashboard -->
+        <div class="page active" id="page-dashboard">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-icon i-green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="stat-total">0</span>
+                        <span class="stat-label">Total Matches</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon i-red"><div class="pulse-dot"></div></div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="stat-live">0</span>
+                        <span class="stat-label">Live Now</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon i-blue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="stat-leagues">0</span>
+                        <span class="stat-label">Leagues</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-icon i-purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="stat-apis">0</span>
+                        <span class="stat-label">APIs Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3>Sport Breakdown</h3>
+                    <button class="btn btn-sm" onclick="refreshDashboard()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                        Refresh
+                    </button>
+                </div>
+                <div class="sport-grid" id="sport-breakdown"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3>System Log</h3>
+                    <button class="btn btn-sm" onclick="clearLog()">Clear</button>
+                </div>
+                <div class="syslog" id="system-log">
+                    <div class="log-entry">System initialized</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Status -->
+        <div class="page" id="page-apis">
+            <div class="card">
+                <div class="card-head">
+                    <h3>API Endpoints</h3>
+                    <button class="btn btn-sm btn-accent" onclick="checkAllAPIs()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        Check All
+                    </button>
+                </div>
+                <div id="api-list"></div>
+            </div>
+            <div class="card">
+                <div class="card-head">
+                    <h3>Server Proxy Endpoints</h3>
+                </div>
+                <div id="proxy-list"></div>
+            </div>
+        </div>
+
+        <!-- Matches -->
+        <div class="page" id="page-matches">
+            <div class="card">
+                <div class="card-head">
+                    <h3>All Current Matches</h3>
+                    <div class="card-head-actions">
+                        <select id="match-sport-filter" class="sel" onchange="filterAdminMatches()">
+                            <option value="all">All Sports</option>
+                            <option value="football">Football</option>
+                            <option value="cricket">Cricket</option>
+                            <option value="basketball">Basketball</option>
+                            <option value="tennis">Tennis</option>
+                            <option value="mma">MMA</option>
+                            <option value="ufc">UFC</option>
+                            <option value="nfl">NFL</option>
+                        </select>
+                        <button class="btn btn-sm" onclick="loadAdminMatches()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table class="dt">
+                        <thead>
+                            <tr>
+                                <th>Sport</th>
+                                <th>Home</th>
+                                <th>Away</th>
+                                <th>Score</th>
+                                <th>League</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matches-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="page" id="page-settings">
+            <div class="settings-grid">
+                <div class="settings-col">
+                    <div class="card">
+                        <div class="card-head"><h3>API Keys</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Cricket API Key</label>
+                                <div class="form-row">
+                                    <input type="text" id="setting-cricket-key" placeholder="Free key from cricketdata.org" class="form-input">
+                                    <button class="btn btn-accent" onclick="saveSetting('cricket_api_key','setting-cricket-key')">Save</button>
+                                </div>
+                                <span class="form-hint">Get free key at <a href="https://cricketdata.org" target="_blank">cricketdata.org</a></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><h3>Auto Refresh</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Refresh Interval (minutes)</label>
+                                <div class="form-row">
+                                    <input type="number" id="setting-refresh" value="5" min="1" max="60" class="form-input input-sm">
+                                    <button class="btn btn-accent" onclick="saveSetting('refresh_interval','setting-refresh')">Save</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Current Date</label>
+                                <input type="date" id="setting-date" class="form-input input-md">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><h3>Storage</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label">Local Storage Used</label>
+                                <div class="storage-bar"><div class="storage-fill" id="storage-fill"></div></div>
+                                <span class="form-hint" id="storage-info">Calculating...</span>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-red" onclick="clearAllStorage()">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-col">
+                    <div class="card">
+                        <div class="card-head"><h3>Data Sources</h3></div>
+                        <div class="info-row"><span class="info-label">Primary API</span><span class="info-val">SportScore (no key)</span></div>
+                        <div class="info-row"><span class="info-label">Fallback API</span><span class="info-val">SportSRC (no key)</span></div>
+                        <div class="info-row"><span class="info-label">NFL Data</span><span class="info-val">nfldata.org (free)</span></div>
+                        <div class="info-row"><span class="info-label">Cricket</span><span class="info-val">ESPN Cricket (browser)</span></div>
+                        <div class="info-row"><span class="info-label">UFC/MMA</span><span class="info-val">TheSportsDB (free)</span></div>
+                        <div class="info-row"><span class="info-label">Player Data</span><span class="info-val">TheSportsDB (proxy)</span></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><h3>System</h3></div>
+                        <div class="info-row"><span class="info-label">Admin User</span><span class="info-val">admin</span></div>
+                        <div class="info-row"><span class="info-label">Session</span><span class="info-val">24 hours</span></div>
+                        <div class="info-row"><span class="info-label">Server Port</span><span class="info-val">8080</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/countdown.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
