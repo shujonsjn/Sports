@@ -423,17 +423,18 @@ body{
   letter-spacing:-0.2px;
 }
 .mc-score-center{
-  display:flex;align-items:center;gap:1.2rem;flex-shrink:0;
-  padding:0 1rem;
+  display:flex;align-items:center;gap:0;flex-shrink:0;
+  padding:0 0.5rem;
 }
 .mc-score-val{
   font-size:0.95rem;font-weight:800;color:var(--text-primary);
   font-variant-numeric:tabular-nums;min-width:22px;text-align:center;
-  letter-spacing:-0.3px;
+  letter-spacing:-0.3px;padding:0 0.6rem;
 }
 .mc-vs{
   font-size:0.55rem;font-weight:800;color:var(--text-muted);
   letter-spacing:2px;text-transform:uppercase;
+  padding:0 0.3rem;border-left:1px solid var(--border);border-right:1px solid var(--border);
 }
 .mc-bottom{display:flex;justify-content:center;padding:0 1rem 0.5rem}
 .mc-status{
