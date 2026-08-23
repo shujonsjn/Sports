@@ -256,15 +256,7 @@ body{
   white-space:nowrap;
 }
 .nav-btn:hover{background:rgba(0,0,0,0.04);color:var(--text-primary);transform:translateY(-1px)}
-.nav-btn.active{color:#fff;font-weight:600;box-shadow:0 4px 15px rgba(0,0,0,0.2)}
-.nav-btn.active[data-sport="football"]{background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%)}
-.nav-btn.active[data-sport="cricket"]{background:linear-gradient(135deg,#16a34a 0%,#15803d 100%)}
-.nav-btn.active[data-sport="basketball"]{background:linear-gradient(135deg,#ea580c 0%,#c2410c 100%)}
-.nav-btn.active[data-sport="tennis"]{background:linear-gradient(135deg,#9333ea 0%,#7e22ce 100%)}
-.nav-btn.active[data-sport="mma"]{background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%)}
-.nav-btn.active[data-sport="ufc"]{background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%)}
-.nav-btn.active[data-sport="nfl"]{background:linear-gradient(135deg,#0284c7 0%,#0369a1 100%)}
-.nav-btn.active[data-sport="all"]{background:linear-gradient(135deg,var(--accent) 0%,var(--accent-hover) 100%);box-shadow:0 4px 15px var(--accent-glow)}
+.nav-btn.active{color:#fff;font-weight:600;background:linear-gradient(135deg,var(--accent) 0%,var(--accent-hover) 100%);box-shadow:0 4px 15px var(--accent-glow)}
 .nav-icon{font-size:1rem}
 
 /* ===== Main Container ===== */
