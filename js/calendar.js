@@ -22,7 +22,7 @@ function initCalendar() {
         },
         titleFormat: { year: 'numeric', month: 'long' },
         height: 'auto',
-        dayMaxEvents: 1,
+        dayMaxEvents: 0,
         moreLinkText: '',
         events: [],
         dateClick: function(info) {
