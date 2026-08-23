@@ -423,8 +423,8 @@ body{
   letter-spacing:-0.2px;
 }
 .mc-score-center{
-  display:flex;align-items:center;gap:0.8rem;flex-shrink:0;
-  padding:0 0.75rem;
+  display:flex;align-items:center;gap:1.2rem;flex-shrink:0;
+  padding:0 1rem;
 }
 .mc-score-val{
   font-size:0.95rem;font-weight:800;color:var(--text-primary);
