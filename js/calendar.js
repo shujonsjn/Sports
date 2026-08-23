@@ -104,16 +104,17 @@ async function loadCalendarEvents() {
             }
 
             if (dayData) {
-                let hasAnyMatch = false;
-                categories.forEach(cat => {
+                let matchSport = null;
+                for (const cat of categories) {
                     const matches = dayData[cat] || dayData[cat === 'tennis' ? 'tabletennis' : cat] || [];
-                    if (matches.length > 0) hasAnyMatch = true;
-                });
-                if (hasAnyMatch) {
+                    if (matches.length > 0) { matchSport = cat; break; }
+                }
+                if (matchSport) {
+                    const colors = {football:'#2563eb',cricket:'#16a34a',basketball:'#ea580c',tennis:'#9333ea',mma:'#dc2626',ufc:'#dc2626',nfl:'#0284c7'};
                     allEvents.push({
                         title: '',
                         date: dateStr,
-                        color: '#6366f1',
+                        color: colors[matchSport] || '#6366f1',
                         display: 'dot'
                     });
                 }

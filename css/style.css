@@ -309,12 +309,11 @@ body{
 .calendar-card .fc .fc-daygrid-day.fc-day-today{background:var(--accent-light)}
 .calendar-card .fc .fc-daygrid-day.fc-day-selected{background:var(--accent);color:#fff;border-radius:var(--radius-sm)}
 .calendar-card .fc .fc-daygrid-day.fc-day-selected .fc-daygrid-day-number{color:#fff}
-.calendar-card .fc .fc-daygrid-day-number{width:100%;text-align:center;padding:0.3rem 0 0.1rem}
+.calendar-card .fc .fc-daygrid-day-number{width:100%;text-align:center;padding:0.25rem 0 0}
 .calendar-card .fc .fc-daygrid-day-frame{min-height:auto}
-.calendar-card .fc .fc-daygrid-day-events{margin-top:0;padding-top:0}
-.calendar-card .fc .fc-event{font-size:0;border:none;background:none!important;padding:0;margin:0;line-height:0}
-.calendar-card .fc .fc-event::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent)}
-.calendar-card .fc .fc-daygrid-day-bottom{margin-top:0}
+.calendar-card .fc .fc-daygrid-day-events{margin:0;padding:0;text-align:center}
+.calendar-card .fc .fc-event{margin:1px auto!important}
+.calendar-card .fc .fc-daygrid-day-bottom{margin-top:0;height:0}
 .calendar-card .fc .fc-more-link{display:none}
 .calendar-card .fc .fc-popover{font-family:'Inter',sans-serif;font-size:0.75rem}
 .calendar-card .fc .fc-popover-header{font-size:0.75rem;font-weight:600;padding:0.4rem 0.6rem;background:var(--bg-primary);border-bottom:1px solid var(--border-light)}
