@@ -646,27 +646,20 @@ function updateLiveScoresInPlace(matches, container) {
         card.className = card.className.replace(/\b(live|finished|upcoming)\b/g, '').trim() + ' ' + status;
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
-        const scoreEl = card.querySelector('.mc-score');
+        const scoreEl = card.querySelector('.mc-score-val');
         if (scoreEl) {
-            const ov1 = match?.overs?.team1 || '';
-            const ov2 = match?.overs?.team2 || '';
             const hasScore1 = s1 && s1 !== '-';
             const hasScore2 = s2 && s2 !== '-';
             let scoreText;
-            if (match?.sport === 'cricket') {
-                if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} vs ${escHtml(s2)}`;
-                else if (hasScore1) scoreText = escHtml(s1);
-                else if (hasScore2) scoreText = escHtml(s2);
-                else scoreText = '-';
-            } else {
-                scoreText = `${escHtml(s1)} - ${escHtml(s2)}`;
-            }
-            const oversHtml = (ov1 || ov2) ? `<div class="mc-overs">${ov1 ? escHtml(ov1)+' ov' : ''}${ov1 && ov2 ? ' | ' : ''}${ov2 ? escHtml(ov2)+' ov' : ''}</div>` : '';
-            const newScoreHtml = `${scoreText}${oversHtml}`;
-            const newPlainText = (scoreText.replace(/<[^>]*>/g, '') + ov1 + ov2).trim();
-            const oldPlainText = (scoreEl.textContent || '').replace(/\s+/g, '').trim();
+            if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} <span class="mc-vs">VS</span> ${escHtml(s2)}`;
+            else if (hasScore1) scoreText = escHtml(s1);
+            else if (hasScore2) scoreText = escHtml(s2);
+            else if (status === 'live') scoreText = 'LIVE';
+            else scoreText = time || 'TBA';
+            const newPlainText = scoreText.replace(/<[^>]*>/g, '').trim();
+            const oldPlainText = (scoreEl.textContent || '').trim();
             if (oldPlainText !== newPlainText) {
-                scoreEl.innerHTML = newScoreHtml;
+                scoreEl.innerHTML = scoreText;
             }
         }
 
