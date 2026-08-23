@@ -568,6 +568,7 @@ function renderMatchList(matches, container) {
                         if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} <span class="mc-vs">VS</span> ${escHtml(s2)}`;
                         else if (hasScore1) scoreText = escHtml(s1);
                         else if (hasScore2) scoreText = escHtml(s2);
+                        else if (status === 'live') scoreText = 'LIVE';
                         else scoreText = time || 'TBA';
                         return `<div class="mc-score-center"><span class="mc-score-val">${scoreText}</span></div>`;
                     })()
