@@ -20,6 +20,7 @@ function initCalendar() {
             center: 'title',
             right: 'next'
         },
+        titleFormat: { year: 'numeric', month: 'long' },
         height: 'auto',
         dayMaxEvents: 1,
         moreLinkText: '',
@@ -35,7 +36,6 @@ function initCalendar() {
                 loadCalendarEvents();
             }, 100);
         },
-        titleFormat: { year: 'numeric', month: 'short' },
         buttonText: {
             today: 'Today'
         },
