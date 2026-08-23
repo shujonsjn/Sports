@@ -570,19 +570,22 @@ function renderMatchList(matches, container) {
                     })()
                     : `<div class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</div>`;
                 html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
-                    <div class="mc-teams">
-                        <div class="mc-team">
+                    <div class="mc-row">
+                        <div class="mc-team-left">
                             ${teamLogoHtml(team1)}
                             <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${escHtml(cleanDisplayName(team1.name||'Home Team'))}</span>
                         </div>
-                        <div class="mc-vs">VS</div>
-                        <div class="mc-team mc-team-right">
+                        <div class="mc-score-center">
+                            <span class="mc-score-val">${escHtml(s1)}</span>
+                            <span class="mc-vs">VS</span>
+                            <span class="mc-score-val">${escHtml(s2)}</span>
+                        </div>
+                        <div class="mc-team-right-inline">
                             <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${escHtml(cleanDisplayName(team2.name||'Away Team'))}</span>
                             ${teamLogoHtml(team2)}
                         </div>
                     </div>
-                    <div class="mc-result">
-                        ${scoreOrTime}
+                    <div class="mc-bottom">
                         <div class="mc-status ${status}">${label}</div>
                     </div>
                 </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
