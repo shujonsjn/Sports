@@ -647,7 +647,7 @@ function updateLiveScoresInPlace(matches, container) {
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
         const scoreEl = card.querySelector('.mc-score-val');
-        if (scoreEl) {
+        if (!scoreEl) return false;
             const hasScore1 = s1 && s1 !== '-';
             const hasScore2 = s2 && s2 !== '-';
             let scoreText;
@@ -661,7 +661,6 @@ function updateLiveScoresInPlace(matches, container) {
             if (oldPlainText !== newPlainText) {
                 scoreEl.innerHTML = scoreText;
             }
-        }
 
         const statusEl = card.querySelector('.mc-status, .ufc-status');
         if (statusEl) {
