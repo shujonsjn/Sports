@@ -315,7 +315,7 @@ body{
 .calendar-card .fc .fc-daygrid-day:hover{background:var(--hover-bg);border-radius:50%}
 .calendar-card .fc .fc-daygrid-day-number{width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin:2px auto;padding:0!important;font-size:0.82rem;font-weight:500;color:var(--text-primary);border-radius:50%;transition:all 0.2s ease;position:relative;z-index:1}
 .calendar-card .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 3px 12px var(--accent-glow)}
-.calendar-card .fc .fc-daygrid-day.fc-day-selected .fc-daygrid-day-number{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 3px 12px var(--accent-glow)}
+.calendar-card .fc .fc-daygrid-day.selected-date .fc-daygrid-day-number{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 3px 12px var(--accent-glow)}
 .calendar-card .fc .fc-daygrid-day-frame{min-height:auto}
 .calendar-card .fc .fc-daygrid-day-events{margin:0;padding:0;text-align:center;line-height:0;position:relative;z-index:0;display:none}
 .calendar-card .fc .fc-daygrid-day-bottom{margin-top:0;height:0;display:none}
