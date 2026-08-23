@@ -156,7 +156,7 @@ async function refreshDashboard() {
 const API_ENDPOINTS = [
     { name: 'SportScore', url: 'sportscore.com/api/widget/matches/?sport=football&limit=1', type: 'direct' },
     { name: 'SportSRC', url: 'api.sportsrc.org/?data=matches&category=football', type: 'direct' },
-    { name: 'nfldata.org', url: 'api.nfldata.org/v1/games?season=2026&season_type=2', type: 'direct' },
+    { name: 'nfldata.org', url: '/api/nfldata?season=2026&season_type=2', type: 'proxy' },
     { name: 'TheSportsDB', url: 'www.thesportsdb.com/api/v1/json/3/searchteams.php?t=Arsenal', type: 'direct' },
     { name: 'ESPN Cricket', url: 'site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket', type: 'direct' },
     { name: 'Server: SportScore', url: 'localhost:8080/api?sport=football&limit=1', type: 'proxy' },
@@ -224,27 +224,6 @@ async function checkAllAPIs() {
 }
 
 // ===== Matches =====
-async function loadAdminMatches() {
-    addLog('Loading matches...');
-    try {
-        const data = await autoFetchMatches();
-        if (!data) return;
-        allAdminMatches = [
-            ...(data.football || []).map(m => ({...m, sport:'football'})),
-            ...(data.cricket || []).map(m => ({...m, sport:'cricket'})),
-            ...(data.basketball || []).map(m => ({...m, sport:'basketball'})),
-            ...(data.tabletennis || []).map(m => ({...m, sport:'tennis'})),
-            ...(data.mma || []).map(m => ({...m, sport:'mma'})),
-            ...(data.ufc || []).map(m => ({...m, sport:'ufc'})),
-            ...(data.nfl || []).map(m => ({...m, sport:'nfl'}))
-        ];
-        filterAdminMatches();
-        addLog(`Loaded ${allAdminMatches.length} matches`);
-    } catch (e) {
-        addLog(`Error: ${e.message}`, 'err');
-    }
-}
-
 function filterAdminMatches() {
     const f = document.getElementById('match-sport-filter')?.value || 'all';
     const m = f === 'all' ? allAdminMatches : allAdminMatches.filter(x => x.sport === f);
@@ -255,12 +234,13 @@ function filterAdminMatches() {
         return;
     }
     const em = { football:'⚽', cricket:'🏏', basketball:'🏀', tennis:'🎾', mma:'🥊', ufc:'🥋', nfl:'🏈' };
-    tb.innerHTML = m.slice(0,100).map(x => {
+    tb.innerHTML = m.slice(0,100).map((x,i) => {
         const s = (x.status||'').toLowerCase();
         const live = s==='live'||s==='in';
         const ft = s==='finished'||s==='post';
         const tc = live?'tag-live':ft?'tag-ft':'tag-up';
         const tt = live?'LIVE':ft?'FT':x.time||'TBD';
+        const origIdx = allAdminMatches.indexOf(x);
         return `<tr>
             <td><span class="tag tag-sport">${em[x.sport]||'🏆'} ${x.sport}</span></td>
             <td>${x.team1?.name||'-'}</td>
@@ -269,6 +249,7 @@ function filterAdminMatches() {
             <td>${x.league||'-'}</td>
             <td>${x.date||'-'}</td>
             <td><span class="tag ${tc}">${tt}</span></td>
+            <td><button class="action-btn" onclick="editMatch(${origIdx})">Edit</button> <button class="action-btn del" onclick="deleteMatch(${origIdx})">Del</button></td>
         </tr>`;
     }).join('');
 }
@@ -313,5 +294,166 @@ function clearAllStorage() {
         addLog('Storage cleared', 'warn');
         updateStorageInfo();
         alert('Cleared!');
+    }
+}
+
+// ===== Match Edit / New Match =====
+const OVERRIDES_KEY = 'admin_match_overrides';
+const CUSTOM_MATCHES_KEY = 'admin_custom_matches';
+
+function getOverrides() {
+    try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
+}
+function saveOverrides(o) { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(o)); }
+function getCustomMatches() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_MATCHES_KEY) || '[]'); } catch { return []; }
+}
+function saveCustomMatches(m) { localStorage.setItem(CUSTOM_MATCHES_KEY, JSON.stringify(m)); }
+
+function editMatch(idx) {
+    const m = allAdminMatches[idx];
+    if (!m) return;
+    document.getElementById('edit-modal-title').textContent = 'Edit Match';
+    document.getElementById('edit-match-idx').value = idx;
+    document.getElementById('edit-sport').value = m.sport || 'football';
+    document.getElementById('edit-team1').value = m.team1?.name || '';
+    document.getElementById('edit-score1').value = m.score?.team1 || '-';
+    document.getElementById('edit-team2').value = m.team2?.name || '';
+    document.getElementById('edit-score2').value = m.score?.team2 || '-';
+    document.getElementById('edit-date').value = m.date || '';
+    document.getElementById('edit-time').value = m.time || '19:00';
+    document.getElementById('edit-league').value = m.league || '';
+    document.getElementById('edit-venue').value = m.venue || '';
+    document.getElementById('edit-status').value = (m.status || 'upcoming').toLowerCase();
+    document.getElementById('edit-result').value = m.result || '';
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function openNewMatchModal() {
+    document.getElementById('edit-modal-title').textContent = 'Add New Match';
+    document.getElementById('edit-match-idx').value = 'new';
+    document.getElementById('edit-sport').value = 'football';
+    document.getElementById('edit-team1').value = '';
+    document.getElementById('edit-score1').value = '-';
+    document.getElementById('edit-team2').value = '';
+    document.getElementById('edit-score2').value = '-';
+    document.getElementById('edit-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('edit-time').value = '19:00';
+    document.getElementById('edit-league').value = '';
+    document.getElementById('edit-venue').value = '';
+    document.getElementById('edit-status').value = 'upcoming';
+    document.getElementById('edit-result').value = '';
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+}
+
+function saveEditMatch(e) {
+    e.preventDefault();
+    const idx = document.getElementById('edit-match-idx').value;
+    const sport = document.getElementById('edit-sport').value;
+    const status = document.getElementById('edit-status').value;
+    const matchData = {
+        sport,
+        team1: { name: document.getElementById('edit-team1').value.trim() },
+        team2: { name: document.getElementById('edit-team2').value.trim() },
+        score: { team1: document.getElementById('edit-score1').value.trim() || '-', team2: document.getElementById('edit-score2').value.trim() || '-' },
+        date: document.getElementById('edit-date').value,
+        time: document.getElementById('edit-time').value || '19:00',
+        league: document.getElementById('edit-league').value.trim(),
+        venue: document.getElementById('edit-venue').value.trim(),
+        status,
+        result: document.getElementById('edit-result').value.trim() || undefined
+    };
+
+    if (idx === 'new') {
+        matchData.id = 'admin_' + Date.now();
+        const customs = getCustomMatches();
+        customs.push(matchData);
+        saveCustomMatches(customs);
+        addLog(`NEW MATCH: ${matchData.team1.name} vs ${matchData.team2.name} (${sport})`);
+    } else {
+        const orig = allAdminMatches[idx];
+        if (orig) {
+            const overrides = getOverrides();
+            const matchId = orig.id || `override_${idx}`;
+            overrides[matchId] = matchData;
+            saveOverrides(overrides);
+            addLog(`EDIT MATCH: ${matchData.team1.name} vs ${matchData.team2.name}`);
+        }
+    }
+    closeEditModal();
+    loadAdminMatches();
+    alert('Match saved!');
+}
+
+function deleteMatch(idx) {
+    if (!confirm('Delete this match?')) return;
+    const m = allAdminMatches[idx];
+    if (m && m.id && m.id.startsWith('admin_')) {
+        const customs = getCustomMatches().filter(c => c.id !== m.id);
+        saveCustomMatches(customs);
+    } else if (m) {
+        const overrides = getOverrides();
+        overrides[m.id] = { _deleted: true };
+        saveOverrides(overrides);
+    }
+    addLog(`DELETE MATCH: ${m?.team1?.name} vs ${m?.team2?.name}`);
+    loadAdminMatches();
+}
+
+function clearAllOverrides() {
+    if (!confirm('Clear all admin overrides and custom matches?')) return;
+    localStorage.removeItem(OVERRIDES_KEY);
+    localStorage.removeItem(CUSTOM_MATCHES_KEY);
+    addLog('All overrides cleared');
+    loadAdminMatches();
+}
+
+function renderOverrides() {
+    const overrides = getOverrides();
+    const customs = getCustomMatches();
+    const keys = Object.keys(overrides).filter(k => !overrides[k]._deleted);
+    const card = document.getElementById('overrides-card');
+    const list = document.getElementById('overrides-list');
+    if (!card || !list) return;
+    if (keys.length === 0 && customs.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+    card.style.display = 'block';
+    let html = '';
+    keys.forEach(k => {
+        const o = overrides[k];
+        html += `<div class="override-item"><span>${o.sport} — ${o.team1?.name} vs ${o.team2?.name} (${o.date})</span><span class="tag tag-ft">edited</span></div>`;
+    });
+    customs.forEach(c => {
+        html += `<div class="override-item"><span>${c.sport} — ${c.team1?.name} vs ${c.team2?.name} (${c.date})</span><span class="tag tag-live">new</span></div>`;
+    });
+    list.innerHTML = html;
+}
+
+async function loadAdminMatches() {
+    addLog('Loading matches...');
+    try {
+        const result = await autoFetchMatches();
+        allAdminMatches = [
+            ...(result.football || []).map(m => ({...m, sport:'football'})),
+            ...(result.cricket || []).map(m => ({...m, sport:'cricket'})),
+            ...(result.basketball || []).map(m => ({...m, sport:'basketball'})),
+            ...(result.tabletennis || []).map(m => ({...m, sport:'tennis'})),
+            ...(result.mma || []).map(m => ({...m, sport:'mma'})),
+            ...(result.ufc || []).map(m => ({...m, sport:'ufc'})),
+            ...(result.nfl || []).map(m => ({...m, sport:'nfl'}))
+        ];
+        const customs = getCustomMatches();
+        if (customs.length > 0) allAdminMatches.push(...customs);
+        filterAdminMatches();
+        renderOverrides();
+        addLog(`Loaded ${allAdminMatches.length} matches`);
+    } catch (e) {
+        addLog(`Error: ${e.message}`, 'err');
     }
 }

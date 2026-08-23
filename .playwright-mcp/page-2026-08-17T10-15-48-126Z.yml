@@ -1,0 +1,84 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "LiveScores" [level=1] [ref=e9]
+      - textbox "Search teams, leagues..." [ref=e14]
+      - generic [ref=e15]:
+        - generic "Calendar" [ref=e16]
+        - generic [ref=e19]:
+          - button "Change Theme" [ref=e20]
+          - generic [ref=e27]:
+            - generic [ref=e28]: Choose Theme
+            - generic [ref=e29]:
+              - button "Red" [ref=e30]
+              - button "Blue" [ref=e31]
+              - button "Green" [ref=e32]
+              - button "Purple" [ref=e33]
+              - button "Orange" [ref=e34]
+              - button "Teal" [ref=e35]
+              - button "Dark" [ref=e36]
+              - button "Midnight" [ref=e37]
+        - generic [ref=e38]: LIVE
+        - generic "Profile" [ref=e39]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: 👤 Guest User
+            - generic [ref=e45]:
+              - link "🛠️ Admin Dashboard" [ref=e46] [cursor=pointer]:
+                - /url: /admin.html
+              - link "⚙️ Settings" [ref=e47] [cursor=pointer]:
+                - /url: "#"
+              - link "📊 Favorites" [ref=e48] [cursor=pointer]:
+                - /url: "#"
+              - link "🔔 Notifications" [ref=e49] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e50]:
+              - generic [ref=e51]: 🏏 Cricket API Key
+              - generic [ref=e52]:
+                - textbox "Free key from cricketdata.org" [ref=e53]
+                - button "Save" [ref=e54]
+              - link "Get free API key →" [ref=e55] [cursor=pointer]:
+                - /url: https://cricketdata.org
+  - navigation [ref=e56]:
+    - generic [ref=e57]:
+      - button "⚽ Football" [ref=e58]
+      - button "🏏 Cricket" [ref=e59]
+      - button "🏀 Basketball" [ref=e60]
+      - button "🎾 Tennis" [ref=e61]
+      - button "🥊 MMA" [ref=e62]
+      - button "🥋 UFC" [ref=e63]
+      - button "🏈 NFL" [ref=e64]
+    - button [ref=e65]
+  - main [ref=e66]:
+    - complementary [ref=e67]:
+      - generic [ref=e69]:
+        - text: 📅
+        - heading "Select Date" [level=3] [ref=e70]
+      - generic [ref=e72]:
+        - text: 🏆
+        - heading "Leagues" [level=3] [ref=e73]
+    - generic [ref=e76]:
+      - text: 🏟️
+      - heading "Match Schedule" [level=3] [ref=e77]
+      - text: Today
+    - complementary [ref=e78]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: Sponsored
+        - generic [ref=e81]:
+          - generic [ref=e82]: AD
+          - generic [ref=e83]:
+            - generic [ref=e84]: ⚽
+            - heading "Live Sports Premium" [level=4] [ref=e85]
+            - paragraph [ref=e86]: Watch all matches live in HD. No ads, no buffering.
+            - button "Try Free →" [ref=e87]
+        - generic [ref=e88]:
+          - generic [ref=e89]: AD
+          - generic [ref=e90]:
+            - generic [ref=e91]: 🎰
+            - heading "SportsBet Pro" [level=4] [ref=e92]
+            - paragraph [ref=e93]: Predict match outcomes & win real prizes daily.
+            - button "Play Now →" [ref=e94]
+  - contentinfo [ref=e95]:
+    - generic [ref=e96]:
+      - generic [ref=e97]: Live Streaming
+      - generic [ref=e98]: ⚽ Football 🏏 Cricket 🏀 Basketball 🎾 Tennis 🥊 MMA 🥋 UFC 🏈 NFL
+      - generic [ref=e99]: Powered by SportSRC • Real-time Data

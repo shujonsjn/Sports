@@ -1,0 +1,508 @@
+- generic [active] [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - heading "LiveScores" [level=1] [ref=f4e9] [cursor=pointer]
+      - textbox "Search teams, leagues..." [ref=f4e11]
+      - generic [ref=f4e12]:
+        - generic "Calendar" [ref=f4e13] [cursor=pointer]
+        - button "Change Theme" [ref=f4e17] [cursor=pointer]
+        - generic [ref=f4e25]: LIVE
+        - generic "Profile" [ref=f4e28] [cursor=pointer]
+  - navigation [ref=f4e32]:
+    - generic [ref=f4e33]:
+      - button "⚽ Football" [ref=f4e34] [cursor=pointer]:
+        - generic [ref=f4e35]: ⚽
+        - generic [ref=f4e36]: Football
+      - button "🏏 Cricket" [ref=f4e37] [cursor=pointer]:
+        - generic [ref=f4e38]: 🏏
+        - generic [ref=f4e39]: Cricket
+      - button "🏀 Basketball" [ref=f4e40] [cursor=pointer]:
+        - generic [ref=f4e41]: 🏀
+        - generic [ref=f4e42]: Basketball
+      - button "🎾 Tennis" [ref=f4e43] [cursor=pointer]:
+        - generic [ref=f4e44]: 🎾
+        - generic [ref=f4e45]: Tennis
+      - button "🥊 MMA" [ref=f4e46] [cursor=pointer]:
+        - generic [ref=f4e47]: 🥊
+        - generic [ref=f4e48]: MMA
+      - button "🥋 UFC" [ref=f4e49] [cursor=pointer]:
+        - generic [ref=f4e50]: 🥋
+        - generic [ref=f4e51]: UFC
+      - button "🏈 NFL" [ref=f4e52] [cursor=pointer]:
+        - generic [ref=f4e53]: 🏈
+        - generic [ref=f4e54]: NFL
+  - main [ref=f4e55]:
+    - complementary [ref=f4e56]:
+      - generic [ref=f4e57]:
+        - generic [ref=f4e58]:
+          - generic [ref=f4e59]: 📅
+          - heading "Select Date" [level=3] [ref=f4e60]
+        - generic [ref=f4e61]:
+          - generic [ref=f4e62]:
+            - button "" [ref=f4e64] [cursor=pointer]
+            - heading "Aug 2026" [level=2] [ref=f4e67]
+            - button "" [ref=f4e69] [cursor=pointer]
+          - generic "Aug 2026" [ref=f4e71]:
+            - grid [ref=f4e73]:
+              - rowgroup [ref=f4e74]:
+                - row [ref=f4e78]:
+                  - columnheader "Sunday" [ref=f4e79]:
+                    - generic "Sunday" [ref=f4e81]: Sun
+                  - columnheader "Monday" [ref=f4e82]:
+                    - generic "Monday" [ref=f4e84]: Mon
+                  - columnheader "Tuesday" [ref=f4e85]:
+                    - generic "Tuesday" [ref=f4e87]: Tue
+                  - columnheader "Wednesday" [ref=f4e88]:
+                    - generic "Wednesday" [ref=f4e90]: Wed
+                  - columnheader "Thursday" [ref=f4e91]:
+                    - generic "Thursday" [ref=f4e93]: Thu
+                  - columnheader "Friday" [ref=f4e94]:
+                    - generic "Friday" [ref=f4e96]: Fri
+                  - columnheader "Saturday" [ref=f4e97]:
+                    - generic "Saturday" [ref=f4e99]: Sat
+              - rowgroup [ref=f4e100]:
+                - generic [ref=f4e103]:
+                  - row [ref=f4e105]:
+                    - gridcell "July 26, 2026" [ref=f4e106]:
+                      - generic "July 26, 2026" [ref=f4e109]: "26"
+                    - gridcell "July 27, 2026" [ref=f4e110]:
+                      - generic "July 27, 2026" [ref=f4e113]: "27"
+                    - gridcell "July 28, 2026" [ref=f4e114]:
+                      - generic "July 28, 2026" [ref=f4e117]: "28"
+                    - gridcell "July 29, 2026" [ref=f4e118]:
+                      - generic "July 29, 2026" [ref=f4e121]: "29"
+                    - gridcell "July 30, 2026" [ref=f4e122]:
+                      - generic "July 30, 2026" [ref=f4e125]: "30"
+                    - gridcell "July 31, 2026" [ref=f4e126]:
+                      - generic "July 31, 2026" [ref=f4e129]: "31"
+                    - gridcell "August 1, 2026" [ref=f4e130]:
+                      - generic "August 1, 2026" [ref=f4e133]: "1"
+                  - row [ref=f4e134]:
+                    - gridcell "August 2, 2026" [ref=f4e135]:
+                      - generic "August 2, 2026" [ref=f4e138]: "2"
+                    - gridcell "August 3, 2026" [ref=f4e139]:
+                      - generic "August 3, 2026" [ref=f4e142]: "3"
+                    - gridcell "August 4, 2026" [ref=f4e143]:
+                      - generic "August 4, 2026" [ref=f4e146]: "4"
+                    - gridcell "August 5, 2026" [ref=f4e147]:
+                      - generic "August 5, 2026" [ref=f4e150]: "5"
+                    - gridcell "August 6, 2026" [ref=f4e151]:
+                      - generic "August 6, 2026" [ref=f4e154]: "6"
+                    - gridcell "August 7, 2026" [ref=f4e155]:
+                      - generic "August 7, 2026" [ref=f4e158]: "7"
+                    - gridcell "August 8, 2026" [ref=f4e159]:
+                      - generic "August 8, 2026" [ref=f4e162]: "8"
+                  - row [ref=f4e163]:
+                    - gridcell "August 9, 2026" [ref=f4e164]:
+                      - generic "August 9, 2026" [ref=f4e167]: "9"
+                    - gridcell "August 10, 2026" [ref=f4e168]:
+                      - generic "August 10, 2026" [ref=f4e171]: "10"
+                    - gridcell "August 11, 2026" [ref=f4e172]:
+                      - generic "August 11, 2026" [ref=f4e175]: "11"
+                    - gridcell "August 12, 2026" [ref=f4e176]:
+                      - generic "August 12, 2026" [ref=f4e179]: "12"
+                    - gridcell "August 13, 2026" [ref=f4e180]:
+                      - generic "August 13, 2026" [ref=f4e183]: "13"
+                    - gridcell "August 14, 2026" [ref=f4e184]:
+                      - generic "August 14, 2026" [ref=f4e187]: "14"
+                    - gridcell "August 15, 2026" [ref=f4e188]:
+                      - generic "August 15, 2026" [ref=f4e191]: "15"
+                  - row [ref=f4e192]:
+                    - gridcell "August 16, 2026" [ref=f4e193]:
+                      - generic "August 16, 2026" [ref=f4e196]: "16"
+                    - gridcell "August 17, 2026" [ref=f4e197]:
+                      - generic "August 17, 2026" [ref=f4e200]: "17"
+                    - gridcell "August 18, 2026" [ref=f4e201]:
+                      - generic "August 18, 2026" [ref=f4e204]: "18"
+                    - gridcell "August 19, 2026" [ref=f4e205]:
+                      - generic "August 19, 2026" [ref=f4e208]: "19"
+                    - gridcell "August 20, 2026" [ref=f4e209]:
+                      - generic "August 20, 2026" [ref=f4e212]: "20"
+                    - gridcell "August 21, 2026" [ref=f4e213]:
+                      - generic "August 21, 2026" [ref=f4e216]: "21"
+                    - gridcell "August 22, 2026" [ref=f4e217]:
+                      - generic "August 22, 2026" [ref=f4e220]: "22"
+                  - row [ref=f4e221]:
+                    - gridcell "August 23, 2026" [ref=f4e222]:
+                      - generic "August 23, 2026" [ref=f4e225]: "23"
+                    - gridcell "August 24, 2026" [ref=f4e226]:
+                      - generic "August 24, 2026" [ref=f4e229]: "24"
+                    - gridcell "August 25, 2026" [ref=f4e230]:
+                      - generic "August 25, 2026" [ref=f4e233]: "25"
+                    - gridcell "August 26, 2026" [ref=f4e234]:
+                      - generic "August 26, 2026" [ref=f4e237]: "26"
+                    - gridcell "August 27, 2026" [ref=f4e238]:
+                      - generic "August 27, 2026" [ref=f4e241]: "27"
+                    - gridcell "August 28, 2026" [ref=f4e242]:
+                      - generic "August 28, 2026" [ref=f4e245]: "28"
+                    - gridcell "August 29, 2026" [ref=f4e246]:
+                      - generic "August 29, 2026" [ref=f4e249]: "29"
+                  - row [ref=f4e250]:
+                    - gridcell "August 30, 2026" [ref=f4e251]:
+                      - generic "August 30, 2026" [ref=f4e254]: "30"
+                    - gridcell "August 31, 2026" [ref=f4e255]:
+                      - generic "August 31, 2026" [ref=f4e258]: "31"
+                    - gridcell "September 1, 2026" [ref=f4e259]:
+                      - generic "September 1, 2026" [ref=f4e262]: "1"
+                    - gridcell "September 2, 2026" [ref=f4e263]:
+                      - generic "September 2, 2026" [ref=f4e266]: "2"
+                    - gridcell "September 3, 2026" [ref=f4e267]:
+                      - generic "September 3, 2026" [ref=f4e270]: "3"
+                    - gridcell "September 4, 2026" [ref=f4e271]:
+                      - generic "September 4, 2026" [ref=f4e274]: "4"
+                    - gridcell "September 5, 2026" [ref=f4e275]:
+                      - generic "September 5, 2026" [ref=f4e278]: "5"
+      - generic [ref=f4e279]:
+        - generic [ref=f4e280]:
+          - generic [ref=f4e281]: 🏆
+          - heading "Leagues" [level=3] [ref=f4e282]
+        - generic [ref=f4e283]:
+          - generic [ref=f4e284] [cursor=pointer]:
+            - generic [ref=f4e285]: 🏟️
+            - generic [ref=f4e286]: Coppa Italia
+            - generic [ref=f4e287]: "4"
+          - generic [ref=f4e288] [cursor=pointer]:
+            - generic [ref=f4e289]: 🏟️
+            - generic [ref=f4e290]: 2. Bundesliga
+            - generic [ref=f4e291]: "3"
+          - generic [ref=f4e292] [cursor=pointer]:
+            - generic [ref=f4e293]: 🏟️
+            - generic [ref=f4e294]: La Liga
+            - generic [ref=f4e295]: "2"
+          - generic [ref=f4e296] [cursor=pointer]:
+            - generic [ref=f4e297]: 🏟️
+            - generic [ref=f4e298]: Championship
+            - generic [ref=f4e299]: "2"
+          - generic [ref=f4e300] [cursor=pointer]:
+            - generic [ref=f4e301]: 🏟️
+            - generic [ref=f4e302]: Serie A
+            - generic [ref=f4e303]: "2"
+          - generic [ref=f4e304] [cursor=pointer]:
+            - generic [ref=f4e305]: 🏟️
+            - generic [ref=f4e306]: FA Community Shield
+            - generic [ref=f4e307]: "1"
+          - generic [ref=f4e308] [cursor=pointer]:
+            - generic [ref=f4e309]: 🏟️
+            - generic [ref=f4e310]: Ligue 1 Super Cup
+            - generic [ref=f4e311]: "1"
+          - generic [ref=f4e312] [cursor=pointer]:
+            - generic [ref=f4e313]: 🏟️
+            - generic [ref=f4e314]: MLS
+            - generic [ref=f4e315]: "1"
+          - generic [ref=f4e316] [cursor=pointer]:
+            - generic [ref=f4e317]: 🏟️
+            - generic [ref=f4e318]: Liga MX
+            - generic [ref=f4e319]: "1"
+          - generic [ref=f4e320] [cursor=pointer]:
+            - generic [ref=f4e321]: 🏟️
+            - generic [ref=f4e322]: Liga Profesional
+            - generic [ref=f4e323]: "1"
+    - generic [ref=f4e325]:
+      - generic [ref=f4e326]:
+        - generic [ref=f4e327]: ⚽
+        - heading "Football Schedule" [level=3] [ref=f4e328]
+        - generic [ref=f4e329]: Sunday, August 16, 2026
+      - generic [ref=f4e330]:
+        - generic [ref=f4e331]:
+          - generic [ref=f4e332]:
+            - generic [ref=f4e333]: 🏟️
+            - generic [ref=f4e334]: Coppa Italia
+            - generic [ref=f4e335]: 4 matches
+          - generic [ref=f4e336]:
+            - generic [ref=f4e338] [cursor=pointer]:
+              - generic [ref=f4e340]:
+                - generic [ref=f4e341]:
+                  - img "Frosinone" [ref=f4e342]
+                  - generic [ref=f4e343]: Frosinone
+                - generic [ref=f4e344]: VS
+                - generic [ref=f4e345]:
+                  - generic [ref=f4e346]: JS
+                  - generic [ref=f4e347]: Juve Stabia
+              - generic [ref=f4e348]:
+                - generic [ref=f4e349]: 4 - 1
+                - generic [ref=f4e350]: FINAL
+            - generic [ref=f4e352] [cursor=pointer]:
+              - generic [ref=f4e354]:
+                - generic [ref=f4e355]:
+                  - img "Genoa" [ref=f4e356]
+                  - generic [ref=f4e357]: Genoa
+                - generic [ref=f4e358]: VS
+                - generic [ref=f4e359]:
+                  - generic [ref=f4e360]: A
+                  - generic [ref=f4e361]: Ascoli
+              - generic [ref=f4e362]:
+                - generic [ref=f4e363]: 4 - 1
+                - generic [ref=f4e364]: FINAL
+            - generic [ref=f4e366] [cursor=pointer]:
+              - generic [ref=f4e368]:
+                - generic [ref=f4e369]:
+                  - img "Verona" [ref=f4e370]
+                  - generic [ref=f4e371]: Verona
+                - generic [ref=f4e372]: VS
+                - generic [ref=f4e373]:
+                  - generic [ref=f4e374]: E
+                  - generic [ref=f4e375]: Entella
+              - generic [ref=f4e376]:
+                - generic [ref=f4e377]: 2 - 2
+                - generic [ref=f4e378]: FINAL
+            - generic [ref=f4e380] [cursor=pointer]:
+              - generic [ref=f4e382]:
+                - generic [ref=f4e383]:
+                  - img "Lazio" [ref=f4e384]
+                  - generic [ref=f4e385]: Lazio
+                - generic [ref=f4e386]: VS
+                - generic [ref=f4e387]:
+                  - generic [ref=f4e388]: M
+                  - generic [ref=f4e389]: Mantova
+              - generic [ref=f4e390]:
+                - generic [ref=f4e391]: 0 - 2
+                - generic [ref=f4e392]: FINAL
+        - generic [ref=f4e393]:
+          - generic [ref=f4e394]:
+            - generic [ref=f4e395]: 🏟️
+            - generic [ref=f4e396]: 2. Bundesliga
+            - generic [ref=f4e397]: 3 matches
+          - generic [ref=f4e398]:
+            - generic [ref=f4e400] [cursor=pointer]:
+              - generic [ref=f4e402]:
+                - generic [ref=f4e403]:
+                  - img "Arminia Bielefeld" [ref=f4e404]
+                  - generic [ref=f4e405]: Arminia Bielefeld
+                - generic [ref=f4e406]: VS
+                - generic [ref=f4e407]:
+                  - img "Energie Cottbus" [ref=f4e408]
+                  - generic [ref=f4e409]: Energie Cottbus
+              - generic [ref=f4e410]:
+                - generic [ref=f4e411]: 3 - 0
+                - generic [ref=f4e412]: FINAL
+            - generic [ref=f4e414] [cursor=pointer]:
+              - generic [ref=f4e416]:
+                - generic [ref=f4e417]:
+                  - img "Dynamo Dresden" [ref=f4e418]
+                  - generic [ref=f4e419]: Dynamo Dresden
+                - generic [ref=f4e420]: VS
+                - generic [ref=f4e421]:
+                  - img "Darmstadt 98" [ref=f4e422]
+                  - generic [ref=f4e423]: Darmstadt 98
+              - generic [ref=f4e424]:
+                - generic [ref=f4e425]: 1 - 0
+                - generic [ref=f4e426]: FINAL
+            - generic [ref=f4e428] [cursor=pointer]:
+              - generic [ref=f4e430]:
+                - generic [ref=f4e431]:
+                  - img "Hannover 96" [ref=f4e432]
+                  - generic [ref=f4e433]: Hannover 96
+                - generic [ref=f4e434]: VS
+                - generic [ref=f4e435]:
+                  - img "Wolfsburg" [ref=f4e436]
+                  - generic [ref=f4e437]: Wolfsburg
+              - generic [ref=f4e438]:
+                - generic [ref=f4e439]: 0 - 1
+                - generic [ref=f4e440]: FINAL
+        - generic [ref=f4e441]:
+          - generic [ref=f4e442]:
+            - generic [ref=f4e443]: 🏟️
+            - generic [ref=f4e444]: La Liga
+            - generic [ref=f4e445]: 2 matches
+          - generic [ref=f4e446]:
+            - generic [ref=f4e448] [cursor=pointer]:
+              - generic [ref=f4e450]:
+                - generic [ref=f4e451]:
+                  - img "R. Santander" [ref=f4e452]
+                  - generic [ref=f4e453]: R. Santander
+                - generic [ref=f4e454]: VS
+                - generic [ref=f4e455]:
+                  - img "Villarreal" [ref=f4e456]
+                  - generic [ref=f4e457]: Villarreal
+              - generic [ref=f4e458]:
+                - generic [ref=f4e459]: 2 - 2
+                - generic [ref=f4e460]: FINAL
+            - generic [ref=f4e462] [cursor=pointer]:
+              - generic [ref=f4e464]:
+                - generic [ref=f4e465]:
+                  - img "Espanyol" [ref=f4e466]
+                  - generic [ref=f4e467]: Espanyol
+                - generic [ref=f4e468]: VS
+                - generic [ref=f4e469]:
+                  - img "Levante" [ref=f4e470]
+                  - generic [ref=f4e471]: Levante
+              - generic [ref=f4e472]:
+                - generic [ref=f4e473]: 3 - 0
+                - generic [ref=f4e474]: FINAL
+        - generic [ref=f4e475]:
+          - generic [ref=f4e476]:
+            - generic [ref=f4e477]: 🏟️
+            - generic [ref=f4e478]: Championship
+            - generic [ref=f4e479]: 2 matches
+          - generic [ref=f4e480]:
+            - generic [ref=f4e482] [cursor=pointer]:
+              - generic [ref=f4e484]:
+                - generic [ref=f4e485]:
+                  - img "Watford" [ref=f4e486]
+                  - generic [ref=f4e487]: Watford
+                - generic [ref=f4e488]: VS
+                - generic [ref=f4e489]:
+                  - img "Southampton" [ref=f4e490]
+                  - generic [ref=f4e491]: Southampton
+              - generic [ref=f4e492]:
+                - generic [ref=f4e493]: 2 - 1
+                - generic [ref=f4e494]: FINAL
+            - generic [ref=f4e496] [cursor=pointer]:
+              - generic [ref=f4e498]:
+                - generic [ref=f4e499]:
+                  - img "Burnley" [ref=f4e500]
+                  - generic [ref=f4e501]: Burnley
+                - generic [ref=f4e502]: VS
+                - generic [ref=f4e503]:
+                  - img "West Ham" [ref=f4e504]
+                  - generic [ref=f4e505]: West Ham
+              - generic [ref=f4e506]:
+                - generic [ref=f4e507]: 2 - 2
+                - generic [ref=f4e508]: FINAL
+        - generic [ref=f4e509]:
+          - generic [ref=f4e510]:
+            - generic [ref=f4e511]: 🏟️
+            - generic [ref=f4e512]: Serie A
+            - generic [ref=f4e513]: 2 matches
+          - generic [ref=f4e514]:
+            - generic [ref=f4e516] [cursor=pointer]:
+              - generic [ref=f4e518]:
+                - generic [ref=f4e519]:
+                  - img "Mirassol" [ref=f4e520]
+                  - generic [ref=f4e521]: Mirassol
+                - generic [ref=f4e522]: VS
+                - generic [ref=f4e523]:
+                  - img "Flamengo" [ref=f4e524]
+                  - generic [ref=f4e525]: Flamengo
+              - generic [ref=f4e526]:
+                - generic [ref=f4e527]: "- - -"
+                - generic [ref=f4e528]: FINAL
+            - generic [ref=f4e530] [cursor=pointer]:
+              - generic [ref=f4e532]:
+                - generic [ref=f4e533]:
+                  - img "Corinthians" [ref=f4e534]
+                  - generic [ref=f4e535]: Corinthians
+                - generic [ref=f4e536]: VS
+                - generic [ref=f4e537]:
+                  - img "Cruzeiro" [ref=f4e538]
+                  - generic [ref=f4e539]: Cruzeiro
+              - generic [ref=f4e540]:
+                - generic [ref=f4e541]: "- - -"
+                - generic [ref=f4e542]: FINAL
+        - generic [ref=f4e543]:
+          - generic [ref=f4e544]:
+            - generic [ref=f4e545]: 🏟️
+            - generic [ref=f4e546]: FA Community Shield
+            - generic [ref=f4e547]: 1 match
+          - generic [ref=f4e550] [cursor=pointer]:
+            - generic [ref=f4e552]:
+              - generic [ref=f4e553]:
+                - img "Arsenal" [ref=f4e554]
+                - generic [ref=f4e555]: Arsenal
+              - generic [ref=f4e556]: VS
+              - generic [ref=f4e557]:
+                - img "Manchester City" [ref=f4e558]
+                - generic [ref=f4e559]: Manchester City
+            - generic [ref=f4e560]:
+              - generic [ref=f4e561]: 3 - 0
+              - generic [ref=f4e562]: FINAL
+        - generic [ref=f4e563]:
+          - generic [ref=f4e564]:
+            - generic [ref=f4e565]: 🏟️
+            - generic [ref=f4e566]: Ligue 1 Super Cup
+            - generic [ref=f4e567]: 1 match
+          - generic [ref=f4e570] [cursor=pointer]:
+            - generic [ref=f4e572]:
+              - generic [ref=f4e573]:
+                - img "Lens" [ref=f4e574]
+                - generic [ref=f4e575]: Lens
+              - generic [ref=f4e576]: VS
+              - generic [ref=f4e577]:
+                - img "Paris Saint-Germain" [ref=f4e578]
+                - generic [ref=f4e579]: Paris Saint-Germain
+            - generic [ref=f4e580]:
+              - generic [ref=f4e581]: 1 - 0
+              - generic [ref=f4e582]: FINAL
+        - generic [ref=f4e583]:
+          - generic [ref=f4e584]:
+            - generic [ref=f4e585]: 🏟️
+            - generic [ref=f4e586]: MLS
+            - generic [ref=f4e587]: 1 match
+          - generic [ref=f4e590] [cursor=pointer]:
+            - generic [ref=f4e592]:
+              - generic [ref=f4e593]:
+                - generic [ref=f4e594]: NS
+                - generic [ref=f4e595]: Nashville SC
+              - generic [ref=f4e596]: VS
+              - generic [ref=f4e597]:
+                - generic [ref=f4e598]: IM
+                - generic [ref=f4e599]: Inter Miami
+            - generic [ref=f4e600]:
+              - generic [ref=f4e601]: "- - -"
+              - generic [ref=f4e602]: FINAL
+        - generic [ref=f4e603]:
+          - generic [ref=f4e604]:
+            - generic [ref=f4e605]: 🏟️
+            - generic [ref=f4e606]: Liga MX
+            - generic [ref=f4e607]: 1 match
+          - generic [ref=f4e610] [cursor=pointer]:
+            - generic [ref=f4e612]:
+              - generic [ref=f4e613]:
+                - generic [ref=f4e614]: PU
+                - generic [ref=f4e615]: Pumas UNAM
+              - generic [ref=f4e616]: VS
+              - generic [ref=f4e617]:
+                - generic [ref=f4e618]: Q
+                - generic [ref=f4e619]: Queretaro
+            - generic [ref=f4e620]:
+              - generic [ref=f4e621]: "- - -"
+              - generic [ref=f4e622]: FINAL
+        - generic [ref=f4e623]:
+          - generic [ref=f4e624]:
+            - generic [ref=f4e625]: 🏟️
+            - generic [ref=f4e626]: Liga Profesional
+            - generic [ref=f4e627]: 1 match
+          - generic [ref=f4e630] [cursor=pointer]:
+            - generic [ref=f4e632]:
+              - generic [ref=f4e633]:
+                - img "River Plate" [ref=f4e634]
+                - generic [ref=f4e635]: River Plate
+              - generic [ref=f4e636]: VS
+              - generic [ref=f4e637]:
+                - img "Argentinos Juniors" [ref=f4e638]
+                - generic [ref=f4e639]: Argentinos Juniors
+            - generic [ref=f4e640]:
+              - generic [ref=f4e641]: "- - -"
+              - generic [ref=f4e642]: FINAL
+    - complementary [ref=f4e643]:
+      - generic [ref=f4e644]:
+        - generic [ref=f4e645]: Sponsored
+        - generic [ref=f4e646]:
+          - generic [ref=f4e647]: AD
+          - generic [ref=f4e648]:
+            - generic [ref=f4e649]: ⚽
+            - heading "Live Sports Premium" [level=4] [ref=f4e650]
+            - paragraph [ref=f4e651]: Watch all matches live in HD. No ads, no buffering.
+            - button "Try Free →" [ref=f4e652] [cursor=pointer]
+        - generic [ref=f4e653]:
+          - generic [ref=f4e654]: AD
+          - generic [ref=f4e655]:
+            - generic [ref=f4e656]: 🎰
+            - heading "SportsBet Pro" [level=4] [ref=f4e657]
+            - paragraph [ref=f4e658]: Predict match outcomes & win real prizes daily.
+            - button "Play Now →" [ref=f4e659] [cursor=pointer]
+  - contentinfo [ref=f4e660]:
+    - generic [ref=f4e661]:
+      - generic [ref=f4e662]: Live Streaming
+      - generic [ref=f4e664]:
+        - generic [ref=f4e665] [cursor=pointer]: ⚽ Football
+        - generic [ref=f4e666] [cursor=pointer]: 🏏 Cricket
+        - generic [ref=f4e667] [cursor=pointer]: 🏀 Basketball
+        - generic [ref=f4e668] [cursor=pointer]: 🎾 Tennis
+        - generic [ref=f4e669] [cursor=pointer]: 🥊 MMA
+        - generic [ref=f4e670] [cursor=pointer]: 🥋 UFC
+        - generic [ref=f4e671] [cursor=pointer]: 🏈 NFL
+      - generic [ref=f4e672]:
+        - generic [ref=f4e673]: Powered by SportSRC
+        - generic [ref=f4e674]: •
+        - generic [ref=f4e675]: Real-time Data

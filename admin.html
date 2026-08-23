@@ -161,7 +161,7 @@
         <div class="page" id="page-matches">
             <div class="card">
                 <div class="card-head">
-                    <h3>All Current Matches</h3>
+                    <h3>Match Management</h3>
                     <div class="card-head-actions">
                         <select id="match-sport-filter" class="sel" onchange="filterAdminMatches()">
                             <option value="all">All Sports</option>
@@ -173,6 +173,7 @@
                             <option value="ufc">UFC</option>
                             <option value="nfl">NFL</option>
                         </select>
+                        <button class="btn btn-sm btn-accent" onclick="openNewMatchModal()">+ New Match</button>
                         <button class="btn btn-sm" onclick="loadAdminMatches()">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                         </button>
@@ -189,12 +190,105 @@
                                 <th>League</th>
                                 <th>Date</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="matches-tbody"></tbody>
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- Edit Match Modal -->
+        <div id="edit-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeEditModal()">
+            <div class="modal-box">
+                <div class="modal-head">
+                    <h3 id="edit-modal-title">Edit Match</h3>
+                    <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                </div>
+                <form id="edit-match-form" onsubmit="saveEditMatch(event)">
+                    <input type="hidden" id="edit-match-idx">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Sport</label>
+                            <select id="edit-sport" class="form-input" required>
+                                <option value="football">Football</option>
+                                <option value="cricket">Cricket</option>
+                                <option value="basketball">Basketball</option>
+                                <option value="tennis">Tennis</option>
+                                <option value="mma">MMA</option>
+                                <option value="ufc">UFC</option>
+                                <option value="nfl">NFL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select id="edit-status" class="form-input" required>
+                                <option value="upcoming">Upcoming</option>
+                                <option value="live">Live</option>
+                                <option value="finished">Finished</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Team 1 (Home)</label>
+                            <input type="text" id="edit-team1" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Team 1 Score</label>
+                            <input type="text" id="edit-score1" class="form-input" placeholder="-">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Team 2 (Away)</label>
+                            <input type="text" id="edit-team2" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Team 2 Score</label>
+                            <input type="text" id="edit-score2" class="form-input" placeholder="-">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Date</label>
+                            <input type="date" id="edit-date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time</label>
+                            <input type="time" id="edit-time" class="form-input" value="19:00">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">League</label>
+                            <input type="text" id="edit-league" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Venue</label>
+                            <input type="text" id="edit-venue" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Result (cricket/optional)</label>
+                        <input type="text" id="edit-result" class="form-input" placeholder="e.g. England won by 63 runs">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="btn btn-accent">Save Match</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Overrides List -->
+        <div class="card" id="overrides-card" style="display:none;">
+            <div class="card-head">
+                <h3>Admin Overrides (saved edits)</h3>
+                <button class="btn btn-sm btn-red" onclick="clearAllOverrides()">Clear All</button>
+            </div>
+            <div id="overrides-list"></div>
         </div>
 
         <!-- Settings -->

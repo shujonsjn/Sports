@@ -1,0 +1,28 @@
+SPORTS SITE - FINAL FIX REPORT
+==============================
+
+Fixed:
+1. Invalid/placeholder agent rows were appearing as match cards (null teams, 1970 dates).
+2. Local agent data is now validated and normalized before it reaches the UI.
+3. If core sports have no valid data for today, the site falls back to the external API path instead of showing broken cards.
+4. Old browser localStorage cache is isolated with a new cache namespace.
+5. Live results now show the live score instead of only the word LIVE.
+6. Finished results show FINAL + score.
+7. Upcoming cards show time + UPCOMING.
+8. Team logos now use contain/fallback initials instead of collapsing the card when an image is missing.
+9. Card/team names are safely escaped and long names no longer break the layout.
+10. Match detail accordion now shows score, status, date, time, venue and league consistently.
+11. Match detail logos also have safe fallbacks.
+12. Responsive card layout improved for tablet/mobile widths.
+13. Countdown only starts for valid upcoming date/time values.
+14. Provider status is respected before time-based status guessing.
+15. Start.bat no longer kills every PowerShell process on the computer; it only targets this site's server/agent processes.
+16. JavaScript syntax checked for all JS files.
+17. JSON files scanned successfully.
+
+Important:
+- The live external APIs still require the local PowerShell server/proxy to be running.
+- Do not open index.html directly if you want live API/proxy data. Use Start.bat.
+
+
+V2 FIX: malformed team/title prefixes like B"> and IC"> are now stripped at API normalization and UI rendering.

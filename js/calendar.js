@@ -137,6 +137,12 @@ function handleDateClick(dateStr) {
     if (typeof updateUrl === 'function') {
         updateUrl(currentSport, dateStr, null);
     }
+    const sidebar = document.querySelector('.sidebar-left');
+    const overlay = document.getElementById('calendar-overlay');
+    if (sidebar && sidebar.classList.contains('mobile-open')) {
+        sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+    }
 }
 
 // Highlight selected date in calendar

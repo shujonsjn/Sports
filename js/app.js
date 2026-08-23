@@ -2,6 +2,44 @@
 
 const SPORTS = ['football','cricket','basketball','tennis','mma','ufc','nfl'];
 
+function applyAdminOverrides(dateStr) {
+    try {
+        const overrides = JSON.parse(localStorage.getItem('admin_match_overrides') || '{}');
+        const customs = JSON.parse(localStorage.getItem('admin_custom_matches') || '[]');
+        const day = DATE_CACHE[dateStr];
+        if (!day && customs.length === 0) return;
+        const data = day || {};
+        SPORTS.forEach(sport => {
+            if (!data[sport]) data[sport] = [];
+            data[sport].forEach(m => {
+                if (m.id && overrides[m.id] && !overrides[m.id]._deleted) {
+                    const o = overrides[m.id];
+                    if (o.team1) m.team1 = { ...m.team1, ...o.team1 };
+                    if (o.team2) m.team2 = { ...m.team2, ...o.team2 };
+                    if (o.score) m.score = o.score;
+                    if (o.status) m.status = o.status;
+                    if (o.league) m.league = o.league;
+                    if (o.venue) m.venue = o.venue;
+                    if (o.result) m.result = o.result;
+                    if (o.time) m.time = o.time;
+                    if (o.date) m.date = o.date;
+                } else if (m.id && overrides[m.id]?._deleted) {
+                    m._deleted = true;
+                }
+            });
+            data[sport] = data[sport].filter(m => !m._deleted);
+        });
+        customs.forEach(c => {
+            if (c.date === dateStr && c.sport) {
+                const cat = c.sport === 'tennis' ? 'tabletennis' : c.sport;
+                if (!data[cat]) data[cat] = [];
+                if (!data[cat].find(x => x.id === c.id)) data[cat].push(c);
+            }
+        });
+        DATE_CACHE[dateStr] = data;
+    } catch (e) {}
+}
+
 function parseUrlPath() {
     const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
     if (!path) return { sport: 'football', date: getTodayString(), matchSlug: null };
@@ -272,7 +310,8 @@ function initHamburger() {
     const navContent = document.querySelector('.nav-content');
 
     if (hamburger && navContent) {
-        hamburger.addEventListener('click', function() {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
             navContent.classList.toggle('active');
         });
 
@@ -280,6 +319,12 @@ function initHamburger() {
             btn.addEventListener('click', function() {
                 navContent.classList.remove('active');
             });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!navContent.contains(e.target) && !hamburger.contains(e.target)) {
+                navContent.classList.remove('active');
+            }
         });
     }
 }
@@ -325,10 +370,54 @@ async function loadMatchesForDate(dateStr) {
                 const existing = DATE_CACHE[dateStr] || {};
                 ['cricket','football','basketball','tabletennis','mma','ufc','nfl'].forEach(sport => {
                     if (LIVE_MATCHES[sport] && LIVE_MATCHES[sport].length > 0) {
-                        existing[sport] = LIVE_MATCHES[sport];
+                        const apiMatches = LIVE_MATCHES[sport];
+                        const existingMatches = existing[sport] || [];
+                        const merged = [...existingMatches];
+                        apiMatches.forEach(apiM => {
+                            const apiId = String(apiM.id);
+                            let idx = merged.findIndex(e => String(e.id) === apiId);
+                            if (idx < 0) {
+                                const normName = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                                const apiT1 = normName(apiM.team1?.name);
+                                const apiT2 = normName(apiM.team2?.name);
+                                idx = merged.findIndex(e => {
+                                    const eT1 = normName(e.team1?.name);
+                                    const eT2 = normName(e.team2?.name);
+                                    return (eT1 === apiT1 && eT2 === apiT2) || (eT1 === apiT2 && eT2 === apiT1);
+                                });
+                            }
+                            if (idx >= 0) {
+                                const ex = merged[idx];
+                                const hasScore = v => v && v !== '-' && v !== '';
+                                const _mergeDate = ex.date || '';
+                                const _isPastMatch = _mergeDate && _mergeDate < getTodayString();
+                                if (!_isPastMatch) {
+                                    if (apiM.status === 'live') ex.status = 'live';
+                                    else if (apiM.status) ex.status = apiM.status;
+                                    if (apiM.statusText && apiM.statusText.length > (ex.statusText || '').length) ex.statusText = apiM.statusText;
+                                }
+                                if (hasScore(apiM.score?.team1)) { ex.score = ex.score || {}; ex.score.team1 = apiM.score.team1; }
+                                if (hasScore(apiM.score?.team2)) { ex.score = ex.score || {}; ex.score.team2 = apiM.score.team2; }
+                                if (apiM.overs?.team1) { ex.overs = ex.overs || {}; ex.overs.team1 = apiM.overs.team1; }
+                                if (apiM.overs?.team2) { ex.overs = ex.overs || {}; ex.overs.team2 = apiM.overs.team2; }
+                                if (apiM.innings && apiM.innings.some(arr => arr && arr.length > 0)) {
+                                    if (!_isPastMatch && (!ex.innings || !ex.innings.some(arr => arr && arr.length > 0))) {
+                                        ex.innings = apiM.innings;
+                                    }
+                                }
+                                if (apiM.team1?.logo && !ex.team1?.logo) ex.team1.logo = apiM.team1.logo;
+                                if (apiM.team2?.logo && !ex.team2?.logo) ex.team2.logo = apiM.team2.logo;
+                            } else {
+                                merged.push(apiM);
+                            }
+                        });
+                        existing[sport] = merged;
                     }
                 });
                 DATE_CACHE[dateStr] = existing;
+                applyAdminOverrides(dateStr);
+                const ufcMma = [...(existing.ufc || []), ...(existing.mma || [])];
+                if (ufcMma.length > 0) applyUFCPhotos(ufcMma);
             }
             const fresh = getMatchesForDate(dateStr);
             await enrichMatchLogos(fresh);
@@ -350,10 +439,6 @@ async function loadMatchesForDate(dateStr) {
         filterAndRender(cached, container);
         return;
     }
-
-    let matches = getMatchesForDate(dateStr);
-    await enrichMatchLogos(matches);
-    filterAndRender(matches, container);
 }
 
 // Normalize every match immediately before rendering so malformed provider names
@@ -416,32 +501,92 @@ function renderMatchList(matches, container) {
             const id = String(match?.id ?? '');
             const team1 = match?.team1 || {name:'Home Team'};
             const team2 = match?.team2 || {name:'Away Team'};
-            const s1 = scoreValue(match?.score?.team1);
-            const s2 = scoreValue(match?.score?.team2);
+            let s1 = scoreValue(match?.score?.team1);
+            let s2 = scoreValue(match?.score?.team2);
+            if (match.sport === 'cricket' && match.innings && match.innings.length >= 2) {
+                const inn = match.innings;
+                const lastT1 = (inn[0] || []).filter(i => i && i.runs && i.runs !== '-');
+                const lastT2 = (inn[1] || []).filter(i => i && i.runs && i.runs !== '-');
+                if (lastT1.length > 0) s1 = lastT1[lastT1.length - 1].runs;
+                if (lastT2.length > 0) s2 = lastT2[lastT2.length - 1].runs;
+            }
             const idJson = JSON.stringify(id);
             const time = match?.time && match.time!=='00:00' ? match.time : 'TBA';
-            const label = status==='live'?'LIVE':status==='finished'?'FINAL':'UPCOMING';
+            const label = status==='live'?'LIVE':status==='finished'?'FINISHED':'UPCOMING';
             const active = selectedMatch && String(selectedMatch.id)===id;
-            const scoreOrTime = status==='live'||status==='finished'
-                ? `<div class="mc-score">${escHtml(s1)} - ${escHtml(s2)}</div>`
-                : `<div class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</div>`;
-            html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
-                <div class="mc-teams">
-                    <div class="mc-team">
-                        ${teamLogoHtml(team1)}
-                        <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${escHtml(cleanDisplayName(team1.name||'Home Team'))}</span>
+
+            if (match.sport === 'ufc' || match.sport === 'mma') {
+                const method = s1 && s1 !== '-' ? escHtml(s1) : '';
+                const boutType = match.league ? escHtml(match.league) : '';
+                const result = s1 && s1 !== '-' ? s1 : '';
+                const isKO = /ko|tko/i.test(result);
+                const isSUB = /sub/i.test(result);
+                const isDec = /ud|sd|md|dec/i.test(result);
+                let methodClass = 'pending';
+                let methodLabel = 'TBD';
+                if (result) {
+                    if (isKO) { methodClass = 'ko'; methodLabel = result; }
+                    else if (isSUB) { methodClass = 'sub'; methodLabel = result; }
+                    else if (isDec) { methodClass = 'dec'; methodLabel = result; }
+                    else { methodClass = ''; methodLabel = result; }
+                }
+                const winnerSide = (status === 'finished' && s1 && s1 !== '-') ? 'left' : '';
+                const t1Logo = team1.logo || '';
+                const t2Logo = team2.logo || '';
+                const t1Img = t1Logo ? `<img src="${escHtml(t1Logo)}" alt="${escHtml(cleanDisplayName(team1.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
+                const t2Img = t2Logo ? `<img src="${escHtml(t2Logo)}" alt="${escHtml(cleanDisplayName(team2.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
+                html += `<div class="match-card-wrapper"><div class="ufc-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
+                    <div class="ufc-fighter fighter-left" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name))}, ${jsAttr(t1Logo)})">
+                        ${status==='finished' && s1 && s1!=='-' ? '<span class="ufc-win-badge">WIN</span>' : ''}
+                        ${t1Img}
+                        <div class="ufc-fighter-name">${escHtml(cleanDisplayName(team1.name))}</div>
                     </div>
-                    <div class="mc-vs">VS</div>
-                    <div class="mc-team mc-team-right">
-                        ${teamLogoHtml(team2)}
-                        <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${escHtml(cleanDisplayName(team2.name||'Away Team'))}</span>
+                    <div class="ufc-center">
+                        <div class="ufc-bout-type">${boutType || 'UFC BOUT'}</div>
+                        <div class="ufc-vs">VS</div>
+                        <div class="ufc-stats">
+                            <div class="ufc-stat-row">
+                                <span class="ufc-stat-label">METHOD</span>
+                            </div>
+                            <div class="ufc-method ${methodClass}">${methodLabel}</div>
+                        </div>
+                        <div class="ufc-status ${status}">${label}</div>
                     </div>
-                </div>
-                <div class="mc-result">
-                    ${scoreOrTime}
-                    <div class="mc-status ${status}">${label}</div>
-                </div>
-            </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
+                    <div class="ufc-fighter fighter-right" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name))}, ${jsAttr(t2Logo)})">
+                        ${t2Img}
+                        <div class="ufc-fighter-name">${escHtml(cleanDisplayName(team2.name))}</div>
+                    </div>
+                </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
+            } else {
+                const scoreOrTime = status==='live'||status==='finished'
+                    ? (() => {
+                        const ov1 = match?.overs?.team1 || '';
+                        const ov2 = match?.overs?.team2 || '';
+                        const hasScore1 = s1 && s1 !== '-';
+                        const hasScore2 = s2 && s2 !== '-';
+                        let scoreText = `${escHtml(s1)} - ${escHtml(s2)}`;
+                        const oversHtml = (ov1 || ov2) ? `<div class="mc-overs">${ov1 ? escHtml(ov1)+' ov' : ''}${ov1 && ov2 ? ' | ' : ''}${ov2 ? escHtml(ov2)+' ov' : ''}</div>` : '';
+                        return `<div class="mc-score">${scoreText}${oversHtml}</div>`;
+                    })()
+                    : `<div class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</div>`;
+                html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
+                    <div class="mc-teams">
+                        <div class="mc-team">
+                            ${teamLogoHtml(team1)}
+                            <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${escHtml(cleanDisplayName(team1.name||'Home Team'))}</span>
+                        </div>
+                        <div class="mc-vs">VS</div>
+                        <div class="mc-team mc-team-right">
+                            <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${escHtml(cleanDisplayName(team2.name||'Away Team'))}</span>
+                            ${teamLogoHtml(team2)}
+                        </div>
+                    </div>
+                    <div class="mc-result">
+                        ${scoreOrTime}
+                        <div class="mc-status ${status}">${label}</div>
+                    </div>
+                </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
+            }
         });
         html += `</div></div>`;
     });
@@ -449,6 +594,7 @@ function renderMatchList(matches, container) {
 
     matches.forEach(m=>{ if(getMatchStatus(m)==='upcoming' && m.date && m.time && m.time!=='00:00') startCountdown(String(m.id),m.date,m.time); });
     if(selectedMatch){ const acc=document.getElementById(`accordion-${CSS.escape(String(selectedMatch.id))}`); if(acc){renderAccordionContent(selectedMatch,acc);acc.style.display='block';} }
+    updateLiveFilterBtn();
 }
 
 // Update live scores in-place without rebuilding DOM
@@ -468,7 +614,7 @@ function updateLiveScoresInPlace(matches, container) {
         return true;
     });
 
-    const existingCards = container.querySelectorAll('.match-card[data-match-id]');
+    const existingCards = container.querySelectorAll('.match-card[data-match-id], .ufc-card[data-match-id]');
     const existingIds = new Set();
     existingCards.forEach(card => existingIds.add(card.getAttribute('data-match-id')));
 
@@ -479,32 +625,82 @@ function updateLiveScoresInPlace(matches, container) {
 
     matches.forEach(match => {
         const id = String(match.id);
-        const card = container.querySelector(`.match-card[data-match-id="${CSS.escape(id)}"]`);
+        const card = container.querySelector(`.match-card[data-match-id="${CSS.escape(id)}"], .ufc-card[data-match-id="${CSS.escape(id)}"]`);
         if (!card) return;
 
         const status = getMatchStatus(match);
-        const s1 = scoreValue(match.score?.team1);
-        const s2 = scoreValue(match.score?.team2);
-        const label = status === 'live' ? 'LIVE' : status === 'finished' ? 'FINAL' : 'UPCOMING';
+        let s1 = scoreValue(match.score?.team1);
+        let s2 = scoreValue(match.score?.team2);
+        if (match.sport === 'cricket' && match.innings && match.innings.length >= 2) {
+            const inn = match.innings;
+            const lastT1 = (inn[0] || []).filter(i => i && i.runs && i.runs !== '-');
+            const lastT2 = (inn[1] || []).filter(i => i && i.runs && i.runs !== '-');
+            if (lastT1.length > 0) s1 = lastT1[lastT1.length - 1].runs;
+            if (lastT2.length > 0) s2 = lastT2[lastT2.length - 1].runs;
+        }
+        const label = status === 'live' ? 'LIVE' : status === 'finished' ? 'FINISHED' : 'UPCOMING';
 
         card.className = card.className.replace(/\b(live|finished|upcoming)\b/g, '').trim() + ' ' + status;
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
         const scoreEl = card.querySelector('.mc-score');
         if (scoreEl) {
-            const newScore = `${escHtml(s1)} - ${escHtml(s2)}`;
-            if (scoreEl.textContent !== `${s1} - ${s2}`) {
-                scoreEl.textContent = `${s1} - ${s2}`;
-                scoreEl.classList.remove('score-flash');
-                void scoreEl.offsetWidth;
-                scoreEl.classList.add('score-flash');
+            const ov1 = match?.overs?.team1 || '';
+            const ov2 = match?.overs?.team2 || '';
+            const hasScore1 = s1 && s1 !== '-';
+            const hasScore2 = s2 && s2 !== '-';
+            let scoreText;
+            if (match?.sport === 'cricket') {
+                if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} vs ${escHtml(s2)}`;
+                else if (hasScore1) scoreText = escHtml(s1);
+                else if (hasScore2) scoreText = escHtml(s2);
+                else scoreText = '-';
+            } else {
+                scoreText = `${escHtml(s1)} - ${escHtml(s2)}`;
+            }
+            const oversHtml = (ov1 || ov2) ? `<div class="mc-overs">${ov1 ? escHtml(ov1)+' ov' : ''}${ov1 && ov2 ? ' | ' : ''}${ov2 ? escHtml(ov2)+' ov' : ''}</div>` : '';
+            const newScoreHtml = `${scoreText}${oversHtml}`;
+            const newPlainText = (scoreText.replace(/<[^>]*>/g, '') + ov1 + ov2).trim();
+            const oldPlainText = (scoreEl.textContent || '').replace(/\s+/g, '').trim();
+            if (oldPlainText !== newPlainText) {
+                scoreEl.innerHTML = newScoreHtml;
             }
         }
 
-        const statusEl = card.querySelector('.mc-status');
+        const statusEl = card.querySelector('.mc-status, .ufc-status');
         if (statusEl) {
-            statusEl.className = `mc-status ${status}`;
+            const isUFC = card.classList.contains('ufc-card');
+            statusEl.className = isUFC ? `ufc-status ${status}` : `mc-status ${status}`;
             if (statusEl.textContent !== label) statusEl.textContent = label;
+        }
+
+        if (card.classList.contains('ufc-card')) {
+            const methodEl = card.querySelector('.ufc-method');
+            if (methodEl) {
+                const result = s1 && s1 !== '-' ? s1 : '';
+                const isKO = /ko|tko/i.test(result);
+                const isSUB = /sub/i.test(result);
+                const isDec = /ud|sd|md|dec/i.test(result);
+                let methodClass = 'pending';
+                let methodLabel = 'TBD';
+                if (result) {
+                    if (isKO) { methodClass = 'ko'; methodLabel = result; }
+                    else if (isSUB) { methodClass = 'sub'; methodLabel = result; }
+                    else if (isDec) { methodClass = 'dec'; methodLabel = result; }
+                    else { methodClass = ''; methodLabel = result; }
+                }
+                methodEl.className = `ufc-method ${methodClass}`;
+                if (methodEl.textContent !== methodLabel) methodEl.textContent = methodLabel;
+            }
+            const winBadge = card.querySelector('.ufc-win-badge');
+            if (status === 'finished' && s1 && s1 !== '-') {
+                if (!winBadge) {
+                    const fighterLeft = card.querySelector('.fighter-left');
+                    if (fighterLeft) fighterLeft.insertAdjacentHTML('afterbegin', '<span class="ufc-win-badge">WIN</span>');
+                }
+            } else if (winBadge) {
+                winBadge.remove();
+            }
         }
 
         if (selectedMatch && String(selectedMatch.id) === id) {
@@ -516,6 +712,7 @@ function updateLiveScoresInPlace(matches, container) {
     });
 
     currentRenderedMatches = matches;
+    updateLiveFilterBtn();
     return true;
 }
 
@@ -532,7 +729,7 @@ function selectMatch(matchId, updateUrl = true) {
         acc.style.display = 'none';
         acc.innerHTML = '';
     });
-    document.querySelectorAll('.match-card').forEach(card => {
+    document.querySelectorAll('.match-card, .ufc-card').forEach(card => {
         card.classList.remove('active');
     });
 
@@ -566,7 +763,7 @@ function renderAccordionContent(match, container) {
     let scoreSection = '';
     if (isCricket) {
         const sClass = status === 'live' ? ' live' : '';
-        const statusLabel = status==='live'?'LIVE':status==='finished'?'FINAL':'UPCOMING';
+        const statusLabel = status==='live'?'LIVE':status==='finished'?'FINISHED':'UPCOMING';
         const isTest = match.innings && match.innings.length >= 2;
 
         if (isTest) {
@@ -577,10 +774,6 @@ function renderAccordionContent(match, container) {
             const fmtOvers = v => (!v || v === '') ? '' : escHtml(v);
             scoreSection = `
             <div class="cricket-test-display">
-              <div class="cricket-team-block">
-                <div class="cricket-team">${teamLogoHtml(t1)}</div>
-                <div class="cricket-team-name">${escHtml(cleanDisplayName(t1.name||'Home Team'))}</div>
-              </div>
               <div class="cricket-test-innings">
                 <div class="cricket-innings-row">
                   <span class="cricket-inn-label">1st</span>
@@ -605,13 +798,9 @@ function renderAccordionContent(match, container) {
                   <span class="cricket-inn-runs">${fmt(t2inn[1]?.runs || '-')}</span>
                   <span class="cricket-inn-overs">${fmtOvers(t2inn[1]?.overs)}</span>
                 </div>
-                ${match.target ? `<div class="cricket-target">Target ${escHtml(match.target)}</div>` : ''}
-              </div>
-              <div class="cricket-team-block">
-                <div class="cricket-team">${teamLogoHtml(t2)}</div>
-                <div class="cricket-team-name">${escHtml(cleanDisplayName(t2.name||'Away Team'))}</div>
               </div>
             </div>
+            ${match.target ? `<div class="cricket-target">Target ${escHtml(match.target)}</div>` : ''}
             ${match.result ? `<div class="cricket-result">${escHtml(match.result)}</div>` : ''}
 `;
         } else {
@@ -619,10 +808,6 @@ function renderAccordionContent(match, container) {
             const fmtOvers = v => (!v || v === '') ? '' : escHtml(v);
             scoreSection = `
             <div class="cricket-score-display">
-              <div class="cricket-team-block">
-                <div class="cricket-team">${teamLogoHtml(t1)}</div>
-                <div class="cricket-team-name">${escHtml(cleanDisplayName(t1.name||'Home Team'))}</div>
-              </div>
               <div class="cricket-score-block">
                 <div class="cricket-score-num${sClass}">${fmt(s1)}</div>
                 <div class="cricket-score-overs">${fmtOvers(match.overs?.team1)}</div>
@@ -632,20 +817,11 @@ function renderAccordionContent(match, container) {
                 <div class="cricket-score-num${sClass}">${fmt(s2)}</div>
                 <div class="cricket-score-overs">${fmtOvers(match.overs?.team2)}</div>
               </div>
-              <div class="cricket-team-block">
-                <div class="cricket-team">${teamLogoHtml(t2)}</div>
-                <div class="cricket-team-name">${escHtml(cleanDisplayName(t2.name||'Away Team'))}</div>
-              </div>
             </div>
 `;
         }
     } else {
-        scoreSection = `
-        <div class="accordion-teams">
-          <div class="accordion-team">${teamLogoHtml(t1)}<div class="accordion-team-name">${escHtml(cleanDisplayName(t1.name||'Home Team'))}</div></div>
-          <div class="accordion-score-center">${status==='live'||status==='finished'?`<div class="accordion-score ${status}"><span class="score-num">${escHtml(s1)}</span><span class="score-sep">-</span><span class="score-num">${escHtml(s2)}</span></div>`:`<div class="accordion-vs">VS</div>`}<div class="accordion-status">${status==='live'?'LIVE':status==='finished'?'FINAL':'UPCOMING'}</div></div>
-          <div class="accordion-team">${teamLogoHtml(t2)}<div class="accordion-team-name">${escHtml(cleanDisplayName(t2.name||'Away Team'))}</div></div>
-        </div>`;
+        scoreSection = '';
     }
 
     container.innerHTML=`<div class="accordion-content">
@@ -668,7 +844,7 @@ function closeAllAccordions() {
         acc.style.display = 'none';
         acc.innerHTML = '';
     });
-    document.querySelectorAll('.match-card').forEach(card => {
+    document.querySelectorAll('.match-card, .ufc-card').forEach(card => {
         card.classList.remove('active');
     });
     selectedMatch = null;
@@ -735,6 +911,39 @@ function updateLeagueList(matches) {
     container.innerHTML = html;
 }
 
+// Filter live matches to top
+let _liveFilterActive = false;
+
+function renderWithLiveFirst() {
+    const container = document.getElementById('match-list');
+    if (!container) return;
+    const matches = getMatchesForDate(currentDate);
+    let filtered = matches;
+    if (currentSport !== 'all') filtered = filtered.filter(m => m.sport === currentSport);
+    if (currentLeagueFilter) filtered = filtered.filter(m => m.league === currentLeagueFilter);
+    if (_liveFilterActive) {
+        const live = filtered.filter(m => getMatchStatus(m) === 'live');
+        const nonLive = filtered.filter(m => getMatchStatus(m) !== 'live');
+        filtered = [...live, ...nonLive];
+    }
+    renderMatchList(filtered, container);
+}
+
+function filterLiveMatches() {
+    _liveFilterActive = !_liveFilterActive;
+    const btn = document.getElementById('live-filter-btn');
+    if (btn) btn.classList.toggle('active', _liveFilterActive);
+    renderWithLiveFirst();
+}
+
+function updateLiveFilterBtn() {
+    const btn = document.getElementById('live-filter-btn');
+    if (!btn) return;
+    const matches = getMatchesForDate(currentDate);
+    const hasLive = matches.some(m => getMatchStatus(m) === 'live');
+    btn.classList.toggle('visible', hasLive);
+}
+
 // Filter matches by league
 let currentLeagueFilter = null;
 
@@ -786,6 +995,27 @@ function toggleMobileCalendar() {
     }
 }
 
+// Mobile sidebar toggle
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('mobile-sidebar');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('calendar-overlay');
+    if (sidebar) {
+        sidebar.classList.toggle('active');
+        if (hamburger) hamburger.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('mobile-sidebar');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('calendar-overlay');
+    if (sidebar) sidebar.classList.remove('active');
+    if (hamburger) hamburger.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+}
+
 // Close profile dropdown when clicking outside
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.profile-btn')) {
@@ -818,7 +1048,48 @@ function startLiveAgent() {
                 const existing = DATE_CACHE[today] || {};
                 ['cricket','football','basketball','tabletennis','mma','ufc','nfl'].forEach(sport => {
                     if (result[sport] && result[sport].length > 0) {
-                        existing[sport] = result[sport];
+                        const apiMatches = result[sport];
+                        const existingMatches = existing[sport] || [];
+                        const merged = [...existingMatches];
+                        apiMatches.forEach(apiM => {
+                            const apiId = String(apiM.id);
+                            let idx = merged.findIndex(e => String(e.id) === apiId);
+                            if (idx < 0) {
+                                const normName = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                                const apiT1 = normName(apiM.team1?.name);
+                                const apiT2 = normName(apiM.team2?.name);
+                                idx = merged.findIndex(e => {
+                                    const eT1 = normName(e.team1?.name);
+                                    const eT2 = normName(e.team2?.name);
+                                    return (eT1 === apiT1 && eT2 === apiT2) || (eT1 === apiT2 && eT2 === apiT1);
+                                });
+                            }
+                            if (idx >= 0) {
+                                const ex = merged[idx];
+                                const hasScore = v => v && v !== '-' && v !== '';
+                                const _mergeDate = ex.date || '';
+                                const _isPastMatch = _mergeDate && _mergeDate < getTodayString();
+                                if (!_isPastMatch) {
+                                    if (apiM.status === 'live') ex.status = 'live';
+                                    else if (apiM.status) ex.status = apiM.status;
+                                    if (apiM.statusText && apiM.statusText.length > (ex.statusText || '').length) ex.statusText = apiM.statusText;
+                                }
+                                if (hasScore(apiM.score?.team1)) { ex.score = ex.score || {}; ex.score.team1 = apiM.score.team1; }
+                                if (hasScore(apiM.score?.team2)) { ex.score = ex.score || {}; ex.score.team2 = apiM.score.team2; }
+                                if (apiM.overs?.team1) { ex.overs = ex.overs || {}; ex.overs.team1 = apiM.overs.team1; }
+                                if (apiM.overs?.team2) { ex.overs = ex.overs || {}; ex.overs.team2 = apiM.overs.team2; }
+                                if (apiM.innings && apiM.innings.some(arr => arr && arr.length > 0)) {
+                                    if (!_isPastMatch && (!ex.innings || !ex.innings.some(arr => arr && arr.length > 0))) {
+                                        ex.innings = apiM.innings;
+                                    }
+                                }
+                                if (apiM.team1?.logo && !ex.team1?.logo) ex.team1.logo = apiM.team1.logo;
+                                if (apiM.team2?.logo && !ex.team2?.logo) ex.team2.logo = apiM.team2.logo;
+                            } else {
+                                merged.push(apiM);
+                            }
+                        });
+                        existing[sport] = merged;
                     }
                 });
                 DATE_CACHE[today] = existing;
@@ -829,8 +1100,12 @@ function startLiveAgent() {
                 await enrichMatchLogos(fresh);
                 const container = document.getElementById('match-list');
                 if (container && currentDate === today) {
-                    const updated = updateLiveScoresInPlace(fresh, container);
-                    if (!updated) filterAndRender(fresh, container);
+                    if (_liveFilterActive) {
+                        renderWithLiveFirst();
+                    } else {
+                        const updated = updateLiveScoresInPlace(fresh, container);
+                        if (!updated) filterAndRender(fresh, container);
+                    }
                 }
             }
             console.log('✅ Live Agent: refresh complete');
@@ -849,6 +1124,10 @@ function stopLiveAgent() {
 
 document.addEventListener('DOMContentLoaded', () => {
     startLiveAgent();
+    const sidebar = document.querySelector('.sidebar-left');
+    const overlay = document.getElementById('calendar-overlay');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
 });
 
 document.addEventListener('visibilitychange', () => {
@@ -879,17 +1158,34 @@ async function toggleTeamPlayers(matchId, teamKey, teamName, teamLogo) {
     }
 
     playerSection.style.display = 'block';
-    playerSection.innerHTML = `<div class="player-loading"><div class="loading-spinner"></div><p>Loading ${teamName} squad...</p></div>`;
+    playerSection.innerHTML = `<div class="player-loading"><div class="loading-spinner"></div><p>Loading ${teamName}...</p></div>`;
 
     const cacheKey = teamName;
     if (!teamRosterCache[cacheKey]) {
-        const team = await searchTheSportsDBTeam(teamName);
-        if (!team) {
-            playerSection.innerHTML = `<div class="player-empty">Team data not available.</div>`;
-            return;
+        const match = currentRenderedMatches.find(m => String(m.id) === String(matchId));
+        const isUFC = match && (match.sport === 'ufc' || match.sport === 'mma');
+
+        if (isUFC) {
+            const players = await searchTheSportsDBPlayer(teamName);
+            const fighter = players.find(p => {
+                const pname = (p.strPlayer || '').toLowerCase();
+                const tname = teamName.toLowerCase();
+                return pname === tname || pname.includes(tname) || tname.includes(pname);
+            }) || players[0] || null;
+            if (fighter) {
+                teamRosterCache[cacheKey] = [fighter];
+            } else {
+                teamRosterCache[cacheKey] = [];
+            }
+        } else {
+            const team = await searchTheSportsDBTeam(teamName);
+            if (!team) {
+                playerSection.innerHTML = `<div class="player-empty">Team data not available.</div>`;
+                return;
+            }
+            const roster = await fetchTeamRoster(team.id);
+            teamRosterCache[cacheKey] = roster.filter(p => p.strPlayer && p.strPosition !== 'Manager' && p.strPosition !== 'Assistant Coach');
         }
-        const roster = await fetchTeamRoster(team.id);
-        teamRosterCache[cacheKey] = roster.filter(p => p.strPlayer && p.strPosition !== 'Manager' && p.strPosition !== 'Assistant Coach');
     }
 
     const players = teamRosterCache[cacheKey];
@@ -898,19 +1194,44 @@ async function toggleTeamPlayers(matchId, teamKey, teamName, teamLogo) {
         return;
     }
 
-    playerSection.innerHTML = `
-        <div class="player-roster-grid">
-            ${players.map(p => `
-                <div class="player-roster-card" onclick="event.stopPropagation(); togglePlayerDetail('${esc(matchId)}', '${esc(teamKey)}', '${esc(p.idPlayer)}')">
-                    <img src="${p.strThumb || ''}" alt="" class="player-roster-img" onerror="this.style.display='none'">
-                    <div class="player-roster-info">
-                        <span class="player-roster-name">${p.strPlayer}</span>
-                        <span class="player-roster-pos">${p.strPosition || ''}</span>
+    const isUFCFighter = players.length === 1 && players[0].strPlayer;
+    if (isUFCFighter) {
+        const p = players[0];
+        playerSection.innerHTML = `
+            <div class="player-blog" style="display:block;margin-top:0">
+                <div class="player-blog-top">
+                    <img src="${p.strCutout || p.strThumb || ''}" alt="" class="player-blog-photo" onerror="this.style.display='none'">
+                    <div class="player-blog-info">
+                        <h4 class="player-blog-name">${p.strPlayer || teamName}</h4>
+                        <span class="player-blog-team">${p.strTeam || p.strNationality || ''}</span>
                     </div>
                 </div>
-            `).join('')}
-        </div>
-    `;
+                <div class="player-blog-stats">
+                    ${p.strNationality ? `<div class="player-stat"><span class="player-stat-label">Nationality</span><span class="player-stat-value">${p.strNationality}</span></div>` : ''}
+                    ${p.strHeight ? `<div class="player-stat"><span class="player-stat-label">Height</span><span class="player-stat-value">${p.strHeight}</span></div>` : ''}
+                    ${p.strWeight ? `<div class="player-stat"><span class="player-stat-label">Weight</span><span class="player-stat-value">${p.strWeight}</span></div>` : ''}
+                    ${p.strPosition ? `<div class="player-stat"><span class="player-stat-label">Weight Class</span><span class="player-stat-value">${p.strPosition}</span></div>` : ''}
+                    ${p.strGender === 'Male' ? `<div class="player-stat"><span class="player-stat-label">Gender</span><span class="player-stat-value">Male</span></div>` : ''}
+                    ${p.strGender === 'Female' ? `<div class="player-stat"><span class="player-stat-label">Gender</span><span class="player-stat-value">Female</span></div>` : ''}
+                </div>
+                ${p.strDescriptionEN ? `<div class="player-blog-desc">${p.strDescriptionEN.split('\n').filter(x => x.trim()).slice(0,3).map(x => `<p>${x.trim()}</p>`).join('')}</div>` : ''}
+            </div>
+        `;
+    } else {
+        playerSection.innerHTML = `
+            <div class="player-roster-grid">
+                ${players.map(p => `
+                    <div class="player-roster-card" onclick="event.stopPropagation(); togglePlayerDetail('${esc(matchId)}', '${esc(teamKey)}', '${esc(p.idPlayer)}')">
+                        <img src="${p.strThumb || ''}" alt="" class="player-roster-img" onerror="this.style.display='none'">
+                        <div class="player-roster-info">
+                            <span class="player-roster-name">${p.strPlayer}</span>
+                            <span class="player-roster-pos">${p.strPosition || ''}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
 }
 
 async function togglePlayerDetail(matchId, teamKey, playerId) {

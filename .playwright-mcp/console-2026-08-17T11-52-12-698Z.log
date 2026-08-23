@@ -1,0 +1,6 @@
+[     580ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:422
+[     582ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:422
+[     662ms] [LOG] 🚀 Live Streaming initialized @ http://localhost:8080/js/app.js?v=3:211
+[     962ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ http://localhost:8080/:0
+[  115118ms] [LOG] 🚀 Live Streaming initialized @ http://localhost:8080/js/app.js?v=3:211
+[  115153ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ http://localhost:8080/cricket/2026-08-16/australia-vs-bangladesh:0

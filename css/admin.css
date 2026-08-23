@@ -390,3 +390,27 @@ table.dt{width:100%;border-collapse:collapse;font-size:0.82rem}
   .stats{grid-template-columns:1fr}
   .login-box{margin:0.75rem;padding:1.85rem 1.3rem}
 }
+
+/* ===== Modal ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(2px)}
+.modal-box{background:var(--bg-card,#fff);border-radius:12px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;z-index:2001;border:1px solid var(--border,#e5e7eb)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)}
+.modal-head h3{margin:0;font-size:1rem}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);padding:0.25rem}
+.modal-close:hover{color:var(--text-primary)}
+#edit-match-form{padding:1.25rem}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.form-group{margin-bottom:0.75rem}
+.form-label{display:block;font-size:0.72rem;font-weight:600;margin-bottom:0.3rem;color:var(--text-secondary)}
+.form-input{width:100%;padding:0.5rem 0.65rem;border:1px solid var(--border);border-radius:6px;font-size:0.78rem;background:var(--bg-secondary);color:var(--text-primary)}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.form-actions{display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)}
+.btn-accent{background:var(--accent);color:#fff;border:none;padding:0.45rem 1rem;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600}
+.btn-accent:hover{opacity:0.9}
+.btn-red{background:#ef4444;color:#fff;border:none;padding:0.45rem 0.85rem;border-radius:6px;cursor:pointer;font-size:0.72rem;font-weight:600}
+.btn-red:hover{opacity:0.9}
+.action-btn{padding:0.25rem 0.5rem;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:0.68rem;background:var(--bg-secondary);color:var(--text-secondary)}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.del:hover{border-color:#ef4444;color:#ef4444}
+.override-item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;border-bottom:1px solid var(--border);font-size:0.78rem}
+.override-item:last-child{border-bottom:none}

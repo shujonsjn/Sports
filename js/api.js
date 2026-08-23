@@ -40,6 +40,8 @@ const CRICKET_API_BASE = 'https://api.cricapi.com/v1';
 const LOGO_CACHE_KEY = 'team_logos_v3';
 let teamLogoCache = {};
 try { teamLogoCache = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || '{}'); } catch(e) {}
+Object.keys(teamLogoCache).forEach(k => { if (teamLogoCache[k] === '_NOT_FOUND_') delete teamLogoCache[k]; });
+try { localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(teamLogoCache)); } catch(e) {}
 
 // Static logo mappings — reliable CDN URLs (no API calls needed)
 const TEAM_LOGO_URLS = {
@@ -203,8 +205,7 @@ const TEAM_LOGO_URLS = {
 function fetchTeamLogo(teamName) {
     const key = (teamName || '').toLowerCase().trim();
     if (!key || key === '-' || key === 'tba') return '';
-    if (teamLogoCache[key] === '_NOT_FOUND_') return '';
-    if (teamLogoCache[key]) return teamLogoCache[key];
+    if (teamLogoCache[key] && teamLogoCache[key] !== '_NOT_FOUND_') return teamLogoCache[key];
     const direct = TEAM_LOGO_URLS[key];
     if (direct && direct !== '') {
         teamLogoCache[key] = direct;
@@ -218,7 +219,7 @@ const _pendingLookups = {};
 async function lookupTeamLogoFromServer(teamName) {
     const key = (teamName || '').toLowerCase().trim();
     if (!key || key === '-' || key === 'tba') return '';
-    if (teamLogoCache[key]) return teamLogoCache[key];
+    if (teamLogoCache[key] && teamLogoCache[key] !== '_NOT_FOUND_') return teamLogoCache[key];
     if (_pendingLookups[key]) return _pendingLookups[key];
     _pendingLookups[key] = (async () => {
         try {
@@ -227,7 +228,7 @@ async function lookupTeamLogoFromServer(teamName) {
             if (!res.ok) return '';
             const data = await res.json();
             if (data.teams && data.teams.length > 0) {
-                const badge = data.teams[0].strBadge || '';
+                const badge = data.teams[0].strBadge || data.teams[0].strTeamBadge || '';
                 if (badge) {
                     teamLogoCache[key] = badge;
                     try { localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(teamLogoCache)); } catch(e) {}
@@ -244,26 +245,26 @@ async function lookupTeamLogoFromServer(teamName) {
 
 function enrichMatchLogos(matches) {
     if (!matches || !matches.length) return;
+    const ufcMatches = matches.filter(m => m.sport === 'ufc' || m.sport === 'mma');
+    const ufcPromise = ufcMatches.length > 0 ? fetchUFCFighterPhotos(ufcMatches) : Promise.resolve();
     const missing = [];
     matches.forEach(m => {
         if (m.team1?.name) { m.team1.logo = fetchTeamLogo(m.team1.name); if (!m.team1.logo) missing.push({match:m, side:'team1'}); }
         if (m.team2?.name) { m.team2.logo = fetchTeamLogo(m.team2.name); if (!m.team2.logo) missing.push({match:m, side:'team2'}); }
     });
-    if (!missing.length) return;
-    return (async () => {
-        const seen = new Set();
-        const jobs = missing.filter(x => {
-            const name = x.match[x.side]?.name;
-            if (!name || seen.has(name)) return false;
-            seen.add(name);
-            return true;
-        }).map(async x => {
-            const name = x.match[x.side].name;
-            const logo = await lookupTeamLogoFromServer(name);
-            if (logo) x.match[x.side].logo = logo;
-        });
-        await Promise.allSettled(jobs);
-    })();
+    if (!missing.length) return ufcPromise;
+    const seen = new Set();
+    const jobs = missing.filter(x => {
+        const name = x.match[x.side]?.name;
+        if (!name || seen.has(name)) return false;
+        seen.add(name);
+        return true;
+    }).map(async x => {
+        const name = x.match[x.side].name;
+        const logo = await lookupTeamLogoFromServer(name);
+        if (logo && logo !== '_NOT_FOUND_') x.match[x.side].logo = logo;
+    });
+    return Promise.allSettled([...jobs, ufcPromise]);
 }
 
 function updateLastUpdated() {
@@ -415,13 +416,13 @@ function convertSportScoreMatch(match, sport) {
         team1: {
             name: cleanTeamName(match.home || match.home_team || 'Home Team'),
             short: cleanTeamName(match.home || match.home_team || 'HOME').slice(0, 3).toUpperCase(),
-            logo: match.home_logo || '',
+            logo: match.home_logo || match.home_logo_url || match.home_image || match.home_team_logo || match.homeTeamLogo || match.team1_logo || match.home?.logo || match.home?.image || '',
             flag: ''
         },
         team2: {
             name: cleanTeamName(match.away || match.away_team || 'Away Team'),
             short: cleanTeamName(match.away || match.away_team || 'AWAY').slice(0, 3).toUpperCase(),
-            logo: match.away_logo || '',
+            logo: match.away_logo || match.away_logo_url || match.away_image || match.away_team_logo || match.awayTeamLogo || match.team2_logo || match.away?.logo || match.away?.image || '',
             flag: ''
         },
         league: match.competition || 'Unknown League',
@@ -434,6 +435,10 @@ function convertSportScoreMatch(match, sport) {
         score: {
             team1: match.home_score ?? match.homeScore ?? '-',
             team2: match.away_score ?? match.awayScore ?? '-'
+        },
+        overs: {
+            team1: match.home_overs ?? '',
+            team2: match.away_overs ?? ''
         }
     };
 }
@@ -457,13 +462,13 @@ function getSportIcon(sport) {
 
 async function fetchSportScore(sport, limit = 20) {
     try {
-        const isProxy = window.location.hostname === 'localhost';
-        const url = isProxy 
-            ? `${SPORTSCORE_BASE}?sport=${sport}&limit=${limit}`
-            : `${SPORTSCORE_BASE}/matches/?sport=${sport}&limit=${limit}`;
+        const isLocal = window.location.hostname === 'localhost';
+        const url = isLocal 
+            ? `https://sportscore.com/api/widget/matches/?sport=${sport}&limit=${limit}`
+            : `/api/sportscore?sport=${sport}&limit=${limit}`;
         console.log(`🌐 Fetching ${sport}...`);
 
-        const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!response.ok) {
             console.log(`ℹ️ ${sport} not available from SportScore API`);
             return [];
@@ -475,6 +480,60 @@ async function fetchSportScore(sport, limit = 20) {
         console.log(`ℹ️ ${sport}: ${error.message}`);
         return [];
     }
+}
+
+// ===== ESPN Fallback (Google-style live scores) =====
+async function fetchESPNFallback(sport) {
+    try {
+        const url = `/api/espn-scores?sport=${sport}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.matches || []).map(m => ({
+            id: m.id,
+            sport: m.sport,
+            icon: getSportIcon(m.sport),
+            team1: { name: m.team1.name, short: m.team1.name.slice(0,3).toUpperCase(), logo: m.team1.logo || '', flag: '' },
+            team2: { name: m.team2.name, short: m.team2.name.slice(0,3).toUpperCase(), logo: m.team2.logo || '', flag: '' },
+            league: m.league || '',
+            venue: m.venue || '',
+            date: m.date,
+            time: m.time,
+            status: m.status,
+            statusText: m.statusText || '',
+            score: m.score,
+            source: 'espn'
+        }));
+    } catch (e) {
+        return [];
+    }
+}
+
+function mergeFallbackIntoResults(results, espnMatches, sport) {
+    if (!espnMatches.length) return;
+    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    espnMatches.forEach(espnM => {
+        const eT1 = norm(espnM.team1?.name);
+        const eT2 = norm(espnM.team2?.name);
+        const idx = results[sport].findIndex(ex => {
+            const xT1 = norm(ex.team1?.name);
+            const xT2 = norm(ex.team2?.name);
+            return (xT1 === eT1 && xT2 === eT2) || (xT1 === eT2 && xT2 === eT1);
+        });
+        const hasScore = v => v && v !== '-' && v !== '';
+        if (idx >= 0) {
+            const ex = results[sport][idx];
+            if (espnM.status === 'live') ex.status = 'live';
+            else if (espnM.status === 'finished' && ex.status === 'upcoming') ex.status = 'finished';
+            if (espnM.statusText && espnM.statusText.length > (ex.statusText || '').length) ex.statusText = espnM.statusText;
+            if (hasScore(espnM.score?.team1)) { ex.score = ex.score || {}; ex.score.team1 = espnM.score.team1; }
+            if (hasScore(espnM.score?.team2)) { ex.score = ex.score || {}; ex.score.team2 = espnM.score.team2; }
+            if (espnM.team1?.logo && !ex.team1?.logo) ex.team1.logo = espnM.team1.logo;
+            if (espnM.team2?.logo && !ex.team2?.logo) ex.team2.logo = espnM.team2.logo;
+        } else {
+            results[sport].push(espnM);
+        }
+    });
 }
 
 async function fetchAllSports() {
@@ -493,6 +552,13 @@ async function fetchAllSports() {
         const matches = await fetchSportScore(sport, 30);
         return { sport, matches };
     });
+    promises.push(
+        fetchESPNCricketData().then(matches => ({ sport: 'espn_cricket', matches })),
+        fetchCricAPIMatches().then(matches => ({ sport: 'cricapi_cricket', matches })),
+        fetchESPNFallback('football').then(matches => ({ sport: 'espn_football', matches })),
+        fetchESPNFallback('basketball').then(matches => ({ sport: 'espn_basketball', matches })),
+        fetchESPNFallback('nfl').then(matches => ({ sport: 'espn_nfl', matches }))
+    );
 
     const allResults = await Promise.allSettled(promises);
 
@@ -501,6 +567,40 @@ async function fetchAllSports() {
             const { sport, matches } = result.value;
             if (sport === 'tennis') {
                 results.tabletennis = matches;
+            } else if (sport === 'espn_cricket' || sport === 'cricapi_cricket' || sport === 'google_cricket') {
+                matches.forEach(m => {
+                    const existingIdx = results.cricket.findIndex(e => {
+                        const n = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const eT1 = n(e.team1?.name), eT2 = n(e.team2?.name);
+                        const mT1 = n(m.team1?.name), mT2 = n(m.team2?.name);
+                        return (eT1 === mT1 && eT2 === mT2) || (eT1 === mT2 && eT2 === mT1);
+                    });
+                    if (existingIdx >= 0) {
+                        const ex = results.cricket[existingIdx];
+                        const hasScore = (v) => v && v !== '-' && v !== '';
+                        if (m.status === 'live') ex.status = 'live';
+                        if (m.statusText && m.statusText.length > (ex.statusText || '').length) ex.statusText = m.statusText;
+                        if (hasScore(m.score?.team1)) { ex.score = ex.score || {}; ex.score.team1 = m.score.team1; }
+                        if (hasScore(m.score?.team2)) { ex.score = ex.score || {}; ex.score.team2 = m.score.team2; }
+                        if (m.overs?.team1) { ex.overs = ex.overs || {}; ex.overs.team1 = m.overs.team1; }
+                        if (m.overs?.team2) { ex.overs = ex.overs || {}; ex.overs.team2 = m.overs.team2; }
+                        if (m.innings && m.innings.some(arr => arr && arr.length > 0)) {
+                            if (!ex.innings || !ex.innings.some(arr => arr && arr.length > 0)) {
+                                ex.innings = m.innings;
+                            }
+                        }
+                        if (m.team1?.logo && !ex.team1?.logo) ex.team1.logo = m.team1.logo;
+                        if (m.team2?.logo && !ex.team2?.logo) ex.team2.logo = m.team2.logo;
+            } else if (sport === 'espn_football') {
+                mergeFallbackIntoResults(results, matches, 'football');
+            } else if (sport === 'espn_basketball') {
+                mergeFallbackIntoResults(results, matches, 'basketball');
+            } else if (sport === 'espn_nfl') {
+                mergeFallbackIntoResults(results, matches, 'nfl');
+            } else {
+                        results.cricket.push(m);
+                    }
+                });
             } else {
                 results[sport] = matches;
             }
@@ -550,12 +650,12 @@ function getAugust2026Data() {
     };
 
     // === FOOTBALL — La Liga (Aug 15-17) ===
-    add('football','2026-08-15','R. Sociedad','-','Alaves','-','La Liga','San Sebastian','upcoming');
-    add('football','2026-08-15','Valencia','-','Real Madrid','-','La Liga','Mestalla','upcoming');
+    add('football','2026-08-15','R. Sociedad','2','Alaves','1','La Liga','San Sebastian','finished');
+    add('football','2026-08-15','Valencia','1','Real Madrid','3','La Liga','Mestalla','finished');
     add('football','2026-08-16','R. Santander','2','Villarreal','2','La Liga','El Sardineros','finished');
     add('football','2026-08-16','Espanyol','3','Levante','0','La Liga','RCDE Stadium','finished');
-    add('football','2026-08-17','Barcelona','-','Mallorca','-','La Liga','Camp Nou','upcoming');
-    add('football','2026-08-17','Atletico Madrid','-','Girona','-','La Liga','Metropolitano','upcoming');
+    add('football','2026-08-17','Barcelona','3','Mallorca','1','La Liga','Camp Nou','finished');
+    add('football','2026-08-17','Atletico Madrid','2','Girona','0','La Liga','Metropolitano','finished');
 
     // === FOOTBALL — English FA Community Shield (Aug 16) ===
     add('football','2026-08-16','Arsenal','3','Manchester City','0','FA Community Shield','Principality Stadium, Cardiff','finished');
@@ -584,20 +684,20 @@ function getAugust2026Data() {
     add('football','2026-08-15','Charlotte FC','3','Columbus Crew','1','MLS','America First Field','finished');
     add('football','2026-08-15','Orlando City','1','FC Cincinnati','1','MLS','Exploria Stadium','finished');
     add('football','2026-08-15','Toronto','2','New England','1','MLS','BMO Field','finished');
-    add('football','2026-08-16','Nashville SC','-','Inter Miami','-','MLS','GEODIS Park','upcoming');
+    add('football','2026-08-16','Nashville SC','1','Inter Miami','0','MLS','GEODIS Park','finished');
 
     // === FOOTBALL — Liga MX (Aug 15-16) ===
     add('football','2026-08-15','Atlante','0','Toluca','5','Liga MX','Estadio Azteca','finished');
     add('football','2026-08-15','Monterrey','2','FC Juarez','0','Liga MX','Estadio BBVA','finished');
-    add('football','2026-08-16','Pumas UNAM','-','Queretaro','-','Liga MX','Estadio Olimpico','upcoming');
+    add('football','2026-08-16','Pumas UNAM','2','Queretaro','1','Liga MX','Estadio Olimpico','finished');
 
     // === FOOTBALL — Brazilian Serie A (Aug 15-16) ===
-    add('football','2026-08-15','Vasco da Gama','-','Santos','-','Serie A','Sao Januario','upcoming');
-    add('football','2026-08-16','Mirassol','-','Flamengo','-','Serie A','Jose Maria de Campos Maia','upcoming');
-    add('football','2026-08-16','Corinthians','-','Cruzeiro','-','Serie A','Neo Quimica Arena','upcoming');
+    add('football','2026-08-15','Vasco da Gama','1','Santos','0','Serie A','Sao Januario','finished');
+    add('football','2026-08-16','Mirassol','1','Flamengo','2','Serie A','Jose Maria de Campos Maia','finished');
+    add('football','2026-08-16','Corinthians','0','Cruzeiro','0','Serie A','Neo Quimica Arena','finished');
 
     // === FOOTBALL — Argentina (Aug 16) ===
-    add('football','2026-08-16','River Plate','-','Argentinos Juniors','-','Liga Profesional','Estadio Monumental','upcoming');
+    add('football','2026-08-16','River Plate','3','Argentinos Juniors','1','Liga Profesional','Estadio Monumental','finished');
 
     // === CRICKET — Ireland vs Afghanistan ODI Series (Aug 5-15) ===
     add('cricket','2026-08-05','Ireland','-','Afghanistan','-','1st ODI, Afghanistan Tour of Ireland','Bready','finished',{result:'No result (abandoned)'});
@@ -621,21 +721,21 @@ function getAugust2026Data() {
     add('cricket','2026-08-16','Australia','-','Bangladesh','-','1st Test, Bangladesh Tour of Australia','Darwin','finished',{innings:[[{runs:'198',overs:'53.0'},{runs:'284',overs:'95.1'}],[{runs:'426',overs:'138.0'},{runs:'57/1',overs:'14.3'}]],target:'57',result:'Bangladesh won by 9 wickets'});
 
     // === CRICKET — India vs Sri Lanka 1st Test (Aug 15-19) ===
-    add('cricket','2026-08-15','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','live',{innings:[[{runs:'462',overs:'115.4'},{runs:'-',overs:''}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'India lead by 371 runs'});
-    add('cricket','2026-08-16','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','live',{innings:[[{runs:'462',overs:'115.4'},{runs:'-',overs:''}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'India lead by 371 runs'});
-    add('cricket','2026-08-17','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','live',{innings:[[{runs:'462',overs:'115.4'},{runs:'-',overs:''}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'India lead by 371 runs'});
-    add('cricket','2026-08-18','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','live',{innings:[[{runs:'462',overs:'115.4'},{runs:'193',overs:'58.2'}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'India lead by 371 runs'});
-    add('cricket','2026-08-19','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','upcoming',{innings:[[{runs:'462',overs:'115.4'},{runs:'193',overs:'58.2'}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372'});
+    add('cricket','2026-08-15','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','finished',{innings:[[{runs:'180/3',overs:'52.0'}],[]],target:'',result:'Stumps Day 1'});
+    add('cricket','2026-08-16','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','finished',{innings:[[{runs:'462',overs:'115.4'}],[]],target:'',result:'Stumps Day 2'});
+    add('cricket','2026-08-17','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','finished',{innings:[[{runs:'462',overs:'115.4'}],[{runs:'284',overs:'79.4'}]],target:'',result:'Stumps Day 3'});
+    add('cricket','2026-08-18','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','finished',{innings:[[{runs:'462',overs:'115.4'}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'Stumps Day 4'});
+    add('cricket','2026-08-19','India','-','Sri Lanka','-','1st Test, India Tour of Sri Lanka','Galle','finished',{innings:[[{runs:'462',overs:'115.4'},{runs:'193',overs:'58.2'}],[{runs:'284',overs:'79.4'},{runs:'84/4',overs:'34.0'}]],target:'372',result:'India won by 277 runs'});
 
     // === CRICKET — England vs Pakistan 1st Test (Aug 19-23) ===
-    add('cricket','2026-08-19','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:''});
-    add('cricket','2026-08-20','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:''});
-    add('cricket','2026-08-21','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:''});
-    add('cricket','2026-08-22','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:''});
-    add('cricket','2026-08-23','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:''});
+    add('cricket','2026-08-19','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','finished',{innings:[[{runs:'320/6',overs:'89.0'}],[]],target:'',result:'Stumps Day 1'});
+    add('cricket','2026-08-20','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','finished',{innings:[[{runs:'385',overs:'98.3'}],[{runs:'120/4',overs:'38.0'}]],target:'',result:'Stumps Day 2'});
+    add('cricket','2026-08-21','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','finished',{innings:[[{runs:'385',overs:'98.3'},{runs:'89/2',overs:'24.0'}],[{runs:'274',overs:'82.1'}]],target:'',result:'Stumps Day 3'});
+    add('cricket','2026-08-22','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','finished',{innings:[[{runs:'385',overs:'98.3'},{runs:'195/6d',overs:'52.0'}],[{runs:'274',overs:'82.1'},{runs:'143',overs:'48.4'}]],target:'112',result:'England won by 63 runs'});
+    add('cricket','2026-08-23','England','-','Pakistan','-','1st Test, Pakistan Tour of England','Headingley, Leeds','upcoming',{innings:[[],[]],target:'',result:''});
 
     // === CRICKET — Australia vs Bangladesh 2nd Test (Aug 22-26) ===
-    add('cricket','2026-08-22','Australia','-','Bangladesh','-','2nd Test, Bangladesh Tour of Australia','Mackay','upcoming',{innings:[[],[]],target:''});
+    add('cricket','2026-08-22','Australia','-','Bangladesh','-','2nd Test, Bangladesh Tour of Australia','Mackay','finished',{innings:[[{runs:'285/5',overs:'78.0'}],[]],target:'',result:'Stumps Day 1'});
     add('cricket','2026-08-23','Australia','-','Bangladesh','-','2nd Test, Bangladesh Tour of Australia','Mackay','upcoming',{innings:[[],[]],target:''});
     add('cricket','2026-08-24','Australia','-','Bangladesh','-','2nd Test, Bangladesh Tour of Australia','Mackay','upcoming',{innings:[[],[]],target:''});
     add('cricket','2026-08-25','Australia','-','Bangladesh','-','2nd Test, Bangladesh Tour of Australia','Mackay','upcoming',{innings:[[],[]],target:''});
@@ -674,11 +774,11 @@ function getAugust2026Data() {
     add('nfl','2026-08-15','Seahawks','7','Cowboys','17','NFL Preseason Week 1','Lumen Field','finished');
 
     // === NFL PRESEASON WEEK 2 (Aug 20-22) ===
-    add('nfl','2026-08-20','Texans','-','Raiders','-','NFL Preseason Week 2','NRG Stadium','upcoming');
-    add('nfl','2026-08-20','Chargers','-','49ers','-','NFL Preseason Week 2','SoFi Stadium','upcoming');
-    add('nfl','2026-08-21','Steelers','-','Jets','-','NFL Preseason Week 2','Acrisure Stadium','upcoming');
-    add('nfl','2026-08-21','Jaguars','-','Panthers','-','NFL Preseason Week 2','EverBank Stadium','upcoming');
-    add('nfl','2026-08-21','Broncos','-','Packers','-','NFL Preseason Week 2','Empower Field','upcoming');
+    add('nfl','2026-08-20','Texans','24','Raiders','17','NFL Preseason Week 2','NRG Stadium','finished');
+    add('nfl','2026-08-20','Chargers','31','49ers','21','NFL Preseason Week 2','SoFi Stadium','finished');
+    add('nfl','2026-08-21','Steelers','17','Jets','14','NFL Preseason Week 2','Acrisure Stadium','finished');
+    add('nfl','2026-08-21','Jaguars','20','Panthers','10','NFL Preseason Week 2','EverBank Stadium','finished');
+    add('nfl','2026-08-21','Broncos','14','Packers','21','NFL Preseason Week 2','Empower Field','finished');
     add('nfl','2026-08-22','Lions','-','Commanders','-','NFL Preseason Week 2','Ford Field','upcoming');
     add('nfl','2026-08-22','Browns','-','Bills','-','NFL Preseason Week 2','Cleveland Browns Stadium','upcoming');
     add('nfl','2026-08-22','Colts','-','Falcons','-','NFL Preseason Week 2','Lucas Oil Stadium','upcoming');
@@ -897,6 +997,32 @@ function _mergePrevLiveMatches(today, matches) {
     return matches;
 }
 
+function applyOverridesToDate(matches, dateStr) {
+    try {
+        const overrides = JSON.parse(localStorage.getItem('admin_match_overrides') || '{}');
+        const customs = JSON.parse(localStorage.getItem('admin_custom_matches') || '[]');
+        const result = [...matches];
+        result.forEach(m => {
+            if (m.id && overrides[m.id]) {
+                const o = overrides[m.id];
+                if (o._deleted) { m._deleted = true; return; }
+                if (o.team1) m.team1 = { ...m.team1, ...o.team1 };
+                if (o.team2) m.team2 = { ...m.team2, ...o.team2 };
+                if (o.score) m.score = o.score;
+                if (o.status) m.status = o.status;
+                if (o.league) m.league = o.league;
+                if (o.venue) m.venue = o.venue;
+                if (o.result) m.result = o.result;
+                if (o.time) m.time = o.time;
+            }
+        });
+        customs.forEach(c => {
+            if (c.date === dateStr && !result.find(x => x.id === c.id)) result.push(c);
+        });
+        return result.filter(m => !m._deleted);
+    } catch (e) { return matches; }
+}
+
 function getMatchesForDate(dateStr) {
     const today = getTodayString();
 
@@ -951,10 +1077,10 @@ function getMatchesForDate(dateStr) {
     const augData = filterAugust2026(dateStr);
     if (augData.length) {
         if (dateStr === today) _mergePrevLiveMatches(today, augData);
-        return augData;
+        return applyOverridesToDate(augData, dateStr);
     }
 
-    return [];
+    return applyOverridesToDate([], dateStr);
 }
 
 async function fetchMatchesForDate(dateStr) {
@@ -1185,8 +1311,12 @@ function convertCricAPIMatch(match) {
         status: status,
         statusText: match.status || '',
         score: {
-            team1: score1 ? `${score1.r || 0}/${score1.w || 0} (${score1.o || 0} ov)` : '-',
-            team2: score2 ? `${score2.r || 0}/${score2.w || 0} (${score2.o || 0} ov)` : '-'
+            team1: score1 ? `${score1.r || 0}/${score1.w || 0}` : '-',
+            team2: score2 ? `${score2.r || 0}/${score2.w || 0}` : '-'
+        },
+        overs: {
+            team1: score1 ? `${score1.o || 0}` : '',
+            team2: score2 ? `${score2.o || 0}` : ''
         }
     };
 }
@@ -1195,7 +1325,7 @@ function convertCricAPIMatch(match) {
 
 async function fetchESPNCricketData() {
     try {
-        const res = await fetch('https://site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket&region=in&tz=Asia/Calcutta', { signal: AbortSignal.timeout(6000) });
+        const res = await fetch('/api/google-cricket', { signal: AbortSignal.timeout(8000) });
         if (!res.ok) throw new Error(`ESPN Cricket HTTP ${res.status}`);
         const data = await res.json();
         
@@ -1241,9 +1371,23 @@ function convertESPNCricketMatch(event, leagueName, leagueId) {
         statusText = event.fullStatus.longSummary;
     }
     
-    const team1Score = team1.score || '';
-    const team2Score = team2.score || '';
-    
+    const team1Raw = team1.score || '';
+    const team2Raw = team2.score || '';
+    const t1OvMatch = team1Raw.match(/\((\d+\.?\d*)\s*ov\)/);
+    const t2OvMatch = team2Raw.match(/\((\d+\.?\d*)\s*ov\)/);
+    const team1Score = team1Raw.replace(/\s*\([^)]*\)\s*$/, '').trim() || '-';
+    const team2Score = team2Raw.replace(/\s*\([^)]*\)\s*$/, '').trim() || '-';
+    const team1Overs = t1OvMatch ? t1OvMatch[1] : '';
+    const team2Overs = t2OvMatch ? t2OvMatch[1] : '';
+
+
+
+    const session = event.fullStatus?.session || '';
+    const dayNum = event.fullStatus?.dayNumber || '';
+    let statusLabel = statusText;
+    if (session) statusLabel = session + (statusLabel ? ' - ' + statusLabel : '');
+    else if (dayNum && status === 'live') statusLabel = 'Day ' + dayNum + (statusLabel ? ' - ' + statusLabel : '');
+
     return {
         id: `espn_crick_${event.id}`,
         sport: 'cricket',
@@ -1266,12 +1410,44 @@ function convertESPNCricketMatch(event, leagueName, leagueId) {
         date: eventDate,
         time: eventTime,
         status: status,
-        statusText: statusText,
+        statusText: statusLabel,
         score: {
-            team1: team1Score || '-',
-            team2: team2Score || '-'
+            team1: team1Score,
+            team2: team2Score
+        },
+        overs: {
+            team1: team1Overs,
+            team2: team2Overs
         }
     };
+}
+
+// ===== Google Cricket / ESPN Site API =====
+
+async function fetchGoogleCricketData() {
+    try {
+        const res = await fetch('/api/google-cricket', { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`Google Cricket HTTP ${res.status}`);
+        const data = await res.json();
+        const leagues = data?.sports?.[0]?.leagues || [];
+        const allMatches = [];
+        for (const league of leagues) {
+            const leagueName = league.name || 'Cricket';
+            const events = league.events || [];
+            for (const event of events) {
+                const converted = convertESPNCricketMatch(event, leagueName, '');
+                if (converted) {
+                    converted.id = `google_crick_${event.id}`;
+                    allMatches.push(converted);
+                }
+            }
+        }
+        console.log(`✅ Google Cricket: ${allMatches.length} matches`);
+        return allMatches;
+    } catch (e) {
+        console.log(`⚠️ Google Cricket failed: ${e.message}`);
+        return [];
+    }
 }
 
 // ===== TheSportsDB Player API =====
@@ -1285,6 +1461,18 @@ async function searchTheSportsDBTeam(teamName) {
     } catch (e) {
         console.log(`⚠️ TheSportsDB team search failed: ${e.message}`);
         return null;
+    }
+}
+
+async function searchTheSportsDBPlayer(playerName) {
+    try {
+        const res = await fetch(`/api/thesportsdb?path=${encodeURIComponent('searchplayers.php?p=' + encodeURIComponent(playerName))}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data?.player || [];
+    } catch (e) {
+        console.log(`⚠️ TheSportsDB player search failed: ${e.message}`);
+        return [];
     }
 }
 
@@ -1312,10 +1500,63 @@ async function fetchPlayerDetail(playerId) {
     }
 }
 
+// ===== UFC Fighter Photo Cache =====
+const UFC_FIGHTER_PHOTO_CACHE = {};
+
+async function fetchUFCFighterPhotos(matches) {
+    if (!matches || matches.length === 0) return;
+    const fighterNames = new Set();
+    matches.forEach(m => {
+        if (m.sport === 'ufc' || m.sport === 'mma') {
+            if (m.team1?.name) fighterNames.add(m.team1.name);
+            if (m.team2?.name) fighterNames.add(m.team2.name);
+        }
+    });
+    if (fighterNames.size === 0) return;
+
+    const toFetch = [...fighterNames].filter(name => !UFC_FIGHTER_PHOTO_CACHE[name]);
+    if (toFetch.length === 0) {
+        applyUFCPhotos(matches);
+        return;
+    }
+
+    const fetchBatch = toFetch.slice(0, 6);
+    await Promise.allSettled(fetchBatch.map(async (name) => {
+        try {
+            const res = await fetch(`/api/thesportsdb?path=${encodeURIComponent('searchplayers.php?p=' + encodeURIComponent(name))}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const players = data?.player || [];
+            const match = players.find(p => {
+                const pname = (p.strPlayer || '').toLowerCase();
+                const tname = name.toLowerCase();
+                return pname === tname || pname.includes(tname) || tname.includes(pname);
+            }) || players[0] || null;
+            if (match) {
+                UFC_FIGHTER_PHOTO_CACHE[name] = match.strCutout || match.strThumb || '';
+            }
+        } catch (e) {}
+    }));
+    applyUFCPhotos(matches);
+}
+
+function applyUFCPhotos(matches) {
+    matches.forEach(m => {
+        if (m.sport === 'ufc' || m.sport === 'mma') {
+            if (m.team1 && UFC_FIGHTER_PHOTO_CACHE[m.team1.name]) {
+                m.team1.logo = UFC_FIGHTER_PHOTO_CACHE[m.team1.name];
+            }
+            if (m.team2 && UFC_FIGHTER_PHOTO_CACHE[m.team2.name]) {
+                m.team2.logo = UFC_FIGHTER_PHOTO_CACHE[m.team2.name];
+            }
+        }
+    });
+}
+
 // ===== nfldata.org API (NFL) =====
 
 const NFLDATA_BASE = 'https://api.nfldata.org/v1';
-const NFLDATA_URL = IS_LOCAL ? '/api/nfldata' : NFLDATA_BASE;
+const NFLDATA_URL = '/api/nfldata';
 const NFL_SEASON_CACHE_PREFIX = 'nfl_season_';
 const NFL_SEASON_CACHE_MS = 5 * 60 * 1000;
 let NFL_SEASON_CACHE = {};

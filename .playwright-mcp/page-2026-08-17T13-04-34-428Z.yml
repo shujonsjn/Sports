@@ -1,0 +1,260 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - heading "LiveScores" [level=1] [ref=f5e9] [cursor=pointer]
+      - textbox "Search teams, leagues..." [ref=f5e11]
+      - generic [ref=f5e12]:
+        - generic "Calendar" [ref=f5e13] [cursor=pointer]
+        - button "Change Theme" [ref=f5e17] [cursor=pointer]
+        - generic [ref=f5e25]: LIVE
+        - generic "Profile" [ref=f5e28] [cursor=pointer]
+  - navigation [ref=f5e32]:
+    - generic [ref=f5e33]:
+      - button "⚽ Football" [ref=f5e34] [cursor=pointer]:
+        - generic [ref=f5e35]: ⚽
+        - generic [ref=f5e36]: Football
+      - button "🏏 Cricket" [ref=f5e37] [cursor=pointer]:
+        - generic [ref=f5e38]: 🏏
+        - generic [ref=f5e39]: Cricket
+      - button "🏀 Basketball" [ref=f5e40] [cursor=pointer]:
+        - generic [ref=f5e41]: 🏀
+        - generic [ref=f5e42]: Basketball
+      - button "🎾 Tennis" [ref=f5e43] [cursor=pointer]:
+        - generic [ref=f5e44]: 🎾
+        - generic [ref=f5e45]: Tennis
+      - button "🥊 MMA" [ref=f5e46] [cursor=pointer]:
+        - generic [ref=f5e47]: 🥊
+        - generic [ref=f5e48]: MMA
+      - button "🥋 UFC" [ref=f5e49] [cursor=pointer]:
+        - generic [ref=f5e50]: 🥋
+        - generic [ref=f5e51]: UFC
+      - button "🏈 NFL" [ref=f5e52] [cursor=pointer]:
+        - generic [ref=f5e53]: 🏈
+        - generic [ref=f5e54]: NFL
+  - main [ref=f5e55]:
+    - complementary [ref=f5e56]:
+      - generic [ref=f5e57]:
+        - generic [ref=f5e58]:
+          - generic [ref=f5e59]: 📅
+          - heading "Select Date" [level=3] [ref=f5e60]
+        - generic [ref=f5e61]:
+          - generic [ref=f5e62]:
+            - button "" [ref=f5e64] [cursor=pointer]
+            - heading "Aug 2026" [level=2] [ref=f5e67]
+            - button "" [ref=f5e69] [cursor=pointer]
+          - generic "Aug 2026" [ref=f5e71]:
+            - grid [ref=f5e73]:
+              - rowgroup [ref=f5e74]:
+                - row [ref=f5e78]:
+                  - columnheader "Sunday" [ref=f5e79]:
+                    - generic "Sunday" [ref=f5e81]: Sun
+                  - columnheader "Monday" [ref=f5e82]:
+                    - generic "Monday" [ref=f5e84]: Mon
+                  - columnheader "Tuesday" [ref=f5e85]:
+                    - generic "Tuesday" [ref=f5e87]: Tue
+                  - columnheader "Wednesday" [ref=f5e88]:
+                    - generic "Wednesday" [ref=f5e90]: Wed
+                  - columnheader "Thursday" [ref=f5e91]:
+                    - generic "Thursday" [ref=f5e93]: Thu
+                  - columnheader "Friday" [ref=f5e94]:
+                    - generic "Friday" [ref=f5e96]: Fri
+                  - columnheader "Saturday" [ref=f5e97]:
+                    - generic "Saturday" [ref=f5e99]: Sat
+              - rowgroup [ref=f5e100]:
+                - generic [ref=f5e103]:
+                  - row [ref=f5e105]:
+                    - gridcell "July 26, 2026" [ref=f5e106]:
+                      - generic "July 26, 2026" [ref=f5e109]: "26"
+                    - gridcell "July 27, 2026" [ref=f5e110]:
+                      - generic "July 27, 2026" [ref=f5e113]: "27"
+                    - gridcell "July 28, 2026" [ref=f5e114]:
+                      - generic "July 28, 2026" [ref=f5e117]: "28"
+                    - gridcell "July 29, 2026" [ref=f5e118]:
+                      - generic "July 29, 2026" [ref=f5e121]: "29"
+                    - gridcell "July 30, 2026" [ref=f5e122]:
+                      - generic "July 30, 2026" [ref=f5e125]: "30"
+                    - gridcell "July 31, 2026" [ref=f5e126]:
+                      - generic "July 31, 2026" [ref=f5e129]: "31"
+                    - gridcell "August 1, 2026" [ref=f5e130]:
+                      - generic "August 1, 2026" [ref=f5e133]: "1"
+                  - row [ref=f5e134]:
+                    - gridcell "August 2, 2026" [ref=f5e135]:
+                      - generic "August 2, 2026" [ref=f5e138]: "2"
+                    - gridcell "August 3, 2026" [ref=f5e139]:
+                      - generic "August 3, 2026" [ref=f5e142]: "3"
+                    - gridcell "August 4, 2026" [ref=f5e143]:
+                      - generic "August 4, 2026" [ref=f5e146]: "4"
+                    - gridcell "August 5, 2026" [ref=f5e147]:
+                      - generic "August 5, 2026" [ref=f5e150]: "5"
+                    - gridcell "August 6, 2026" [ref=f5e151]:
+                      - generic "August 6, 2026" [ref=f5e154]: "6"
+                    - gridcell "August 7, 2026" [ref=f5e155]:
+                      - generic "August 7, 2026" [ref=f5e158]: "7"
+                    - gridcell "August 8, 2026" [ref=f5e159]:
+                      - generic "August 8, 2026" [ref=f5e162]: "8"
+                  - row [ref=f5e163]:
+                    - gridcell "August 9, 2026" [ref=f5e164]:
+                      - generic "August 9, 2026" [ref=f5e167]: "9"
+                    - gridcell "August 10, 2026" [ref=f5e168]:
+                      - generic "August 10, 2026" [ref=f5e171]: "10"
+                    - gridcell "August 11, 2026" [ref=f5e172]:
+                      - generic "August 11, 2026" [ref=f5e175]: "11"
+                    - gridcell "August 12, 2026" [ref=f5e176]:
+                      - generic "August 12, 2026" [ref=f5e179]: "12"
+                    - gridcell "August 13, 2026" [ref=f5e180]:
+                      - generic "August 13, 2026" [ref=f5e183]: "13"
+                    - gridcell "August 14, 2026" [ref=f5e184]:
+                      - generic "August 14, 2026" [ref=f5e187]: "14"
+                    - gridcell "August 15, 2026" [ref=f5e188]:
+                      - generic "August 15, 2026" [ref=f5e191]: "15"
+                  - row [ref=f5e192]:
+                    - gridcell "August 16, 2026" [ref=f5e193]:
+                      - generic "August 16, 2026" [ref=f5e196]: "16"
+                    - gridcell "August 17, 2026" [ref=f5e197]:
+                      - generic "August 17, 2026" [ref=f5e200]: "17"
+                    - gridcell "August 18, 2026" [ref=f5e201]:
+                      - generic "August 18, 2026" [ref=f5e204]: "18"
+                    - gridcell "August 19, 2026" [ref=f5e205]:
+                      - generic "August 19, 2026" [ref=f5e208]: "19"
+                    - gridcell "August 20, 2026" [ref=f5e209]:
+                      - generic "August 20, 2026" [ref=f5e212]: "20"
+                    - gridcell "August 21, 2026" [ref=f5e213]:
+                      - generic "August 21, 2026" [ref=f5e216]: "21"
+                    - gridcell "August 22, 2026" [ref=f5e217]:
+                      - generic "August 22, 2026" [ref=f5e220]: "22"
+                  - row [ref=f5e221]:
+                    - gridcell "August 23, 2026" [ref=f5e222]:
+                      - generic "August 23, 2026" [ref=f5e225]: "23"
+                    - gridcell "August 24, 2026" [ref=f5e226]:
+                      - generic "August 24, 2026" [ref=f5e229]: "24"
+                    - gridcell "August 25, 2026" [ref=f5e230]:
+                      - generic "August 25, 2026" [ref=f5e233]: "25"
+                    - gridcell "August 26, 2026" [ref=f5e234]:
+                      - generic "August 26, 2026" [ref=f5e237]: "26"
+                    - gridcell "August 27, 2026" [ref=f5e238]:
+                      - generic "August 27, 2026" [ref=f5e241]: "27"
+                    - gridcell "August 28, 2026" [ref=f5e242]:
+                      - generic "August 28, 2026" [ref=f5e245]: "28"
+                    - gridcell "August 29, 2026" [ref=f5e246]:
+                      - generic "August 29, 2026" [ref=f5e249]: "29"
+                  - row [ref=f5e250]:
+                    - gridcell "August 30, 2026" [ref=f5e251]:
+                      - generic "August 30, 2026" [ref=f5e254]: "30"
+                    - gridcell "August 31, 2026" [ref=f5e255]:
+                      - generic "August 31, 2026" [ref=f5e258]: "31"
+                    - gridcell "September 1, 2026" [ref=f5e259]:
+                      - generic "September 1, 2026" [ref=f5e262]: "1"
+                    - gridcell "September 2, 2026" [ref=f5e263]:
+                      - generic "September 2, 2026" [ref=f5e266]: "2"
+                    - gridcell "September 3, 2026" [ref=f5e267]:
+                      - generic "September 3, 2026" [ref=f5e270]: "3"
+                    - gridcell "September 4, 2026" [ref=f5e271]:
+                      - generic "September 4, 2026" [ref=f5e274]: "4"
+                    - gridcell "September 5, 2026" [ref=f5e275]:
+                      - generic "September 5, 2026" [ref=f5e278]: "5"
+      - generic [ref=f5e279]:
+        - generic [ref=f5e280]:
+          - generic [ref=f5e281]: 🏆
+          - heading "Leagues" [level=3] [ref=f5e282]
+        - generic [ref=f5e283]:
+          - generic [ref=f5e284] [cursor=pointer]:
+            - generic [ref=f5e285]: 🏟️
+            - generic [ref=f5e286]: 1st Test, Bangladesh Tour of Australia
+            - generic [ref=f5e287]: "1"
+          - generic [ref=f5e288] [cursor=pointer]:
+            - generic [ref=f5e289]: 🏟️
+            - generic [ref=f5e290]: 1st Test, India Tour of Sri Lanka
+            - generic [ref=f5e291]: "1"
+          - generic [ref=f5e292] [cursor=pointer]:
+            - generic [ref=f5e293]: 🏟️
+            - generic [ref=f5e294]: 5th ODI, Afghanistan Tour of Ireland
+            - generic [ref=f5e295]: "1"
+    - generic [ref=f5e297]:
+      - generic [ref=f5e298]:
+        - generic [ref=f5e299]: 🏏
+        - heading "Cricket Schedule" [level=3] [ref=f5e300]
+        - generic [ref=f5e301]: Saturday, August 15, 2026
+      - generic [ref=f5e302]:
+        - generic [ref=f5e303]:
+          - generic [ref=f5e304]:
+            - generic [ref=f5e305]: 🏟️
+            - generic [ref=f5e306]: 1st Test, Bangladesh Tour of Australia
+            - generic [ref=f5e307]: 1 match
+          - generic [ref=f5e310] [cursor=pointer]:
+            - generic [ref=f5e312]:
+              - generic [ref=f5e313]:
+                - generic [ref=f5e314]: A
+                - generic [ref=f5e315]: Australia
+              - generic [ref=f5e316]: VS
+              - generic [ref=f5e317]:
+                - generic [ref=f5e318]: B
+                - generic [ref=f5e319]: Bangladesh
+            - generic [ref=f5e320]:
+              - generic [ref=f5e321]: 198 & 161/4 - 426
+              - generic [ref=f5e322]: FINAL
+        - generic [ref=f5e323]:
+          - generic [ref=f5e324]:
+            - generic [ref=f5e325]: 🏟️
+            - generic [ref=f5e326]: 1st Test, India Tour of Sri Lanka
+            - generic [ref=f5e327]: 1 match
+          - generic [ref=f5e330] [cursor=pointer]:
+            - generic [ref=f5e332]:
+              - generic [ref=f5e333]:
+                - generic [ref=f5e334]: I
+                - generic [ref=f5e335]: India
+              - generic [ref=f5e336]: VS
+              - generic [ref=f5e337]:
+                - generic [ref=f5e338]: "-"
+                - generic [ref=f5e339]: "-"
+            - generic [ref=f5e340]:
+              - generic [ref=f5e341]: 288/2 - -
+              - generic [ref=f5e342]: FINAL
+        - generic [ref=f5e343]:
+          - generic [ref=f5e344]:
+            - generic [ref=f5e345]: 🏟️
+            - generic [ref=f5e346]: 5th ODI, Afghanistan Tour of Ireland
+            - generic [ref=f5e347]: 1 match
+          - generic [ref=f5e350] [cursor=pointer]:
+            - generic [ref=f5e352]:
+              - generic [ref=f5e353]:
+                - generic [ref=f5e354]: I
+                - generic [ref=f5e355]: Ireland
+              - generic [ref=f5e356]: VS
+              - generic [ref=f5e357]:
+                - generic [ref=f5e358]: A
+                - generic [ref=f5e359]: Afghanistan
+            - generic [ref=f5e360]:
+              - generic [ref=f5e361]: 298/7 - 220/2
+              - generic [ref=f5e362]: FINAL
+    - complementary [ref=f5e363]:
+      - generic [ref=f5e364]:
+        - generic [ref=f5e365]: Sponsored
+        - generic [ref=f5e366]:
+          - generic [ref=f5e367]: AD
+          - generic [ref=f5e368]:
+            - generic [ref=f5e369]: ⚽
+            - heading "Live Sports Premium" [level=4] [ref=f5e370]
+            - paragraph [ref=f5e371]: Watch all matches live in HD. No ads, no buffering.
+            - button "Try Free →" [ref=f5e372] [cursor=pointer]
+        - generic [ref=f5e373]:
+          - generic [ref=f5e374]: AD
+          - generic [ref=f5e375]:
+            - generic [ref=f5e376]: 🎰
+            - heading "SportsBet Pro" [level=4] [ref=f5e377]
+            - paragraph [ref=f5e378]: Predict match outcomes & win real prizes daily.
+            - button "Play Now →" [ref=f5e379] [cursor=pointer]
+  - contentinfo [ref=f5e380]:
+    - generic [ref=f5e381]:
+      - generic [ref=f5e382]: Live Streaming
+      - generic [ref=f5e384]:
+        - generic [ref=f5e385] [cursor=pointer]: ⚽ Football
+        - generic [ref=f5e386] [cursor=pointer]: 🏏 Cricket
+        - generic [ref=f5e387] [cursor=pointer]: 🏀 Basketball
+        - generic [ref=f5e388] [cursor=pointer]: 🎾 Tennis
+        - generic [ref=f5e389] [cursor=pointer]: 🥊 MMA
+        - generic [ref=f5e390] [cursor=pointer]: 🥋 UFC
+        - generic [ref=f5e391] [cursor=pointer]: 🏈 NFL
+      - generic [ref=f5e392]:
+        - generic [ref=f5e393]: Powered by SportSRC
+        - generic [ref=f5e394]: •
+        - generic [ref=f5e395]: Real-time Data

@@ -1,0 +1,86 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: LS
+      - generic [ref=e6]: Live Streaming
+    - navigation [ref=e7]:
+      - generic [ref=e8]: Overview
+      - generic [ref=e9] [cursor=pointer]: Dashboard
+      - generic [ref=e16]: Management
+      - generic [ref=e17] [cursor=pointer]: API Status
+      - generic [ref=e21] [cursor=pointer]: Matches
+      - generic [ref=e26]: System
+      - generic [ref=e27] [cursor=pointer]: Settings
+    - link [ref=e33] [cursor=pointer]:
+      - /url: /
+  - generic [ref=e39]:
+    - banner [ref=e40]:
+      - heading "Settings" [level=2] [ref=e174]
+      - generic [ref=e42]:
+        - generic [ref=e43]: Admin
+        - generic [ref=e44]: 4:48:41 PM
+        - button "Logout" [ref=e45] [cursor=pointer]
+    - text: › › › › › › › › ›
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - heading "API Keys" [level=3] [ref=e180]
+          - generic [ref=e182]:
+            - generic [ref=e183]: Cricket API Key
+            - generic [ref=e184]:
+              - textbox "Free key from cricketdata.org" [ref=e185]
+              - button "Save" [ref=e186] [cursor=pointer]
+            - generic [ref=e187]:
+              - text: Get free key at
+              - link "cricketdata.org" [ref=e188] [cursor=pointer]:
+                - /url: https://cricketdata.org
+        - generic [ref=e189]:
+          - heading "Auto Refresh" [level=3] [ref=e191]
+          - generic [ref=e192]:
+            - generic [ref=e193]:
+              - generic [ref=e194]: Refresh Interval (minutes)
+              - generic [ref=e195]:
+                - spinbutton [ref=e196]: "5"
+                - button "Save" [ref=e197] [cursor=pointer]
+            - generic [ref=e198]:
+              - generic [ref=e199]: Current Date
+              - textbox [ref=e200]: 2026-08-17
+        - generic [ref=e201]:
+          - heading "Storage" [level=3] [ref=e203]
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - generic [ref=e206]: Local Storage Used
+              - generic [ref=e208]: 0.1 KB used (1 keys)
+            - button "Clear All Data" [ref=e210] [cursor=pointer]
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - heading "Data Sources" [level=3] [ref=e217]
+          - generic [ref=e218]:
+            - generic [ref=e219]: Primary API
+            - generic [ref=e220]: SportScore (no key)
+          - generic [ref=e221]:
+            - generic [ref=e222]: Fallback API
+            - generic [ref=e223]: SportSRC (no key)
+          - generic [ref=e224]:
+            - generic [ref=e225]: NFL Data
+            - generic [ref=e226]: nfldata.org (free)
+          - generic [ref=e227]:
+            - generic [ref=e228]: Cricket
+            - generic [ref=e229]: ESPN Cricket (browser)
+          - generic [ref=e230]:
+            - generic [ref=e231]: UFC/MMA
+            - generic [ref=e232]: TheSportsDB (free)
+          - generic [ref=e233]:
+            - generic [ref=e234]: Player Data
+            - generic [ref=e235]: TheSportsDB (proxy)
+        - generic [ref=e236]:
+          - heading "System" [level=3] [ref=e238]
+          - generic [ref=e239]:
+            - generic [ref=e240]: Admin User
+            - generic [ref=e241]: admin
+          - generic [ref=e242]:
+            - generic [ref=e243]: Session
+            - generic [ref=e244]: 24 hours
+          - generic [ref=e245]:
+            - generic [ref=e246]: Server Port
+            - generic [ref=e247]: "8080"

@@ -1,0 +1,35 @@
+[    3628ms] [WARNING] [GraphState]: Instance keyOfEntity is deprecated. Use static method keyOfEntity. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[    3629ms] [WARNING] [GraphState]: Instance entityOfKey is deprecated. Use static method entityOfKey. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[    4122ms] [ERROR] web-vitals:fcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[    8090ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://scores24.live/rapi/matches/basketball/19-08-2026-france-u16-women-germany-u16-women/standings?lang=en&short=true:0
+[    9949ms] [ERROR] web-vitals:ttfb {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   10327ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://scores24.live/en/basketball/m-19-08-2026-france-u16-women-germany-u16-women:0
+[   16452ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://hdrc.yandex.net/:0
+[   36836ms] [ERROR] web-vitals:lcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   36911ms] [ERROR] web-vitals:inp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   77385ms] [WARNING] [GraphState]: Instance keyOfEntity is deprecated. Use static method keyOfEntity. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   77387ms] [WARNING] [GraphState]: Instance entityOfKey is deprecated. Use static method entityOfKey. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   77525ms] [ERROR] web-vitals:fcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   77798ms] [ERROR] web-vitals:ttfb {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   79918ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://scores24.live/rapi/matches/basketball/19-08-2026-france-u16-women-germany-u16-women/standings?lang=en&short=true:0
+[   80014ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://scores24.live/en/basketball/m-19-08-2026-france-u16-women-germany-u16-women:0
+[   82916ms] [LOG] CLVR: v2.71.2 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[   82917ms] [LOG] CLVR: 86866 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[   82918ms] [LOG] CLVR: 2026-08-19 10:09:13 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[   83080ms] [LOG] CLVR: UI Loaded @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[   83087ms] [WARNING] Tracker ID not found @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[   87851ms] [ERROR] web-vitals:lcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[   87854ms] [ERROR] web-vitals:inp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  132697ms] [WARNING] [GraphState]: Instance keyOfEntity is deprecated. Use static method keyOfEntity. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  132698ms] [WARNING] [GraphState]: Instance entityOfKey is deprecated. Use static method entityOfKey. @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  132913ms] [ERROR] web-vitals:ttfb {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  132922ms] [ERROR] web-vitals:fcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  134649ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://scores24.live/rapi/matches/basketball/19-08-2026-france-u16-women-germany-u16-women/standings?lang=en&short=true:0
+[  134780ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://scores24.live/en/basketball/m-19-08-2026-france-u16-women-germany-u16-women:0
+[  135441ms] [LOG] CLVR: v2.71.2 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[  135441ms] [LOG] CLVR: 86866 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[  135441ms] [LOG] CLVR: 2026-08-19 10:09:13 @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[  135884ms] [LOG] CLVR: UI Loaded @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[  135887ms] [WARNING] Tracker ID not found @ https://scripts.cleverwebserver.com/c14279422db98522178f936d17ede17b.js:0
+[  875116ms] [ERROR] web-vitals:cls {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141
+[  875156ms] [ERROR] web-vitals:lcp {component: web-vitals, currentPath: /en/basketball/m-19-08-2026-france-u16-women-germany-u16-women, payload: Object, level: error} @ https://static.scores24.live/upload/scores24/dist/assets/index-ad1f675e.js:141

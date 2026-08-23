@@ -1,0 +1,102 @@
+- generic [ref=e16]:
+  - complementary [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: LS
+      - generic [ref=e20]: Live Streaming
+    - navigation [ref=e21]:
+      - generic [ref=e22]: Overview
+      - generic [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: 📊
+        - text: Dashboard
+      - generic [ref=e25]: Management
+      - generic [ref=e26] [cursor=pointer]:
+        - generic [ref=e27]: 🔌
+        - text: API Status
+      - generic [ref=e28] [cursor=pointer]:
+        - generic [ref=e29]: ⚽
+        - text: Matches
+      - generic [ref=e30]: System
+      - generic [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]: ⚙️
+        - text: Settings
+    - link "🌐 View Site" [ref=e34] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e35]: 🌐
+      - text: View Site
+  - generic [ref=e36]:
+    - banner [ref=e37]:
+      - heading "Dashboard" [level=2] [ref=e38]
+      - generic [ref=e39]:
+        - generic [ref=e40]: Admin
+        - generic [ref=e41]: 4:29:48 PM
+        - button "Logout" [ref=e42] [cursor=pointer]
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: ⚽
+          - generic [ref=e47]:
+            - generic [ref=e48]: "0"
+            - generic [ref=e49]: Total Matches
+        - generic [ref=e53]:
+          - generic [ref=e54]: "0"
+          - generic [ref=e55]: Live Now
+        - generic [ref=e56]:
+          - generic [ref=e57]: 🏆
+          - generic [ref=e58]:
+            - generic [ref=e59]: "0"
+            - generic [ref=e60]: Leagues
+        - generic [ref=e61]:
+          - generic [ref=e62]: 🔌
+          - generic [ref=e63]:
+            - generic [ref=e64]: "5"
+            - generic [ref=e65]: APIs Active
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - heading "Sport Breakdown" [level=3] [ref=e68]
+          - button "🔄 Refresh" [ref=e69] [cursor=pointer]
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: ⚽
+            - generic [ref=e73]:
+              - generic [ref=e74]: Football
+              - generic [ref=e75]: 0 matches
+          - generic [ref=e76]:
+            - generic [ref=e77]: 🏏
+            - generic [ref=e78]:
+              - generic [ref=e79]: Cricket
+              - generic [ref=e80]: 0 matches
+          - generic [ref=e81]:
+            - generic [ref=e82]: 🏀
+            - generic [ref=e83]:
+              - generic [ref=e84]: Basketball
+              - generic [ref=e85]: 0 matches
+          - generic [ref=e86]:
+            - generic [ref=e87]: 🎾
+            - generic [ref=e88]:
+              - generic [ref=e89]: Tennis
+              - generic [ref=e90]: 0 matches
+          - generic [ref=e91]:
+            - generic [ref=e92]: 🥊
+            - generic [ref=e93]:
+              - generic [ref=e94]: MMA
+              - generic [ref=e95]: 0 matches
+          - generic [ref=e96]:
+            - generic [ref=e97]: 🥋
+            - generic [ref=e98]:
+              - generic [ref=e99]: UFC
+              - generic [ref=e100]: 0 matches
+          - generic [ref=e101]:
+            - generic [ref=e102]: 🏈
+            - generic [ref=e103]:
+              - generic [ref=e104]: NFL
+              - generic [ref=e105]: 0 matches
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - heading "System Log" [level=3] [ref=e108]
+          - button "Clear" [ref=e109] [cursor=pointer]
+        - generic [ref=e110]:
+          - generic [ref=e111]: ›[4:29:49 PM] Loaded 0 matches
+          - generic [ref=e112]: "›[4:29:49 PM] Loaded: 0 matches, 0 live, 0 leagues"
+          - generic [ref=e113]: ›[4:29:49 PM] Loading matches...
+          - generic [ref=e114]: ›[4:29:49 PM] Refreshing dashboard...
+          - generic [ref=e115]: ›System initialized

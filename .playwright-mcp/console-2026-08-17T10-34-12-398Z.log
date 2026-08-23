@@ -1,0 +1,11 @@
+[     148ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[     149ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[   17111ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[   17111ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[   39882ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[   43891ms] [ERROR] Access to fetch at 'https://api.nfldata.org/v1/games?season=2026&season_type=2' from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8080/admin.html:0
+[   43893ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://api.nfldata.org/v1/games?season=2026&season_type=2:0
+[   43991ms] [ERROR] Access to fetch at 'https://sportscore.com/api/widget/matches/?sport=football&limit=1' from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8080/admin.html:0
+[   43991ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://sportscore.com/api/widget/matches/?sport=football&limit=1:0
+[  100823ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
+[  100824ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js:389
