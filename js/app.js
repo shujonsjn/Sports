@@ -564,22 +564,21 @@ function renderMatchList(matches, container) {
                         const ov2 = match?.overs?.team2 || '';
                         const hasScore1 = s1 && s1 !== '-';
                         const hasScore2 = s2 && s2 !== '-';
-                        let scoreText = `${escHtml(s1)} - ${escHtml(s2)}`;
-                        const oversHtml = (ov1 || ov2) ? `<div class="mc-overs">${ov1 ? escHtml(ov1)+' ov' : ''}${ov1 && ov2 ? ' | ' : ''}${ov2 ? escHtml(ov2)+' ov' : ''}</div>` : '';
-                        return `<div class="mc-score">${scoreText}${oversHtml}</div>`;
+                        let scoreText;
+                        if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} <span class="mc-vs">VS</span> ${escHtml(s2)}`;
+                        else if (hasScore1) scoreText = escHtml(s1);
+                        else if (hasScore2) scoreText = escHtml(s2);
+                        else scoreText = time || 'TBA';
+                        return `<div class="mc-score-center"><span class="mc-score-val">${scoreText}</span></div>`;
                     })()
-                    : `<div class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</div>`;
+                    : `<div class="mc-score-center"><span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span></div>`;
                 html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
                     <div class="mc-row">
                         <div class="mc-team-left">
                             ${teamLogoHtml(team1)}
                             <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${escHtml(cleanDisplayName(team1.name||'Home Team'))}</span>
                         </div>
-                        <div class="mc-score-center">
-                            <span class="mc-score-val">${escHtml(s1)}</span>
-                            <span class="mc-vs">VS</span>
-                            <span class="mc-score-val">${escHtml(s2)}</span>
-                        </div>
+                        ${scoreOrTime}
                         <div class="mc-team-right-inline">
                             <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${escHtml(cleanDisplayName(team2.name||'Away Team'))}</span>
                             ${teamLogoHtml(team2)}
