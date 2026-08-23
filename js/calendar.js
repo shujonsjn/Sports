@@ -21,6 +21,8 @@ function initCalendar() {
             right: 'next'
         },
         height: 'auto',
+        dayMaxEvents: 3,
+        moreLinkText: function(n) { return '+' + n + ' more'; },
         events: [],
         dateClick: function(info) {
             handleDateClick(info.dateStr);
@@ -106,11 +108,11 @@ async function loadCalendarEvents() {
                     const matches = dayData[cat] || dayData[cat === 'tennis' ? 'tabletennis' : cat] || [];
                     matches.forEach(m => {
                         allEvents.push({
-                            title: `${getSportIcon(cat)} ${m.team1?.name || 'TBA'} vs ${m.team2?.name || 'TBA'}`,
+                            title: `${getSportIcon(cat)}`,
                             date: dateStr,
                             color: cat === 'football' ? '#2563eb' : cat === 'cricket' ? '#16a34a' : cat === 'basketball' ? '#ea580c' : cat === 'mma' ? '#dc2626' : cat === 'ufc' ? '#dc2626' : cat === 'nfl' ? '#0284c7' : '#9333ea',
                             textColor: '#fff',
-                            display: 'list-item'
+                            display: 'dot'
                         });
                     });
                 });
@@ -121,7 +123,6 @@ async function loadCalendarEvents() {
         if (calendar) {
             calendar.removeAllEvents();
             calendar.addEventSource(allEvents);
-            setTimeout(addMatchDots, 200);
         }
     } catch (e) {
         console.log('Calendar events load failed');
