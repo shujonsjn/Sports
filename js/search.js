@@ -45,6 +45,10 @@ function initSearch() {
     });
 }
 
+function escSearch(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function performSearch(query, resultsId) {
     const searchResults = document.getElementById(resultsId || 'search-results');
     if (!searchResults) return;
@@ -54,11 +58,12 @@ function performSearch(query, resultsId) {
         const team1Name = (match.team1?.name || '').toLowerCase();
         const team2Name = (match.team2?.name || '').toLowerCase();
         const league = (match.league || '').toLowerCase();
-        return team1Name.includes(query) || team2Name.includes(query) || league.includes(query);
+        const sport = (match.sport || '').toLowerCase();
+        return team1Name.includes(query) || team2Name.includes(query) || league.includes(query) || sport.includes(query);
     });
 
     if (results.length === 0) {
-        searchResults.innerHTML = '<div class="search-no-results">No results found</div>';
+        searchResults.innerHTML = '<div class="search-no-results">No results found for "' + escSearch(query) + '"</div>';
         searchResults.classList.add('active');
         return;
     }
@@ -66,14 +71,17 @@ function performSearch(query, resultsId) {
     const html = results.slice(0, 8).map(match => {
         const sportIcon = match.icon || '🏟️';
         const status = getMatchStatus(match);
-        const statusText = status === 'live' ? ' • LIVE' : status === 'finished' ? ' • FT' : ` • ${match.time}`;
+        const statusText = status === 'live' ? ' • LIVE' : status === 'finished' ? ' • FT' : ` • ${match.time || 'TBA'}`;
+        const t1 = escSearch(match.team1?.name || 'TBA');
+        const t2 = escSearch(match.team2?.name || 'TBA');
+        const league = escSearch(match.league || '');
 
         return `
-            <div class="search-result-item" onclick="selectMatchFromSearch('${escHtml(String(match.id || ''))}')">
+            <div class="search-result-item" onclick="selectMatchFromSearch('${escSearch(String(match.id || ''))}')">
                 <div class="result-icon">${sportIcon}</div>
                 <div class="result-info">
-                    <div class="result-name">${match.team1.name} vs ${match.team2.name}</div>
-                    <div class="result-meta">${match.league}${statusText}</div>
+                    <div class="result-name">${t1} vs ${t2}</div>
+                    <div class="result-meta">${league}${statusText}</div>
                 </div>
             </div>
         `;
@@ -86,9 +94,13 @@ function performSearch(query, resultsId) {
 function selectMatchFromSearch(matchId) {
     const searchResults = document.getElementById('search-results');
     const searchInput = document.getElementById('search-input');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const mobileSearchResults = document.getElementById('mobile-search-results');
 
     if (searchResults) searchResults.classList.remove('active');
     if (searchInput) searchInput.value = '';
+    if (mobileSearchResults) mobileSearchResults.classList.remove('active');
+    if (mobileSearchInput) mobileSearchInput.value = '';
 
     selectMatch(matchId);
 

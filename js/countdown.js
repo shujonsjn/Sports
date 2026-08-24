@@ -42,30 +42,30 @@ function getMatchDateTime(date, time) {
     return new Date(`${date}T${time}:00`);
 }
 
-// Check provider status first; use time only as a fallback.
+// Provider status takes priority. No arbitrary time rules.
 function getMatchStatus(match) {
     if (!match) return 'upcoming';
     const explicit = String(match.status || '').toLowerCase();
     const text = String(match.statusText || '').toLowerCase();
     if (['finished','final','post','cancelled','canceled'].includes(explicit) || /\b(final|finished|ft|ended|cancelled|canceled)\b/.test(text)) return 'finished';
-    const dt = getMatchDateTime(match.date, match.time);
-    const now = new Date();
-    if (!dt || isNaN(dt.getTime())) return 'upcoming';
-    if (dt > now) return 'upcoming';
-    if (now > new Date(dt.getTime() + 24 * 60 * 60 * 1000)) return 'finished';
-    if (['live','in','in_progress','in-progress','suspended'].includes(explicit) || /\b(live|in progress|halftime|quarter|period)\b/.test(text)) {
+    if (['live','in','in_progress','in-progress','suspended','halftime'].includes(explicit) || /\b(live|in progress|halftime|quarter|period)\b/.test(text)) {
         const hasInnings = match.innings && match.innings.length >= 2 && match.innings.some(arr => arr && arr.length > 0 && arr.some(i => i && i.runs && i.runs !== '-'));
         const s1 = String(match.score?.team1 || '').trim();
         const s2 = String(match.score?.team2 || '').trim();
         const hasScores = (s1 && s1 !== '-' && s2 && s2 !== '-') || hasInnings;
         if (hasScores) return 'live';
     }
+    const dt = getMatchDateTime(match.date, match.time);
+    const now = new Date();
+    if (!dt || isNaN(dt.getTime())) return 'upcoming';
+    if (dt > now) return 'upcoming';
+    if (now > new Date(dt.getTime() + 24 * 60 * 60 * 1000)) return 'finished';
     const hasInnings = match.innings && match.innings.length >= 2 && match.innings.some(arr => arr && arr.length > 0 && arr.some(i => i && i.runs && i.runs !== '-'));
     const s1 = String(match.score?.team1 || '').trim();
     const s2 = String(match.score?.team2 || '').trim();
     const hasScores = (s1 && s1 !== '-' && s2 && s2 !== '-') || hasInnings;
-    if (!hasScores) return 'upcoming';
-    return now > new Date(dt.getTime() + 3 * 60 * 60 * 1000) ? 'finished' : 'live';
+    if (hasScores) return 'finished';
+    return 'upcoming';
 }
 
 // Start countdown for a match

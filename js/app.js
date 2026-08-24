@@ -31,7 +31,7 @@ function applyAdminOverrides(dateStr) {
         });
         customs.forEach(c => {
             if (c.date === dateStr && c.sport) {
-                const cat = c.sport === 'tennis' ? 'tabletennis' : c.sport;
+                const cat = c.sport;
                 if (!data[cat]) data[cat] = [];
                 if (!data[cat].find(x => x.id === c.id)) data[cat].push(c);
             }
@@ -221,12 +221,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     initNavigation();
     initHamburger();
     initSearch();
-    
-    const savedCricketKey = localStorage.getItem('cricket_api_key');
-    if (savedCricketKey) {
-        const el = document.getElementById('cricket-api-key');
-        if (el) el.value = savedCricketKey;
-    }
 
     // Set sport from URL
     switchSport(currentSport, false);
@@ -250,14 +244,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     console.log('🚀 Live Streaming initialized');
 
-    // Start 60-day schedule agent (background, non-blocking)
-    setTimeout(() => prefetchSchedule(), 2000);
-
-    // Re-fetch schedule every hour (no cache, always fresh)
-    setInterval(() => {
-        console.log('📅 Schedule agent: re-fetching...');
-        prefetchSchedule();
-    }, 60 * 60 * 1000);
+    // Start score checker
+    setTimeout(startScoreChecker, 5000);
+    console.log('🚀 Live Streaming initialized');
 });
 
 // Initialize navigation
@@ -395,7 +384,7 @@ async function loadMatchesForDate(dateStr) {
             const hasLive = Object.values(LIVE_MATCHES).some(arr => arr && arr.length > 0);
             if (hasLive) {
                 const existing = DATE_CACHE[dateStr] || {};
-                ['cricket','football','basketball','tabletennis','mma','ufc','nfl'].forEach(sport => {
+                ['cricket','football','basketball','tennis','mma','ufc','nfl'].forEach(sport => {
                     if (LIVE_MATCHES[sport] && LIVE_MATCHES[sport].length > 0) {
                         const apiMatches = LIVE_MATCHES[sport];
                         const existingMatches = existing[sport] || [];
@@ -1103,7 +1092,7 @@ function startLiveAgent() {
             const hasLive = Object.values(result).some(arr => arr && arr.length > 0);
             if (hasLive) {
                 const existing = DATE_CACHE[today] || {};
-                ['cricket','football','basketball','tabletennis','mma','ufc','nfl'].forEach(sport => {
+                ['cricket','football','basketball','tennis','mma','ufc','nfl'].forEach(sport => {
                     if (result[sport] && result[sport].length > 0) {
                         const apiMatches = result[sport];
                         const existingMatches = existing[sport] || [];

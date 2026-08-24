@@ -113,7 +113,7 @@
                         <div class="otp-subtitle">OTP sent to <strong id="otp-target"></strong></div>
                     </div>
                     <div class="otp-show-box">
-                        <span class="otp-label">Your OTP:</span>
+                        <span class="otp-label">Sent to:</span>
                         <span class="otp-code" id="otp-display">------</span>
                     </div>
                     <div class="login-field">
@@ -222,14 +222,6 @@
                             <a href="#" class="profile-menu-item" onclick="event.preventDefault(); switchSport('all'); document.querySelector('[data-sport=\\'all\\']')?.click()">📊 Favorites</a>
                             <a href="#" class="profile-menu-item" onclick="event.preventDefault(); toggleNotifPanel()">🔔 Notifications</a>
                             <a href="/admin.html" class="profile-menu-item">🛠️ Admin Dashboard</a>
-                        </div>
-                        <div class="profile-api-section">
-                            <div class="profile-api-label">🏏 Cricket API Key</div>
-                            <div class="profile-api-input">
-                                <input type="text" id="cricket-api-key" placeholder="Free key from cricketdata.org" value="">
-                                <button onclick="event.stopPropagation(); setCricketApiKey(document.getElementById('cricket-api-key').value); loadMatchesForDate(currentDate); refreshCalendarEvents(); this.textContent='✓ Saved'" class="profile-api-btn">Save</button>
-                            </div>
-                            <a href="https://cricketdata.org" target="_blank" class="profile-api-link">Get free API key →</a>
                         </div>
                     </div>
                 </div>
@@ -441,12 +433,12 @@
     <!-- Scripts -->
     <script>window.SPORT_PAGE = 'football';</script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-    <script src="js/api.js?v=11"></script>
-    <script src="js/calendar.js?v=13"></script>
-    <script src="js/countdown.js?v=5"></script>
-    <script src="js/search.js?v=5"></script>
-    <script src="js/app.js?v=18"></script>
-    <script src="js/favorites.js"></script>
+    <script src="js/api.js?v=12"></script>
+    <script src="js/calendar.js?v=14"></script>
+    <script src="js/countdown.js?v=6"></script>
+    <script src="js/search.js?v=6"></script>
+    <script src="js/app.js?v=19"></script>
+    <script src="js/favorites.js?v=2"></script>
     <script src="js/score-checker.js"></script>
     <script src="js/site-audit.js"></script>
 

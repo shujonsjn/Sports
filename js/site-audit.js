@@ -151,7 +151,7 @@ function auditMatchData(report) {
         report.issues.push(`Data: ${emptyScores} finished match(es) without scores`);
     }
 
-    const knownSports = ['football', 'cricket', 'basketball', 'tabletennis', 'mma', 'ufc', 'nfl'];
+    const knownSports = ['football', 'cricket', 'basketball', 'tennis', 'mma', 'ufc', 'nfl'];
     knownSports.forEach(sport => {
         const sportMatches = allMatches.filter(m => m.sport === sport);
         if (sportMatches.length > 0) {

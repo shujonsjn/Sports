@@ -104,7 +104,7 @@ async function loadCalendarEvents() {
                 if (augMatches.length) {
                     dayData = {};
                     augMatches.forEach(m => {
-                        const cat = m.sport === 'tennis' ? 'tabletennis' : m.sport;
+                        const cat = m.sport;
                         if (!dayData[cat]) dayData[cat] = [];
                         dayData[cat].push(m);
                     });
@@ -114,7 +114,7 @@ async function loadCalendarEvents() {
             if (dayData) {
                 let matchSport = null;
                 for (const cat of categories) {
-                    const matches = dayData[cat] || dayData[cat === 'tennis' ? 'tabletennis' : cat] || [];
+                    const matches = dayData[cat] || [];
                     if (matches.length > 0) { matchSport = cat; break; }
                 }
                 if (matchSport) {
@@ -231,7 +231,7 @@ function addMatchDots() {
             if (augMatches.length) {
                 dayData = {};
                 augMatches.forEach(m => {
-                    const cat = m.sport === 'tennis' ? 'tabletennis' : m.sport;
+                    const cat = m.sport;
                     if (!dayData[cat]) dayData[cat] = [];
                     dayData[cat].push(m);
                 });
@@ -239,7 +239,7 @@ function addMatchDots() {
         }
         if (!dayData) return;
 
-        const key = activeSport === 'tennis' ? 'tabletennis' : activeSport;
+        const key = activeSport;
         const matches = dayData[key] || [];
         if (matches.length === 0) return;
 

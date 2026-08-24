@@ -51,22 +51,43 @@ const Favorites = (() => {
         return { ok: true, needOtp: true, contact: c };
     }
 
-    function generateOtp() {
-        return String(Math.floor(100000 + Math.random() * 900000));
+    async function generateOtp(contact) {
+        try {
+            const res = await fetch('/api/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'generate', contact })
+            });
+            const data = await res.json();
+            if (data.success) {
+                return { ok: true };
+            }
+            return { ok: false, error: data.error || 'Failed to generate OTP' };
+        } catch (e) {
+            return { ok: false, error: 'Connection error' };
+        }
     }
 
-    function verifyOtpAndRegister(contact, password, name, otp) {
+    async function verifyOtpAndRegister(contact, password, name, otp) {
         const c = normalizeContact(contact);
-        const stored = JSON.parse(sessionStorage.getItem('ls_pending_reg') || '{}');
-        if (!stored.otp || !stored.contact || normalizeContact(stored.contact) !== c) {
-            return { ok: false, error: 'OTP expired. Please try again.' };
+        try {
+            const res = await fetch('/api/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'verify', contact: c, otp })
+            });
+            const data = await res.json();
+            if (!data.success) {
+                return { ok: false, error: data.error || 'Invalid OTP' };
+            }
+            const users = JSON.parse(localStorage.getItem('ls_users') || '[]');
+            users.push({ contact, password, name: name || c });
+            localStorage.setItem('ls_users', JSON.stringify(users));
+            sessionStorage.removeItem('ls_pending_reg');
+            return login(contact, password);
+        } catch (e) {
+            return { ok: false, error: 'Connection error' };
         }
-        if (stored.otp !== otp) return { ok: false, error: 'Invalid OTP' };
-        const users = JSON.parse(localStorage.getItem('ls_users') || '[]');
-        users.push({ contact, password, name: name || c });
-        localStorage.setItem('ls_users', JSON.stringify(users));
-        sessionStorage.removeItem('ls_pending_reg');
-        return login(contact, password);
     }
 
     function logout() {
@@ -285,33 +306,54 @@ function handleLogin() {
     }
 }
 
-function handleRegister() {
+async function handleRegister() {
     const c = document.getElementById('reg-contact').value.trim();
     const p = document.getElementById('reg-password').value;
     const cp = document.getElementById('reg-confirm-password').value;
     const n = document.getElementById('reg-name').value.trim();
     const err = document.getElementById('reg-error');
+    const btn = document.querySelector('#register-form button[type="submit"]');
+    
     if (!c || !p || !cp) { err.textContent = 'Please fill all fields'; return; }
     const result = Favorites.register(c, p, cp, n);
-    if (result.ok && result.needOtp) {
-        const otp = Favorites.generateOtp();
-        sessionStorage.setItem('ls_pending_reg', JSON.stringify({ contact: c, password: p, name: n, otp }));
-        document.getElementById('reg-step1').style.display = 'none';
-        document.getElementById('reg-step2').style.display = 'block';
-        document.getElementById('otp-display').textContent = otp;
-        document.getElementById('otp-target').textContent = c;
-        err.textContent = '';
+        if (result.ok && result.needOtp) {
+            btn.disabled = true;
+            btn.textContent = 'Sending OTP...';
+            const otpResult = await Favorites.generateOtp(c);
+            btn.disabled = false;
+            btn.textContent = 'Register';
+            
+            if (otpResult.ok) {
+                sessionStorage.setItem('ls_pending_reg', JSON.stringify({ contact: c, password: p, name: n }));
+                document.getElementById('reg-step1').style.display = 'none';
+                document.getElementById('reg-step2').style.display = 'block';
+                document.getElementById('otp-display').textContent = c;
+                document.getElementById('otp-target').textContent = c;
+                err.textContent = '';
+            } else {
+                err.textContent = otpResult.error;
+            }
     } else if (!result.ok) {
         err.textContent = result.error;
     }
 }
 
-function handleVerifyOtp() {
+async function handleVerifyOtp() {
     const otp = document.getElementById('otp-input').value.trim();
     const err = document.getElementById('otp-error');
+    const btn = document.querySelector('#reg-step2 button[type="button"]');
+    
     if (!otp || otp.length !== 6) { err.textContent = 'Enter 6-digit OTP'; return; }
+    
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+    
     const pending = JSON.parse(sessionStorage.getItem('ls_pending_reg') || '{}');
-    const result = Favorites.verifyOtpAndRegister(pending.contact, pending.password, pending.name, otp);
+    const result = await Favorites.verifyOtpAndRegister(pending.contact, pending.password, pending.name, otp);
+    
+    btn.disabled = false;
+    btn.textContent = 'Verify & Register';
+    
     if (result.ok) {
         hideLoginModal();
         updateAuthUI();
@@ -321,14 +363,17 @@ function handleVerifyOtp() {
     }
 }
 
-function resendOtp() {
+async function resendOtp() {
     const pending = JSON.parse(sessionStorage.getItem('ls_pending_reg') || '{}');
     if (!pending.contact) return;
-    const otp = Favorites.generateOtp();
-    pending.otp = otp;
-    sessionStorage.setItem('ls_pending_reg', JSON.stringify(pending));
-    document.getElementById('otp-display').textContent = otp;
-    document.getElementById('otp-resend-msg').textContent = 'New OTP sent!';
+    
+    const result = await Favorites.generateOtp(pending.contact);
+    if (result.ok) {
+        document.getElementById('otp-display').textContent = pending.contact;
+        document.getElementById('otp-resend-msg').textContent = 'OTP resent!';
+    } else {
+        document.getElementById('otp-resend-msg').textContent = 'Failed to resend OTP';
+    }
     setTimeout(() => { const el = document.getElementById('otp-resend-msg'); if (el) el.textContent = ''; }, 3000);
 }
 

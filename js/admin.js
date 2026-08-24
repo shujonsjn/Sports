@@ -1,34 +1,76 @@
 // ===== Admin Dashboard =====
 
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'admin123';
 const SESSION_KEY = 'admin_session';
+const ADMIN_API = '/api/admin';
 
 function isLoggedIn() {
     const s = localStorage.getItem(SESSION_KEY);
     if (!s) return false;
-    const d = JSON.parse(s);
-    if (Date.now() - d.time > 24 * 60 * 60 * 1000) {
+    try {
+        const d = JSON.parse(s);
+        if (!d.token || Date.now() - d.time > 24 * 60 * 60 * 1000) {
+            localStorage.removeItem(SESSION_KEY);
+            return false;
+        }
+        return true;
+    } catch {
         localStorage.removeItem(SESSION_KEY);
         return false;
     }
-    return true;
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
     const err = document.getElementById('login-error');
-    if (u === ADMIN_USER && p === ADMIN_PASS) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ user: u, time: Date.now() }));
-        showAdminApp();
-    } else {
-        err.textContent = 'Invalid username or password';
+    const btn = document.querySelector('#login-form button[type="submit"]');
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
+    try {
+        const res = await fetch(ADMIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'login', username: u, password: p })
+        });
+        const data = await res.json();
+
+        if (data.success && data.token) {
+            localStorage.setItem(SESSION_KEY, JSON.stringify({ token: data.token, time: Date.now() }));
+            showAdminApp();
+        } else {
+            err.textContent = data.error || 'Invalid username or password';
+            err.style.display = 'block';
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-pass').focus();
+        }
+    } catch (e) {
+        err.textContent = 'Connection error. Please try again.';
         err.style.display = 'block';
-        document.getElementById('login-pass').value = '';
-        document.getElementById('login-pass').focus();
     }
+
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+}
+
+function getAdminToken() {
+    try {
+        const s = localStorage.getItem(SESSION_KEY);
+        if (!s) return null;
+        return JSON.parse(s).token;
+    } catch { return null; }
+}
+
+function adminFetch(url, options = {}) {
+    const token = getAdminToken();
+    if (!token) { logout(); return Promise.reject(new Error('No session')); }
+    const headers = { ...options.headers, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    return fetch(url, { ...options, headers }).then(res => {
+        if (res.status === 401) { logout(); throw new Error('Session expired'); }
+        return res;
+    });
 }
 
 function logout() {
@@ -110,7 +152,7 @@ async function refreshDashboard() {
             ...(data.football || []),
             ...(data.cricket || []),
             ...(data.basketball || []),
-            ...(data.tabletennis || []),
+            ...(data.tennis || []),
             ...(data.mma || []),
             ...(data.ufc || []),
             ...(data.nfl || [])
@@ -159,10 +201,9 @@ const API_ENDPOINTS = [
     { name: 'nfldata.org', url: '/api/nfldata?season=2026&season_type=2', type: 'proxy' },
     { name: 'TheSportsDB', url: 'www.thesportsdb.com/api/v1/json/3/searchteams.php?t=Arsenal', type: 'direct' },
     { name: 'ESPN Cricket', url: 'site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket', type: 'direct' },
-    { name: 'Server: SportScore', url: 'localhost:8080/api?sport=football&limit=1', type: 'proxy' },
-    { name: 'Server: SportSRC', url: 'localhost:8080/api/sportsrc?category=football', type: 'proxy' },
-    { name: 'Server: nfldata.org', url: 'localhost:8080/api/nfldata?season=2026&season_type=2', type: 'proxy' },
-    { name: 'Server: TheSportsDB', url: 'localhost:8080/api/thesportsdb?path=searchteams.php?t=Arsenal', type: 'proxy' }
+    { name: 'Server: SportScore', url: '/api/sportscore?sport=football&limit=1', type: 'proxy' },
+    { name: 'Server: nfldata.org', url: '/api/nfldata?season=2026&season_type=2', type: 'proxy' },
+    { name: 'Server: TheSportsDB', url: '/api/thesportsdb?path=searchteams.php?t=Arsenal', type: 'proxy' }
 ];
 
 function renderAPIList() {
@@ -179,7 +220,7 @@ function renderAPIList() {
             </div>
             <div class="api-right">
                 <div class="api-time">—</div>
-                <button class="api-btn" onclick="checkAPI('${a.name}','${a.url}')">Test</button>
+                <button class="api-btn" onclick="checkAPI('${a.name.replace(/'/g,"\\'")}','${a.url.replace(/'/g,"\\'")}')">Test</button>
             </div>
         </div>
     `).join('');
@@ -198,7 +239,7 @@ async function checkAPI(name, url) {
     time.textContent = 'Testing...';
     const t0 = Date.now();
     try {
-        const proto = url.startsWith('localhost') ? 'http://' : 'https://';
+        const proto = url.startsWith('/') ? '' : (url.startsWith('localhost') ? 'http://' : 'https://');
         const res = await fetch(`${proto}${url}`, { signal: AbortSignal.timeout(8000) });
         const ms = Date.now() - t0;
         if (res.ok) {
@@ -256,12 +297,9 @@ function filterAdminMatches() {
 
 // ===== Settings =====
 function loadSettings() {
-    const k = localStorage.getItem('cricket_api_key') || '';
     const r = localStorage.getItem('refresh_interval') || '5';
-    const ci = document.getElementById('setting-cricket-key');
     const ri = document.getElementById('setting-refresh');
     const di = document.getElementById('setting-date');
-    if (ci) ci.value = k;
     if (ri) ri.value = r;
     if (di) di.value = new Date().toISOString().split('T')[0];
     updateStorageInfo();
@@ -443,7 +481,7 @@ async function loadAdminMatches() {
             ...(result.football || []).map(m => ({...m, sport:'football'})),
             ...(result.cricket || []).map(m => ({...m, sport:'cricket'})),
             ...(result.basketball || []).map(m => ({...m, sport:'basketball'})),
-            ...(result.tabletennis || []).map(m => ({...m, sport:'tennis'})),
+            ...(result.tennis || []).map(m => ({...m, sport:'tennis'})),
             ...(result.mma || []).map(m => ({...m, sport:'mma'})),
             ...(result.ufc || []).map(m => ({...m, sport:'ufc'})),
             ...(result.nfl || []).map(m => ({...m, sport:'nfl'}))

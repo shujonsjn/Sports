@@ -5,6 +5,10 @@
   "scripts": {
     "dev": "powershell -ExecutionPolicy Bypass -File server.ps1",
     "check": "node scripts/schedule-checker.js",
-    "check:fix": "node scripts/schedule-checker.js --fix"
+    "check:fix": "node scripts/schedule-checker.js --fix",
+    "generate-admin-hash": "node -e \"const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync(process.argv[1] || 'change-me', 10))\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
   }
 }

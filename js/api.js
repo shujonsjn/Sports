@@ -32,8 +32,8 @@ try {
     }
 } catch (e) {}
 
-let APIFOOTBALL_KEY = localStorage.getItem('apifootball_key') || '';
-let CRICKET_API_KEY = localStorage.getItem('cricket_api_key') || '';
+let APIFOOTBALL_KEY = '';
+let CRICKET_API_KEY = '';
 const CRICKET_API_BASE = 'https://api.cricapi.com/v1';
 
 // ===== Team Logo Cache =====
@@ -276,8 +276,7 @@ function updateLastUpdated() {
 
 function setApiFootballKey(key) {
     APIFOOTBALL_KEY = key;
-    localStorage.setItem('apifootball_key', key);
-    console.log('🔑 API-Football key saved');
+    console.log('🔑 API-Football key set (session only)');
 }
 
 async function fetchVenueFromAPIFootball(dateStr) {
@@ -384,7 +383,7 @@ const SPORT_MAP = {
     'football': 'football',
     'cricket': 'cricket',
     'basketball': 'basketball',
-    'tabletennis': 'tennis'
+    'tennis': 'tennis'
 };
 
 function getTodayString() {
@@ -448,8 +447,7 @@ function getSportIcon(sport) {
         'football': '⚽',
         'cricket': '🏏',
         'basketball': '🏀',
-        'tennis': '🎾',
-        'tabletennis': '🏓',
+        'tennis': '🏓',
         'mma': '🥊',
         'ufc': '🥋',
         'nfl': '🏈',
@@ -543,7 +541,6 @@ async function fetchAllSports() {
         football: [],
         cricket: [],
         basketball: [],
-        tabletennis: [],
         mma: [],
         ufc: [],
         nfl: []
@@ -568,7 +565,7 @@ async function fetchAllSports() {
         if (result.status === 'fulfilled') {
             const { sport, matches } = result.value;
             if (sport === 'tennis') {
-                results.tabletennis = matches;
+                results.tennis = matches;
             } else if (sport === 'espn_cricket' || sport === 'cricapi_cricket' || sport === 'google_cricket' || sport === 'cricketdata_cricket') {
                 matches.forEach(m => {
                     const existingIdx = results.cricket.findIndex(e => {
@@ -845,7 +842,7 @@ async function autoFetchMatches() {
         return result;
     } catch (e) {
         console.log('⚠️ Auto-fetch failed:', e.message);
-        return { football:[], cricket:[], basketball:[], tabletennis:[], mma:[], ufc:[], nfl:[] };
+        return { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
     }
 }
 
@@ -900,7 +897,7 @@ async function fetchSportSRC(dateStr) {
     }
 
     const categories = ['football', 'cricket', 'basketball', 'tennis'];
-    const results = { football: [], cricket: [], basketball: [], tabletennis: [], mma: [], ufc: [], nfl: [] };
+    const results = { football: [], cricket: [], basketball: [], tennis: [], mma: [], ufc: [], nfl: [] };
 
     for (const cat of categories) {
         try {
@@ -915,7 +912,7 @@ async function fetchSportSRC(dateStr) {
             }).map(m => convertSportSRCMatch(m, cat));
 
             if (cat === 'tennis') {
-                results.tabletennis = dayMatches;
+                results.tennis = dayMatches;
             } else {
                 results[cat] = dayMatches;
             }
@@ -940,62 +937,10 @@ async function fetchSportSRC(dateStr) {
 }
 
 function findPreviousDayLiveMatches(today) {
-    const liveMatches = [];
-    for (let i = 1; i <= 7; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const prevDate = d.toLocaleDateString('en-CA');
-
-        let prevData = null;
-        if (DATE_CACHE[prevDate]) {
-            prevData = DATE_CACHE[prevDate];
-        } else {
-            const cached = getCachedData(prevDate);
-            if (cached) prevData = cached;
-            else prevData = filterAugust2026(prevDate);
-        }
-
-        if (!prevData) continue;
-
-        const allPrev = [
-            ...(prevData.cricket || []),
-            ...(prevData.football || []),
-            ...(prevData.basketball || []),
-            ...(prevData.tabletennis || []),
-            ...(prevData.mma || []),
-            ...(prevData.ufc || []),
-            ...(prevData.nfl || [])
-        ];
-
-        allPrev.forEach(m => {
-            if (m.status === 'live' || getMatchStatus(m) === 'live') {
-                const withTodayDate = { ...m, date: today, originalDate: prevDate };
-                liveMatches.push(withTodayDate);
-            }
-        });
-    }
-    return liveMatches;
+    return [];
 }
 
 function _mergePrevLiveMatches(today, matches) {
-    const todayTeamKeys = new Set();
-    matches.forEach(m => {
-        const k1 = (m.team1?.name || '').toLowerCase().replace(/\s+/g,'');
-        const k2 = (m.team2?.name || '').toLowerCase().replace(/\s+/g,'');
-        todayTeamKeys.add(k1 + '_vs_' + k2);
-    });
-
-    const prevLive = findPreviousDayLiveMatches(today);
-    prevLive.forEach(m => {
-        const k1 = (m.team1?.name || '').toLowerCase().replace(/\s+/g,'');
-        const k2 = (m.team2?.name || '').toLowerCase().replace(/\s+/g,'');
-        const key = k1 + '_vs_' + k2;
-        const keyRev = k2 + '_vs_' + k1;
-        if (!todayTeamKeys.has(key) && !todayTeamKeys.has(keyRev)) {
-            matches.push(m);
-            todayTeamKeys.add(key);
-        }
-    });
     return matches;
 }
 
@@ -1034,7 +979,7 @@ function getMatchesForDate(dateStr) {
             ...(cache.cricket || []),
             ...(cache.football || []),
             ...(cache.basketball || []),
-            ...(cache.tabletennis || []),
+            ...(cache.tennis || []),
             ...(cache.mma || []),
             ...(cache.ufc || []),
             ...(cache.nfl || [])
@@ -1049,7 +994,7 @@ function getMatchesForDate(dateStr) {
             ...(LIVE_MATCHES.cricket || []),
             ...(LIVE_MATCHES.football || []),
             ...(LIVE_MATCHES.basketball || []),
-            ...(LIVE_MATCHES.tabletennis || []),
+            ...(LIVE_MATCHES.tennis || []),
             ...(LIVE_MATCHES.mma || []),
             ...(LIVE_MATCHES.ufc || []),
             ...(LIVE_MATCHES.nfl || [])
@@ -1066,7 +1011,7 @@ function getMatchesForDate(dateStr) {
             ...(cached.cricket || []),
             ...(cached.football || []),
             ...(cached.basketball || []),
-            ...(cached.tabletennis || []),
+            ...(cached.tennis || []),
             ...(cached.mma || []),
             ...(cached.ufc || []),
             ...(cached.nfl || [])
@@ -1087,7 +1032,7 @@ function getMatchesForDate(dateStr) {
 
 async function fetchMatchesForDate(dateStr) {
     try {
-        const results = { football:[], cricket:[], basketball:[], tabletennis:[], mma:[], ufc:[], nfl:[] };
+        const results = { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
 
         const sports = ['football', 'cricket', 'basketball', 'tennis'];
         const promises = sports.map(async (sport) => {
@@ -1105,7 +1050,7 @@ async function fetchMatchesForDate(dateStr) {
             if (result.status === 'fulfilled') {
                 const { sport, matches } = result.value;
                 if (sport === 'tennis') {
-                    results.tabletennis = matches;
+                    results.tennis = matches;
                 } else {
                     results[sport] = matches;
                 }
@@ -1120,7 +1065,7 @@ async function fetchMatchesForDate(dateStr) {
         return results;
     } catch(e) {
         console.log('⚠️ fetchMatchesForDate failed:', e.message);
-        return { football:[], cricket:[], basketball:[], tabletennis:[], mma:[], ufc:[], nfl:[] };
+        return { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
     }
 }
 
@@ -1243,8 +1188,7 @@ function convertTheSportsDBMatch(event, sport) {
 
 function setCricketApiKey(key) {
     CRICKET_API_KEY = key;
-    localStorage.setItem('cricket_api_key', key);
-    console.log('🏏 Cricket API key saved');
+    console.log('🏏 Cricket API key set (session only)');
 }
 
 async function fetchCricAPIMatches() {
