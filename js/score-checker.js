@@ -124,11 +124,52 @@ async function fetchNFLMatchScore(match) {
 
 async function fetchCricketMatchScore(match) {
     try {
-        const day = DATE_CACHE[match.date] || {};
-        const cricket = day.cricket || [];
         const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const t1n = norm(match.team1?.name);
         const t2n = norm(match.team2?.name);
+        
+        // Try cricketdata.org API first
+        try {
+            const res = await fetch('/api/cricketdata', { signal: AbortSignal.timeout(8000) });
+            if (res.ok) {
+                const apiData = await res.json();
+                const found = apiData.find(m => {
+                    const m1 = norm(m.t1n || m.t1);
+                    const m2 = norm(m.t2n || m.t2);
+                    return (m1.includes(t1n) || t1n.includes(m1)) && (m2.includes(t2n) || t2n.includes(m2)) ||
+                           (m1.includes(t2n) || t2n.includes(m1)) && (m2.includes(t1n) || t1n.includes(m2));
+                });
+                if (found) {
+                    const parseScore = (raw) => {
+                        if (!raw) return '-';
+                        const cleaned = raw.replace(/\?/g, '').trim();
+                        return cleaned || '-';
+                    };
+                    const s1 = parseScore(found.t1s);
+                    const s2 = parseScore(found.t2s);
+                    if (s1 !== '-' || s2 !== '-') {
+                        match.score = { team1: s1, team2: s2 };
+                        match.team1.score = s1;
+                        match.team2.score = s2;
+                    }
+                    if (found.ms === 'live') {
+                        match.status = 'live';
+                        match.statusText = found.s || 'Live';
+                    } else if (found.ms === 'result') {
+                        match.status = 'finished';
+                        match.statusText = found.s || 'Finished';
+                    }
+                    if (found.s) match.statusText = found.s;
+                    if (found.t1i) match.team1.logo = found.t1i;
+                    if (found.t2i) match.team2.logo = found.t2i;
+                    return true;
+                }
+            }
+        } catch (e) { console.log('CricketData API error:', e.message); }
+        
+        // Fallback to DATE_CACHE
+        const day = DATE_CACHE[match.date] || {};
+        const cricket = day.cricket || [];
         const existing = cricket.find(m => {
             const e1 = norm(m.team1?.name);
             const e2 = norm(m.team2?.name);

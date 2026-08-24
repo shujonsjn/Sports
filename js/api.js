@@ -461,6 +461,7 @@ function getSportIcon(sport) {
 }
 
 async function fetchSportScore(sport, limit = 20) {
+    if (sport === 'mma' || sport === 'ufc') return [];
     try {
         const isLocal = window.location.hostname === 'localhost';
         const url = isLocal 
@@ -537,7 +538,7 @@ function mergeFallbackIntoResults(results, espnMatches, sport) {
 }
 
 async function fetchAllSports() {
-    const sports = ['football', 'cricket', 'basketball', 'tennis', 'mma', 'ufc'];
+    const sports = ['football', 'cricket', 'basketball', 'tennis'];
     const results = {
         football: [],
         cricket: [],
@@ -555,6 +556,7 @@ async function fetchAllSports() {
     promises.push(
         fetchESPNCricketData().then(matches => ({ sport: 'espn_cricket', matches })),
         fetchCricAPIMatches().then(matches => ({ sport: 'cricapi_cricket', matches })),
+        fetchCricketDataOrg().then(matches => ({ sport: 'cricketdata_cricket', matches })),
         fetchESPNFallback('football').then(matches => ({ sport: 'espn_football', matches })),
         fetchESPNFallback('basketball').then(matches => ({ sport: 'espn_basketball', matches })),
         fetchESPNFallback('nfl').then(matches => ({ sport: 'espn_nfl', matches }))
@@ -567,7 +569,7 @@ async function fetchAllSports() {
             const { sport, matches } = result.value;
             if (sport === 'tennis') {
                 results.tabletennis = matches;
-            } else if (sport === 'espn_cricket' || sport === 'cricapi_cricket' || sport === 'google_cricket') {
+            } else if (sport === 'espn_cricket' || sport === 'cricapi_cricket' || sport === 'google_cricket' || sport === 'cricketdata_cricket') {
                 matches.forEach(m => {
                     const existingIdx = results.cricket.findIndex(e => {
                         const n = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -1087,7 +1089,7 @@ async function fetchMatchesForDate(dateStr) {
     try {
         const results = { football:[], cricket:[], basketball:[], tabletennis:[], mma:[], ufc:[], nfl:[] };
 
-        const sports = ['football', 'cricket', 'basketball', 'tennis', 'mma', 'ufc'];
+        const sports = ['football', 'cricket', 'basketball', 'tennis'];
         const promises = sports.map(async (sport) => {
             try {
                 const matches = await fetchSportScore(sport, 30);
@@ -1319,6 +1321,65 @@ function convertCricAPIMatch(match) {
             team2: score2 ? `${score2.o || 0}` : ''
         }
     };
+}
+
+// ===== CricketData.org API =====
+
+async function fetchCricketDataOrg() {
+    try {
+        const res = await fetch('/api/cricketdata', { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) {
+            console.log(`ℹ️ CricketData.org: HTTP ${res.status}`);
+            return [];
+        }
+        const data = await res.json();
+        
+        return data.map(m => {
+            const matchDate = m.d ? m.d.split('T')[0] : getTodayString();
+            const matchTime = m.d ? new Date(m.d).toTimeString().slice(0, 5) : '00:00';
+            
+            let status = 'upcoming';
+            if (m.ms === 'live') status = 'live';
+            else if (m.ms === 'result') status = 'finished';
+            
+            const parseScore = (raw) => {
+                if (!raw) return '-';
+                const cleaned = raw.replace(/\?/g, '').trim();
+                return cleaned || '-';
+            };
+            
+            return {
+                id: m.id ? `cdorg_${m.id}` : `cdorg-${matchDate}-${matchTime}-${m.t1}-${m.t2}`.toLowerCase().replace(/\s+/g,'-'),
+                sport: 'cricket',
+                icon: getSportIcon('cricket'),
+                team1: {
+                    name: m.t1n || m.t1 || 'TBA',
+                    short: (m.t1 || 'TBA').slice(0, 3).toUpperCase(),
+                    logo: m.t1i ? `https://cricketdata.org/iapi/${m.t1i}?w=48` : '',
+                    flag: ''
+                },
+                team2: {
+                    name: m.t2n || m.t2 || 'TBA',
+                    short: (m.t2 || 'TBA').slice(0, 3).toUpperCase(),
+                    logo: m.t2i ? `https://cricketdata.org/iapi/${m.t2i}?w=48` : '',
+                    flag: ''
+                },
+                league: cleanTeamName(m.t || 'Cricket'),
+                venue: '',
+                date: matchDate,
+                time: matchTime,
+                status: status,
+                statusText: m.s || '',
+                score: {
+                    team1: parseScore(m.t1s),
+                    team2: parseScore(m.t2s)
+                }
+            };
+        });
+    } catch (e) {
+        console.log(`⚠️ CricketData.org failed: ${e.message}`);
+        return [];
+    }
 }
 
 // ===== ESPN Cricket API (Personalized Header) =====
@@ -1586,11 +1647,12 @@ async function fetchNFLSeason(year) {
             const url = `${NFLDATA_URL}/games?season=${year}&season_type=${seasonType}`;
             const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
             if (!res.ok) continue;
-
-            const json = await res.json();
+            const text = await res.text();
+            if (text.startsWith('<!')) continue;
+            const json = JSON.parse(text);
             if (Array.isArray(json?.data)) allGames.push(...json.data);
         } catch (e) {
-            console.log(`ℹ️ NFL season type ${seasonType} failed: ${e.message}`);
+            // Silent fail — NFL API may require paid key
         }
     }
 

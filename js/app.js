@@ -182,8 +182,7 @@ function teamLogoHtml(team) {
     const logo = String(team?.logo || '').trim();
     const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(x => x[0]).join('').toUpperCase() || 'T';
     if (!logo) return `<div class="mc-logo"><span class="team-initials">${escHtml(initials)}</span></div>`;
-    const fb = escHtml(initials);
-    return `<div class="mc-logo"><img src="${escHtml(logo)}" alt="${escHtml(name)}" loading="lazy" onerror="this.onerror=null;this.outerHTML='<div class=\\'mc-logo\\'><span class=\\'team-initials\\'>${fb}</span></div>'"></div>`;
+    return `<div class="mc-logo"><img src="${escHtml(logo)}" alt="${escHtml(name)}" loading="lazy" onload="this.style.display='';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="team-initials" style="display:none">${escHtml(initials)}</span></div>`;
 }
 let currentRenderedMatches = [];
 
@@ -218,6 +217,7 @@ function initTheme() {
 document.addEventListener('DOMContentLoaded', async function() {
     initTheme();
     initCalendar();
+    initMobileCalendar();
     initNavigation();
     initHamburger();
     initSearch();
@@ -285,12 +285,27 @@ function switchSport(sport, updateUrlFlag = true) {
         }
     });
     
+    // Update mobile nav dropdown
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.sport === sport) {
+            item.classList.add('active');
+        }
+    });
+    const icons = { all:'🌍', football:'⚽', cricket:'🏏', basketball:'🏀', tennis:'🎾', mma:'🥊', ufc:'🥋', nfl:'🏈' };
+    const names = { all:'All Sports', football:'Football', cricket:'Cricket', basketball:'Basketball', tennis:'Tennis', mma:'MMA', ufc:'UFC', nfl:'NFL' };
+    const triggerIcon = document.querySelector('.mobile-nav-trigger-icon');
+    const triggerText = document.getElementById('mobile-nav-current');
+    if (triggerIcon) triggerIcon.textContent = icons[sport] || '🏟️';
+    if (triggerText) triggerText.textContent = names[sport] || sport;
+    const dropdown = document.getElementById('mobile-nav-dropdown');
+    if (dropdown) dropdown.classList.remove('open');
+    
     // Update schedule header
-    const icons = { football: '⚽', cricket: '🏏', basketball: '🏀', tennis: '🎾', mma: '🥊', ufc: '🥋', nfl: '🏈' };
     const scheduleIcon = document.getElementById('schedule-icon');
     const scheduleTitle = document.getElementById('schedule-title');
     if (scheduleIcon) scheduleIcon.textContent = icons[sport] || '🏟️';
-    if (scheduleTitle) scheduleTitle.textContent = `${sport.charAt(0).toUpperCase() + sport.slice(1)} Schedule`;
+    if (scheduleTitle) scheduleTitle.textContent = `${names[sport] || sport} Schedule`;
     
     // Close mobile menu
     const navContent = document.querySelector('.nav-content');
@@ -303,6 +318,15 @@ function switchSport(sport, updateUrlFlag = true) {
     loadMatchesForDate(currentDate);
     setTimeout(addMatchDots, 300);
 }
+
+function toggleMobileNav() {
+    const dropdown = document.getElementById('mobile-nav-dropdown');
+    if (dropdown) dropdown.classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('mobile-nav-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('open');
+});
 
 // Initialize hamburger menu
 function initHamburger() {
@@ -336,6 +360,9 @@ function filterAndRender(matches, container) {
     }
     if (currentLeagueFilter) {
         matches = matches.filter(m => m.league === currentLeagueFilter);
+    }
+    if (_statusFilter !== 'all') {
+        matches = matches.filter(m => getMatchStatus(m) === _statusFilter);
     }
     renderMatchList(matches, container);
     updateLeagueList(getMatchesForDate(currentDate).filter(m => currentSport === 'all' || m.sport === currentSport));
@@ -535,6 +562,7 @@ function renderMatchList(matches, container) {
                 const t2Logo = team2.logo || '';
                 const t1Img = t1Logo ? `<img src="${escHtml(t1Logo)}" alt="${escHtml(cleanDisplayName(team1.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
                 const t2Img = t2Logo ? `<img src="${escHtml(t2Logo)}" alt="${escHtml(cleanDisplayName(team2.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
+                const isFavUfc = typeof Favorites !== 'undefined' && Favorites.isFavorite(id);
                 html += `<div class="match-card-wrapper"><div class="ufc-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
                     <div class="ufc-fighter fighter-left" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name))}, ${jsAttr(t1Logo)})">
                         ${status==='finished' && s1 && s1!=='-' ? '<span class="ufc-win-badge">WIN</span>' : ''}
@@ -550,6 +578,7 @@ function renderMatchList(matches, container) {
                             </div>
                             <div class="ufc-method ${methodClass}">${methodLabel}</div>
                         </div>
+                        <button class="fav-btn ufc-fav-btn ${isFavUfc ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFavUfc ? 'Remove from Favorites' : 'Add to Favorites'}">★</button>
                         <div class="ufc-status ${status}">${label}</div>
                     </div>
                     <div class="ufc-fighter fighter-right" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name))}, ${jsAttr(t2Logo)})">
@@ -558,35 +587,51 @@ function renderMatchList(matches, container) {
                     </div>
                 </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
             } else {
-                const scoreOrTime = status==='live'||status==='finished'
-                    ? (() => {
-                        const ov1 = match?.overs?.team1 || '';
-                        const ov2 = match?.overs?.team2 || '';
-                        const hasScore1 = s1 && s1 !== '-';
-                        const hasScore2 = s2 && s2 !== '-';
-                        let scoreText;
-                        if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} <span class="mc-vs">VS</span> ${escHtml(s2)}`;
-                        else if (hasScore1) scoreText = escHtml(s1);
-                        else if (hasScore2) scoreText = escHtml(s2);
-                        else if (status === 'live') scoreText = 'LIVE';
-                        else scoreText = time || 'TBA';
-                        return `<div class="mc-score-center"><span class="mc-score-val">${scoreText}</span></div>`;
-                    })()
-                    : `<div class="mc-score-center"><span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span></div>`;
+                const isCricket = match.sport === 'cricket';
+                const ov1 = match?.overs?.team1 || '';
+                const ov2 = match?.overs?.team2 || '';
+                const hasScore1 = s1 && s1 !== '-';
+                const hasScore2 = s2 && s2 !== '-';
+                const ov1Text = isCricket && ov1 ? ` <span class="mc-overs">(${escHtml(ov1)})</span>` : '';
+                const ov2Text = isCricket && ov2 ? ` <span class="mc-overs">(${escHtml(ov2)})</span>` : '';
+                let scoreLeft = '', scoreRight = '';
+                if (status === 'live' || status === 'finished') {
+                    if (isCricket) {
+                        scoreLeft = hasScore1 ? `${escHtml(s1)}${ov1Text}` : '<span class="mc-dash">-</span>';
+                        scoreRight = hasScore2 ? `${escHtml(s2)}${ov2Text}` : '<span class="mc-dash">-</span>';
+                    } else {
+                        scoreLeft = hasScore1 ? escHtml(s1) : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
+                        scoreRight = hasScore2 ? escHtml(s2) : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
+                    }
+                } else {
+                    scoreLeft = `<span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span>`;
+                    scoreRight = '';
+                }
+                const hideNamesForCricket = false;
+                const isFav = typeof Favorites !== 'undefined' && Favorites.isFavorite(id);
+                const t1Name = escHtml(cleanDisplayName(team1.name||'Home'));
+                const t2Name = escHtml(cleanDisplayName(team2.name||'Away'));
                 html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
                     <div class="mc-row">
-                        <div class="mc-team-left">
+                        <div class="mc-team-block">
                             ${teamLogoHtml(team1)}
-                            <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${escHtml(cleanDisplayName(team1.name||'Home Team'))}</span>
+                            <div class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${t1Name}</div>
                         </div>
-                        ${scoreOrTime}
-                        <div class="mc-team-right-inline">
-                            <span class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${escHtml(cleanDisplayName(team2.name||'Away Team'))}</span>
+                        <div class="mc-center">
+                            <div class="mc-score-row">
+                                <span class="mc-score-val">${scoreLeft}</span>
+                                <span class="mc-vs">VS</span>
+                                <span class="mc-score-val">${scoreRight}</span>
+                            </div>
+                            <div class="mc-bottom-row">
+                                <button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">★</button>
+                                <div class="mc-status ${status}">${label}</div>
+                            </div>
+                        </div>
+                        <div class="mc-team-block mc-team-block-right">
                             ${teamLogoHtml(team2)}
+                            <div class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${t2Name}</div>
                         </div>
-                    </div>
-                    <div class="mc-bottom">
-                        <div class="mc-status ${status}">${label}</div>
                     </div>
                 </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
             }
@@ -607,6 +652,7 @@ function updateLiveScoresInPlace(matches, container) {
 
     if (currentSport !== 'all') matches = matches.filter(m => m.sport === currentSport);
     if (currentLeagueFilter) matches = matches.filter(m => m.league === currentLeagueFilter);
+    if (_statusFilter !== 'all') matches = matches.filter(m => getMatchStatus(m) === _statusFilter);
 
     matches = matches.map(normalizeDisplayMatch).filter(Boolean);
     const seen = new Set();
@@ -646,21 +692,25 @@ function updateLiveScoresInPlace(matches, container) {
         card.className = card.className.replace(/\b(live|finished|upcoming)\b/g, '').trim() + ' ' + status;
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
-        const scoreEl = card.querySelector('.mc-score-val');
-        if (scoreEl) {
-            const hasScore1 = s1 && s1 !== '-';
-            const hasScore2 = s2 && s2 !== '-';
-            let scoreText;
-            if (hasScore1 && hasScore2) scoreText = `${escHtml(s1)} <span class="mc-vs">VS</span> ${escHtml(s2)}`;
-            else if (hasScore1) scoreText = escHtml(s1);
-            else if (hasScore2) scoreText = escHtml(s2);
-            else if (status === 'live') scoreText = 'LIVE';
-            else scoreText = time || 'TBA';
-            const newPlainText = scoreText.replace(/<[^>]*>/g, '').trim();
-            const oldPlainText = (scoreEl.textContent || '').trim();
-            if (oldPlainText !== newPlainText) {
-                scoreEl.innerHTML = scoreText;
+        const scoreEls = card.querySelectorAll('.mc-score-center .mc-score-val');
+        const hasScore1 = s1 && s1 !== '-';
+        const hasScore2 = s2 && s2 !== '-';
+        const isCricketCard = match.sport === 'cricket';
+        if (scoreEls.length >= 2) {
+            const ov1 = match?.overs?.team1 || '';
+            const ov2 = match?.overs?.team2 || '';
+            const ov1Text = isCricketCard && ov1 ? ` <span class="mc-overs">(${escHtml(ov1)})</span>` : '';
+            const ov2Text = isCricketCard && ov2 ? ` <span class="mc-overs">(${escHtml(ov2)})</span>` : '';
+            let leftHtml, rightHtml;
+            if (status === 'live' || status === 'finished') {
+                leftHtml = hasScore1 ? `${escHtml(s1)}${ov1Text}` : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
+                rightHtml = hasScore2 ? `${escHtml(s2)}${ov2Text}` : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
+            } else {
+                leftHtml = `<span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span>`;
+                rightHtml = '';
             }
+            if (scoreEls[0].innerHTML !== leftHtml) scoreEls[0].innerHTML = leftHtml;
+            if (scoreEls[1].innerHTML !== rightHtml) scoreEls[1].innerHTML = rightHtml;
         }
 
         const statusEl = card.querySelector('.mc-status, .ufc-status');
@@ -827,7 +877,7 @@ function renderAccordionContent(match, container) {
         <div class="accordion-row"><span class="accordion-row-label">⏰ Time</span><span class="accordion-row-value">${escHtml(match.time&&match.time!=='00:00'?match.time:'TBA')}</span></div>
         ${match.venue?`<div class="accordion-row"><span class="accordion-row-label">📍 Venue</span><span class="accordion-row-value">${escHtml(match.venue)}</span></div>`:''}
         <div class="accordion-row"><span class="accordion-row-label">🏆 League</span><span class="accordion-row-value">${escHtml(match.league||'Other')}</span></div>
-        ${match.statusText?`<div class="accordion-row"><span class="accordion-row-label">ℹ️ Status</span><span class="accordion-row-value">${escHtml(match.statusText)}</span></div>`:''}
+        ${match.statusText?`<div class="accordion-row"><span class="accordion-row-label">ℹ️ Status</span><span class="accordion-row-value">${escHtml((() => { const s = match.statusText.toLowerCase(); if (s.includes('abnormal') || s.includes('unknown') || s.includes('invalid')) return getMatchStatus(match)==='live'?'Live':getMatchStatus(match)==='finished'?'Finished':'Scheduled'; return match.statusText; })())}</span></div>`:''}
       </div>
       ${status==='live'?`<div class="accordion-live-section"><button class="accordion-live-btn" onclick="event.stopPropagation();window.open('https://www.google.com/search?q=${encodeURIComponent((t1.name||'')+' vs '+(t2.name||'')+' live stream')}','_blank')">▶ Watch Live</button></div>`:''}
       <div class="accordion-players-section"><div id="players-${escHtml(String(match.id))}-team1" class="player-roster-section" style="display:none"></div><div id="player-detail-${escHtml(String(match.id))}-team1" class="player-detail-section" style="display:none"></div><div id="players-${escHtml(String(match.id))}-team2" class="player-roster-section" style="display:none"></div><div id="player-detail-${escHtml(String(match.id))}-team2" class="player-detail-section" style="display:none"></div></div>
@@ -856,10 +906,11 @@ function formatDate(dateStr) {
 // Update league list in sidebar
 function updateLeagueList(matches) {
     const container = document.getElementById('league-list');
-    if (!container) return;
+    const mobileContainer = document.getElementById('mobile-league-list');
 
     if (!matches || matches.length === 0) {
-        container.innerHTML = '<div class="league-list-empty">No leagues available</div>';
+        if (container) container.innerHTML = '<div class="league-list-empty">No leagues available</div>';
+        if (mobileContainer) mobileContainer.innerHTML = '<div class="league-list-empty">No leagues available</div>';
         return;
     }
 
@@ -876,39 +927,45 @@ function updateLeagueList(matches) {
     const genericLeagues = ['Football', 'Cricket', 'Basketball', 'Tennis', 'MMA', 'UFC', 'NFL'];
     const hasRealLeagues = Object.keys(leagueCount).some(l => !genericLeagues.includes(l) || Object.values(leagueCount).some(d => d.logo));
 
+    let html = '';
     if (!hasRealLeagues && Object.keys(leagueCount).length <= 1) {
         const total = matches.length;
         const icon = matches[0]?.icon || '🏟️';
-        container.innerHTML = `
+        html = `
             <div class="league-list-item" onclick="filterByLeague(null)">
                 <span class="league-list-icon">${icon}</span>
                 <span class="league-list-name">All Matches</span>
                 <span class="league-list-count">${total}</span>
             </div>
         `;
-        return;
+    } else {
+        const sortedLeagues = Object.entries(leagueCount)
+            .sort((a, b) => b[1].count - a[1].count);
+        sortedLeagues.forEach(([league, data]) => {
+            html += `
+                <div class="league-list-item" onclick="filterByLeague('${league.replace(/'/g, "\\'")}')">
+                    ${data.logo ? `<img src="${data.logo}" alt="" class="league-list-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="league-list-icon" style="display:none">${data.icon}</span>` : `<span class="league-list-icon">${data.icon}</span>`}
+                    <span class="league-list-name">${league}</span>
+                    <span class="league-list-count">${data.count}</span>
+                </div>
+            `;
+        });
     }
 
-    // Sort by count
-    const sortedLeagues = Object.entries(leagueCount)
-        .sort((a, b) => b[1].count - a[1].count);
-
-    let html = '';
-    sortedLeagues.forEach(([league, data]) => {
-        html += `
-            <div class="league-list-item" onclick="filterByLeague('${league.replace(/'/g, "\\'")}')">
-                ${data.logo ? `<img src="${data.logo}" alt="" class="league-list-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="league-list-icon" style="display:none">${data.icon}</span>` : `<span class="league-list-icon">${data.icon}</span>`}
-                <span class="league-list-name">${league}</span>
-                <span class="league-list-count">${data.count}</span>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
+    if (container) container.innerHTML = html;
+    if (mobileContainer) mobileContainer.innerHTML = html;
 }
 
-// Filter live matches to top
-let _liveFilterActive = false;
+// Filter matches by status
+let _statusFilter = 'all';
+
+function filterByStatus(status) {
+    _statusFilter = status;
+    document.querySelectorAll('.status-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.status === status);
+    });
+    renderWithLiveFirst();
+}
 
 function renderWithLiveFirst() {
     const container = document.getElementById('match-list');
@@ -917,27 +974,27 @@ function renderWithLiveFirst() {
     let filtered = matches;
     if (currentSport !== 'all') filtered = filtered.filter(m => m.sport === currentSport);
     if (currentLeagueFilter) filtered = filtered.filter(m => m.league === currentLeagueFilter);
-    if (_liveFilterActive) {
-        const live = filtered.filter(m => getMatchStatus(m) === 'live');
-        const nonLive = filtered.filter(m => getMatchStatus(m) !== 'live');
-        filtered = [...live, ...nonLive];
+    if (_statusFilter !== 'all') {
+        filtered = filtered.filter(m => getMatchStatus(m) === _statusFilter);
     }
     renderMatchList(filtered, container);
 }
 
 function filterLiveMatches() {
-    _liveFilterActive = !_liveFilterActive;
-    const btn = document.getElementById('live-filter-btn');
-    if (btn) btn.classList.toggle('active', _liveFilterActive);
-    renderWithLiveFirst();
+    if (_statusFilter === 'live') {
+        filterByStatus('all');
+    } else {
+        filterByStatus('live');
+    }
 }
 
 function updateLiveFilterBtn() {
-    const btn = document.getElementById('live-filter-btn');
-    if (!btn) return;
     const matches = getMatchesForDate(currentDate);
-    const hasLive = matches.some(m => getMatchStatus(m) === 'live');
-    btn.classList.toggle('visible', hasLive);
+    const liveCount = matches.filter(m => getMatchStatus(m) === 'live').length;
+    const liveBtn = document.querySelector('.status-filter-btn.live');
+    if (liveBtn) {
+        liveBtn.style.display = liveCount > 0 ? '' : 'none';
+    }
 }
 
 // Filter matches by league
@@ -983,11 +1040,15 @@ function toggleProfile() {
 
 // Mobile calendar toggle
 function toggleMobileCalendar() {
-    const sidebar = document.querySelector('.sidebar-left');
+    const sheet = document.getElementById('mobile-calendar-sheet');
     const overlay = document.getElementById('calendar-overlay');
-    if (sidebar && overlay) {
-        sidebar.classList.toggle('mobile-open');
+    if (sheet && overlay) {
+        const isOpening = !sheet.classList.contains('active');
+        sheet.classList.toggle('active');
         overlay.classList.toggle('active');
+        if (isOpening && typeof openMobileCalendar === 'function') {
+            openMobileCalendar();
+        }
     }
 }
 
@@ -1031,7 +1092,7 @@ function startLiveAgent() {
         if (currentDate !== today) return;
 
         const now = Date.now();
-        if (now - _lastRefreshTime < 4000) return;
+        if (now - _lastRefreshTime < 14000) return;
         _lastRefreshTime = now;
 
         console.log('🔄 Live Agent: refreshing scores...');
@@ -1096,11 +1157,13 @@ function startLiveAgent() {
                 await enrichMatchLogos(fresh);
                 const container = document.getElementById('match-list');
                 if (container && currentDate === today) {
-                    if (_liveFilterActive) {
-                        renderWithLiveFirst();
-                    } else {
-                        const updated = updateLiveScoresInPlace(fresh, container);
-                        if (!updated) filterAndRender(fresh, container);
+                    const updated = updateLiveScoresInPlace(fresh, container);
+                    if (!updated) {
+                        if (_statusFilter !== 'all') {
+                            renderWithLiveFirst();
+                        } else {
+                            filterAndRender(fresh, container);
+                        }
                     }
                 }
             }

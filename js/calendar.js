@@ -22,7 +22,7 @@ function initCalendar() {
         },
         titleFormat: { year: 'numeric', month: 'long' },
         height: 'auto',
-        dayMaxEvents: 0,
+        dayMaxEvents: false,
         moreLinkText: '',
         events: [],
         dateClick: function(info) {
@@ -30,6 +30,14 @@ function initCalendar() {
         },
         eventClick: function(info) {
             info.jsEvent.preventDefault();
+        },
+        viewDidMount: function() {
+            setTimeout(() => {
+                document.querySelectorAll('#mobile-calendar .fc-daygrid-event-harness').forEach(e => e.style.display = 'none');
+                document.querySelectorAll('#mobile-calendar .fc-event').forEach(e => e.style.display = 'none');
+                document.querySelectorAll('#mobile-calendar .fc-daygrid-day-events').forEach(e => { e.style.display = 'none'; e.style.height = '0'; e.style.margin = '0'; e.style.padding = '0'; });
+                document.querySelectorAll('#mobile-calendar .fc-more-link').forEach(e => e.style.display = 'none');
+            }, 50);
         },
         datesSet: function() {
             setTimeout(() => {
@@ -126,6 +134,7 @@ async function loadCalendarEvents() {
             calendar.removeAllEvents();
             calendar.addEventSource(allEvents);
         }
+        syncMobileCalendar();
     } catch (e) {
         console.log('Calendar events load failed');
     }
@@ -140,27 +149,28 @@ function handleDateClick(dateStr) {
     if (typeof updateUrl === 'function') {
         updateUrl(currentSport, dateStr, null);
     }
-    const sidebar = document.querySelector('.sidebar-left');
+    // Close mobile calendar bottom sheet
+    const sheet = document.getElementById('mobile-calendar-sheet');
     const overlay = document.getElementById('calendar-overlay');
-    if (sidebar && sidebar.classList.contains('mobile-open')) {
-        sidebar.classList.remove('mobile-open');
+    if (sheet && sheet.classList.contains('active')) {
+        sheet.classList.remove('active');
         if (overlay) overlay.classList.remove('active');
     }
 }
 
 // Highlight selected date in calendar
 function highlightDate(dateStr) {
+    // Clear old highlight on both calendars
     if (selectedCalendarDate) {
-        const prevEl = document.querySelector(`.fc-daygrid-day[data-date="${selectedCalendarDate}"]`);
-        if (prevEl) {
-            prevEl.classList.remove('selected-date');
-        }
+        document.querySelectorAll(`.fc-daygrid-day[data-date="${selectedCalendarDate}"]`).forEach(el => {
+            el.classList.remove('selected-date');
+        });
     }
 
-    const newEl = document.querySelector(`.fc-daygrid-day[data-date="${dateStr}"]`);
-    if (newEl) {
-        newEl.classList.add('selected-date');
-    }
+    // Apply new highlight on both calendars
+    document.querySelectorAll(`.fc-daygrid-day[data-date="${dateStr}"]`).forEach(el => {
+        el.classList.add('selected-date');
+    });
 
     selectedCalendarDate = dateStr;
 }
@@ -242,4 +252,88 @@ function addMatchDots() {
         dot.title = `${activeSport}: ${matches.length} match${matches.length > 1 ? 'es' : ''}`;
         num.after(dot);
     });
+}
+
+// ===== Mobile Calendar =====
+let mobileCalendar = null;
+
+function initMobileCalendar() {
+    // Will be created on demand when sheet opens
+}
+
+function openMobileCalendar() {
+    const el = document.getElementById('mobile-calendar');
+    if (!el || typeof FullCalendar === 'undefined') return;
+
+    // Destroy previous instance
+    if (mobileCalendar) {
+        mobileCalendar.destroy();
+        mobileCalendar = null;
+    }
+
+    // Create fresh instance after DOM is visible
+    requestAnimationFrame(() => {
+        mobileCalendar = new FullCalendar.Calendar(el, {
+            initialView: 'dayGridMonth',
+            initialDate: new Date(),
+            headerToolbar: {
+                left: 'prev',
+                center: 'title',
+                right: 'next'
+            },
+            titleFormat: { year: 'numeric', month: 'long' },
+            height: 'auto',
+        dayMaxEvents: false,
+            moreLinkText: '',
+            events: [],
+            dateClick: function(info) {
+                handleDateClick(info.dateStr);
+            },
+            eventClick: function(info) {
+                info.jsEvent.preventDefault();
+            },
+            buttonText: {
+                today: 'Today'
+            },
+            dayCellDidMount: function(info) {
+                const today = getTodayString();
+                if (info.dateStr === today) {
+                    info.el.classList.add('fc-day-today');
+                }
+            }
+        });
+        mobileCalendar.render();
+
+        // Hide all events (CSS specificity issue with FullCalendar)
+        setTimeout(() => {
+            document.querySelectorAll('#mobile-calendar .fc-daygrid-event-harness').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('#mobile-calendar .fc-event').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('#mobile-calendar .fc-daygrid-day-events').forEach(e => { e.style.display = 'none'; e.style.height = '0'; e.style.margin = '0'; e.style.padding = '0'; });
+            document.querySelectorAll('#mobile-calendar .fc-more-link').forEach(e => e.style.display = 'none');
+        }, 100);
+
+        // Sync selected date
+        if (selectedCalendarDate) {
+            highlightDate(selectedCalendarDate);
+        }
+        syncMobileCalendar();
+    });
+}
+
+function syncMobileCalendar() {
+    if (!mobileCalendar || !calendar) return;
+    // Copy events from main calendar
+    mobileCalendar.removeAllEvents();
+    const events = calendar.getEvents();
+    events.forEach(e => {
+        mobileCalendar.addEvent({
+            title: e.title,
+            start: e.start,
+            color: e.backgroundColor
+        });
+    });
+    // Sync selected date highlight
+    if (selectedCalendarDate) {
+        highlightDate(selectedCalendarDate);
+    }
 }
