@@ -184,6 +184,86 @@ function teamLogoHtml(team) {
     if (!logo) return `<div class="mc-logo"><span class="team-initials">${escHtml(initials)}</span></div>`;
     return `<div class="mc-logo"><img src="${escHtml(logo)}" alt="${escHtml(name)}" loading="lazy" onload="this.style.display='';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="team-initials" style="display:none">${escHtml(initials)}</span></div>`;
 }
+
+// ===== Loading Skeleton =====
+function renderLoadingSkeleton(container) {
+    if (!container) return;
+    let html = '<div class="loading-skeletons" aria-label="Loading matches" role="status"><span class="sr-only">Loading matches...</span>';
+    for (let i = 0; i < 4; i++) {
+        html += `<div class="skeleton-card">
+            <div class="skeleton-card-header">
+                <div class="skeleton skeleton-icon"></div>
+                <div class="skeleton skeleton-title"></div>
+            </div>
+            <div class="skeleton-card-body">
+                <div class="skeleton-team">
+                    <div class="skeleton skeleton-logo"></div>
+                    <div class="skeleton skeleton-name"></div>
+                </div>
+                <div class="skeleton-center">
+                    <div class="skeleton-score">
+                        <div class="skeleton skeleton-score-block"></div>
+                        <div class="skeleton skeleton-vs"></div>
+                        <div class="skeleton skeleton-score-block"></div>
+                    </div>
+                    <div class="skeleton skeleton-status"></div>
+                </div>
+                <div class="skeleton-team">
+                    <div class="skeleton skeleton-logo"></div>
+                    <div class="skeleton skeleton-name"></div>
+                </div>
+            </div>
+        </div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ===== Empty State =====
+function renderEmptyState(container, options = {}) {
+    if (!container) return;
+    const { icon = '📭', title = 'No matches found', desc = 'There are no matches scheduled for this date.', action = null, actionText = '', subtle = false } = options;
+    const cls = subtle ? 'empty-state empty-state-subtle' : 'empty-state';
+    let html = `<div class="${cls}" role="status">
+        <div class="empty-state-icon" aria-hidden="true">${icon}</div>
+        <div class="empty-state-title">${escHtml(title)}</div>
+        <div class="empty-state-desc">${escHtml(desc)}</div>`;
+    if (action && actionText) {
+        html += `<button class="empty-state-btn" onclick="${action}">${escHtml(actionText)}</button>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ===== Error State =====
+function renderErrorState(container, options = {}) {
+    if (!container) return;
+    const { title = 'Unable to load matches', desc = 'Something went wrong while fetching match data.', retryAction = 'loadMatchesForDate(currentDate)' } = options;
+    container.innerHTML = `<div class="error-state" role="alert">
+        <div class="error-state-icon" aria-hidden="true">⚠️</div>
+        <div class="error-state-title">${escHtml(title)}</div>
+        <div class="error-state-desc">${escHtml(desc)}</div>
+        <button class="error-state-btn error-state-retry" onclick="${retryAction}">
+            <span class="loading-spinner-inline" style="display:none"></span>
+            Retry
+        </button>
+    </div>`;
+}
+
+// ===== Password Toggle =====
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🔒';
+        btn.setAttribute('aria-label', 'Hide password');
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+        btn.setAttribute('aria-label', 'Show password');
+    }
+}
 let currentRenderedMatches = [];
 
 // ===== Theme Switcher =====
@@ -246,7 +326,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Start score checker
     setTimeout(startScoreChecker, 5000);
-    console.log('🚀 Live Streaming initialized');
 });
 
 // Initialize navigation
@@ -373,7 +452,7 @@ async function loadMatchesForDate(dateStr) {
             await enrichMatchLogos(cached);
             filterAndRender(cached, container);
         } else {
-            container.innerHTML = '<div class="loading">Loading matches...</div>';
+            renderLoadingSkeleton(container);
         }
         try {
             await autoFetchMatches();
@@ -496,7 +575,13 @@ function renderMatchList(matches, container) {
         const today = getTodayString();
         const isPastDate = currentDate < today;
         const isFutureDate = currentDate > today;
-        container.innerHTML = `<div class="no-matches"><span class="icon">${isPastDate?'📅':isFutureDate?'⏳':'📭'}</span><p>${isPastDate?'No historical data available':isFutureDate?'No matches found for this date':'No matches scheduled for this date'}</p></div>`;
+        if (isPastDate) {
+            renderEmptyState(container, { icon: '📅', title: 'No historical data', desc: 'Match data for past dates is not available yet.' });
+        } else if (isFutureDate) {
+            renderEmptyState(container, { icon: '⏳', title: 'No upcoming matches', desc: 'No matches have been scheduled for this date yet.' });
+        } else {
+            renderEmptyState(container, { icon: '📭', title: 'No live matches right now', desc: 'Check back later for live match updates.', action: "filterByStatus('live')", actionText: 'View Live Matches' });
+        }
         return;
     }
 
@@ -567,7 +652,7 @@ function renderMatchList(matches, container) {
                             </div>
                             <div class="ufc-method ${methodClass}">${methodLabel}</div>
                         </div>
-                        <button class="fav-btn ufc-fav-btn ${isFavUfc ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFavUfc ? 'Remove from Favorites' : 'Add to Favorites'}">★</button>
+                        <button class="fav-btn ufc-fav-btn ${isFavUfc ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFavUfc ? 'Remove from Favorites' : 'Add to Favorites'}" aria-label="${isFavUfc ? 'Remove from favorites' : 'Add to favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
                         <div class="ufc-status ${status}">${label}</div>
                     </div>
                     <div class="ufc-fighter fighter-right" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name))}, ${jsAttr(t2Logo)})">
@@ -613,7 +698,7 @@ function renderMatchList(matches, container) {
                                 <span class="mc-score-val">${scoreRight}</span>
                             </div>
                             <div class="mc-bottom-row">
-                                <button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">★</button>
+                                <button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
                                 <div class="mc-status ${status}">${label}</div>
                             </div>
                         </div>
@@ -898,8 +983,8 @@ function updateLeagueList(matches) {
     const mobileContainer = document.getElementById('mobile-league-list');
 
     if (!matches || matches.length === 0) {
-        if (container) container.innerHTML = '<div class="league-list-empty">No leagues available</div>';
-        if (mobileContainer) mobileContainer.innerHTML = '<div class="league-list-empty">No leagues available</div>';
+        if (container) renderEmptyState(container, { icon: '🏆', title: 'No leagues available', desc: 'Leagues will appear here when matches are loaded.', subtle: true });
+        if (mobileContainer) renderEmptyState(mobileContainer, { icon: '🏆', title: 'No leagues available', desc: 'Leagues will appear here when matches are loaded.', subtle: true });
         return;
     }
 

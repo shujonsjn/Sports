@@ -312,16 +312,14 @@ async function handleRegister() {
     const cp = document.getElementById('reg-confirm-password').value;
     const n = document.getElementById('reg-name').value.trim();
     const err = document.getElementById('reg-error');
-    const btn = document.querySelector('#register-form button[type="submit"]');
+    const step1Btn = document.querySelector('#reg-step1 .login-btn');
     
     if (!c || !p || !cp) { err.textContent = 'Please fill all fields'; return; }
     const result = Favorites.register(c, p, cp, n);
         if (result.ok && result.needOtp) {
-            btn.disabled = true;
-            btn.textContent = 'Sending OTP...';
+            if (step1Btn) { step1Btn.disabled = true; step1Btn.textContent = 'Sending OTP...'; }
             const otpResult = await Favorites.generateOtp(c);
-            btn.disabled = false;
-            btn.textContent = 'Register';
+            if (step1Btn) { step1Btn.disabled = false; step1Btn.textContent = 'Send OTP'; }
             
             if (otpResult.ok) {
                 sessionStorage.setItem('ls_pending_reg', JSON.stringify({ contact: c, password: p, name: n }));
@@ -341,18 +339,16 @@ async function handleRegister() {
 async function handleVerifyOtp() {
     const otp = document.getElementById('otp-input').value.trim();
     const err = document.getElementById('otp-error');
-    const btn = document.querySelector('#reg-step2 button[type="button"]');
+    const step2Btn = document.querySelector('#reg-step2 .login-btn');
     
     if (!otp || otp.length !== 6) { err.textContent = 'Enter 6-digit OTP'; return; }
     
-    btn.disabled = true;
-    btn.textContent = 'Verifying...';
+    if (step2Btn) { step2Btn.disabled = true; step2Btn.textContent = 'Verifying...'; }
     
     const pending = JSON.parse(sessionStorage.getItem('ls_pending_reg') || '{}');
     const result = await Favorites.verifyOtpAndRegister(pending.contact, pending.password, pending.name, otp);
     
-    btn.disabled = false;
-    btn.textContent = 'Verify & Register';
+    if (step2Btn) { step2Btn.disabled = false; step2Btn.textContent = 'Verify & Create Account'; }
     
     if (result.ok) {
         hideLoginModal();
@@ -415,6 +411,7 @@ function updateFavButtons() {
         const isFav = Favorites.isFavorite(id);
         btn.classList.toggle('active', isFav);
         btn.title = isFav ? 'Remove from Favorites' : 'Add to Favorites';
+        btn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
     });
 }
 
@@ -448,7 +445,7 @@ function renderNotifList() {
     const container = document.getElementById('notif-list');
     const notifs = Favorites.getNotifications();
     if (!notifs.length) {
-        container.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+        container.innerHTML = '<div class="notif-empty-state"><div class="empty-icon">🔔</div><p>No notifications yet</p></div>';
         return;
     }
     container.innerHTML = notifs.map(n => {

@@ -63,7 +63,11 @@ function performSearch(query, resultsId) {
     });
 
     if (results.length === 0) {
-        searchResults.innerHTML = '<div class="search-no-results">No results found for "' + escSearch(query) + '"</div>';
+        searchResults.innerHTML = `<div class="search-no-results" role="status">
+            <div style="margin-bottom:0.4rem;opacity:0.5;font-size:1.2rem">🔍</div>
+            <div>No teams, leagues or matches found</div>
+            <div style="font-size:0.72rem;margin-top:0.2rem;opacity:0.7">Try a different search term</div>
+        </div>`;
         searchResults.classList.add('active');
         return;
     }
@@ -71,18 +75,20 @@ function performSearch(query, resultsId) {
     const html = results.slice(0, 8).map(match => {
         const sportIcon = match.icon || '🏟️';
         const status = getMatchStatus(match);
-        const statusText = status === 'live' ? ' • LIVE' : status === 'finished' ? ' • FT' : ` • ${match.time || 'TBA'}`;
+        const statusText = status === 'live' ? 'LIVE' : status === 'finished' ? 'FT' : match.time || 'TBA';
+        const statusClass = status;
         const t1 = escSearch(match.team1?.name || 'TBA');
         const t2 = escSearch(match.team2?.name || 'TBA');
         const league = escSearch(match.league || '');
 
         return `
-            <div class="search-result-item" onclick="selectMatchFromSearch('${escSearch(String(match.id || ''))}')">
-                <div class="result-icon">${sportIcon}</div>
+            <div class="search-result-item" role="option" onclick="selectMatchFromSearch('${escSearch(String(match.id || ''))}')" tabindex="0">
+                <div class="result-icon" aria-hidden="true">${sportIcon}</div>
                 <div class="result-info">
                     <div class="result-name">${t1} vs ${t2}</div>
-                    <div class="result-meta">${league}${statusText}</div>
+                    <div class="result-meta">${league}</div>
                 </div>
+                <span class="result-status ${statusClass}">${statusText}</span>
             </div>
         `;
     }).join('');
