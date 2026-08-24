@@ -33,7 +33,9 @@ export default async function handler(req, res) {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const { action } = req.query || req.body || {};
+    const queryAction = req.query?.action;
+    const bodyAction = req.body?.action;
+    const action = queryAction || bodyAction;
 
     // Login does NOT require auth — it IS the auth endpoint
     if (action === 'login') {

@@ -30,10 +30,10 @@ async function handleLogin(e) {
     btn.textContent = 'Signing in...';
 
     try {
-        const res = await fetch(ADMIN_API, {
+        const res = await fetch(ADMIN_API + '?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'login', username: u, password: p })
+            body: JSON.stringify({ username: u, password: p })
         });
         const data = await res.json();
 
