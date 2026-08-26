@@ -790,13 +790,14 @@ function renderMatchList(matches, container) {
             html += `<div class="match-card-wrapper">
                 <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
                     <div class="mc-left">
-                        <div class="mc-team-dot" style="background:${dotColor}"></div>
+                        <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
                         <div class="mc-team-name">${t1Name}</div>
                     </div>
                     <div class="${centerClass}">
                         ${centerHtml}
                     </div>
                     <div class="mc-right">
+                        <div class="mc-logo-wrap mc-logo-right"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                         <div class="mc-team-name" style="text-align:right">${t2Name}</div>
                         ${rightHtml}
                     </div>
