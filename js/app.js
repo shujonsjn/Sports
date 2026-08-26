@@ -408,7 +408,7 @@ function renderDatePills() {
             return `<button class="date-pill ${isActive ? 'active' : ''}" onclick="loadMatchesForDate('${dateStr}');renderDatePills()">${label}</button>`;
         }).join('');
         // Add custom date option
-        desktopContainer.innerHTML += `<button class="date-pill" onclick="pickCustomDate()" title="Pick a date">📅 ${today.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</button>`;
+        desktopContainer.innerHTML += `<button class="date-pill" onclick="pickCustomDate(event)" title="Pick a date">📅 ${today.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</button>`;
     }
     // Mobile
     const mobileContainer = document.getElementById('mobile-date-pills');
@@ -429,15 +429,21 @@ function renderDatePills() {
 var calViewDate = null;
 var calPopup = null;
 
-function pickCustomDate() {
+function pickCustomDate(e) {
     calPopup = document.getElementById('calendar-popup');
     if (!calPopup) return;
     const parts = currentDate.split('-');
     calViewDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
     if (calPopup.style.display === 'none') {
         renderCalendar();
+        var btn = e ? e.currentTarget : document.querySelector('.date-pill:last-child');
+        if (btn) {
+            var rect = btn.getBoundingClientRect();
+            calPopup.style.top = (rect.bottom + 4) + 'px';
+            calPopup.style.left = rect.left + 'px';
+        }
         calPopup.style.display = 'block';
-        document.addEventListener('click', calCloseOutside);
+        setTimeout(function(){ document.addEventListener('click', calCloseOutside); }, 0);
     } else {
         closeCalendar();
     }
@@ -445,8 +451,7 @@ function pickCustomDate() {
 
 function calCloseOutside(e) {
     var popup = document.getElementById('calendar-popup');
-    var btn = document.querySelector('.date-pill:last-child');
-    if (popup && !popup.contains(e.target) && btn && !btn.contains(e.target)) {
+    if (popup && !popup.contains(e.target) && !e.target.closest('.date-pill')) {
         closeCalendar();
     }
 }
