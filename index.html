@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=44">
+    <link rel="stylesheet" href="css/style.css?v=45">
 </head>
 <body>
     <a href="#match-list" class="skip-link">Skip to matches</a>
@@ -156,74 +156,105 @@
     <!-- NFL Premium Page -->
     <div id="nfl-page" class="nfl-page"></div>
 
-    <!-- Blog View -->
-    <div id="blog-view" class="blog-view" style="display:none">
-        <div class="blog-layout">
-            <div class="blog-page">
-                <div class="blog-hero">
-                    <a class="blog-hero-back" onclick="event.preventDefault();hideBlogView()" href="#">← Back to SportsLive</a>
-                    <div class="blog-hero-badge" id="blog-hero-badge">Match Preview</div>
-                    <div class="blog-hero-teams">
-                        <div class="blog-hero-team">
-                            <div class="blog-hero-logo" id="blog-team1-logo">T1</div>
-                            <div class="blog-hero-team-name" id="blog-team1-name">Team 1</div>
-                        </div>
-                        <div class="blog-hero-vs">VS</div>
-                        <div class="blog-hero-team">
-                            <div class="blog-hero-logo" id="blog-team2-logo">T2</div>
-                            <div class="blog-hero-team-name" id="blog-team2-name">Team 2</div>
-                        </div>
-                    </div>
-                    <h1 class="blog-hero-title" id="blog-title">Match Preview</h1>
-                    <div class="blog-hero-meta">
-                        <span class="blog-hero-meta-item" id="blog-date">📅 Loading...</span>
-                        <span class="blog-hero-meta-item" id="blog-league">🏅 Loading...</span>
-                        <span class="blog-hero-meta-item" id="blog-time">⏱️ --:--</span>
-                    </div>
-                </div>
-                <div class="blog-info-card">
-                    <div class="blog-info-grid">
-                        <div class="blog-info-item"><span class="blog-info-icon">📅</span><div><div class="blog-info-label">Date</div><div class="blog-info-value" id="blog-match-date">-</div></div></div>
-                        <div class="blog-info-item"><span class="blog-info-icon">⏰</span><div><div class="blog-info-label">Time</div><div class="blog-info-value" id="blog-match-time">-</div></div></div>
-                        <div class="blog-info-item"><span class="blog-info-icon">🏅</span><div><div class="blog-info-label">League</div><div class="blog-info-value" id="blog-match-league">-</div></div></div>
-                        <div class="blog-info-item"><span class="blog-info-icon">📋</span><div><div class="blog-info-label">Status</div><div class="blog-info-value" id="blog-match-status">Upcoming</div></div></div>
-                    </div>
-                </div>
-                <div id="blog-dynamic-content">
-                    <div class="blog-default-content">
-                        <h2>Match Overview</h2>
-                        <p id="blog-overview">Loading match preview...</p>
-                        <h2>What to Expect</h2>
-                        <p>Both teams will be looking to secure a win in this upcoming fixture. Follow SportsLive for real-time match updates, live scores, and detailed statistics.</p>
-                    </div>
-                </div>
-                <div class="blog-tags">
-                    <span class="blog-tag" id="blog-tag-sport">⚽ Football</span>
-                    <span class="blog-tag" id="blog-tag-league">League</span>
-                    <span class="blog-tag">Live Scores</span>
-                    <span class="blog-tag">Match Preview</span>
-                </div>
-                <div class="blog-share-card">
-                    <span class="blog-share-label">Share this match</span>
-                    <div class="blog-share-btns">
-                        <a class="blog-share-btn" id="share-twitter" href="#" target="_blank" rel="noopener">Twitter</a>
-                        <a class="blog-share-btn" id="share-facebook" href="#" target="_blank" rel="noopener">Facebook</a>
-                        <button class="blog-share-btn" onclick="copyBlogLink()">Copy Link</button>
-                    </div>
-                </div>
+    <!-- Match Preview View -->
+    <div id="blog-view" class="preview-view" style="display:none">
+      <div class="preview-breadcrumb">
+        <span onclick="hideBlogView()">Home</span> › <span id="pv-sport">Football</span> › <span id="pv-league">Premier League</span> › <span id="pv-vs">Match</span>
+      </div>
+      <div class="preview-layout">
+        <div class="preview-main">
+          <!-- Match Header Card -->
+          <div class="pv-card pv-match-header">
+            <div class="pv-header-top">
+              <div class="pv-league-info"><span id="pv-league2">Premier League</span> • <span id="pv-country">England</span></div>
+              <div class="pv-status-badge" id="pv-status-badge"><span class="pv-status-dot"></span> UPCOMING</div>
             </div>
-            <aside class="blog-sidebar">
-                <div class="top-leagues-card">
-                    <div class="top-leagues-header"><div class="top-leagues-title">Top Leagues</div></div>
-                    <div class="top-leagues-list">
-                        <div class="top-league-item" onclick="switchSport('football')">Premier League <span class="top-league-arrow">›</span></div>
-                        <div class="top-league-item" onclick="switchSport('football')">La Liga <span class="top-league-arrow">›</span></div>
-                        <div class="top-league-item" onclick="switchSport('football')">Serie A <span class="top-league-arrow">›</span></div>
-                        <div class="top-league-item" onclick="switchSport('football')">Bundesliga <span class="top-league-arrow">›</span></div>
-                    </div>
-                </div>
-            </aside>
+            <h1 class="pv-match-title" id="pv-title">Manchester City vs Newcastle United</h1>
+            <p class="pv-match-date" id="pv-date">Wednesday, 26 August 2026 • 20:00</p>
+            <div class="pv-teams">
+              <div class="pv-team">
+                <div class="pv-team-logo" id="pv-t1-logo">T1</div>
+                <div class="pv-team-name" id="pv-t1-name">Manchester City</div>
+                <div class="pv-team-role">Home</div>
+              </div>
+              <div class="pv-time-center">
+                <div class="pv-time" id="pv-time">20:00</div>
+                <div class="pv-time-label" id="pv-time-label">Today</div>
+              </div>
+              <div class="pv-team">
+                <div class="pv-team-logo" id="pv-t2-logo">T2</div>
+                <div class="pv-team-name" id="pv-t2-name">Newcastle United</div>
+                <div class="pv-team-role">Away</div>
+              </div>
+            </div>
+            <button class="pv-watch-btn" id="pv-watch-btn">Watch Live ▶</button>
+          </div>
+          <!-- Tabs -->
+          <div class="pv-tabs">
+            <button class="pv-tab active" onclick="pvTab(this,'preview')">Preview</button>
+            <button class="pv-tab" onclick="pvTab(this,'stats')">Stats</button>
+            <button class="pv-tab" onclick="pvTab(this,'h2h')">Head to Head</button>
+            <button class="pv-tab" onclick="pvTab(this,'lineups')">Lineups</button>
+            <button class="pv-tab" onclick="pvTab(this,'news')">News</button>
+          </div>
+          <!-- Tab Content: Preview -->
+          <div class="pv-tab-content" id="pv-tab-preview">
+            <div class="pv-card">
+              <h2 class="pv-section-title">Match Preview</h2>
+              <p class="pv-text" id="pv-preview-text">Both teams will be looking to secure a win in this upcoming fixture. Follow SportsLive for real-time match updates, live scores, and detailed statistics.</p>
+              <div class="pv-divider"></div>
+              <h3 class="pv-subtitle">Key Information</h3>
+              <div class="pv-info-row"><span class="pv-info-label">Date</span><span class="pv-info-value" id="pv-info-date">26 August 2026</span></div>
+              <div class="pv-info-row"><span class="pv-info-label">Kick-off</span><span class="pv-info-value" id="pv-info-time">20:00</span></div>
+            </div>
+          </div>
+          <!-- Tab Content: Stats -->
+          <div class="pv-tab-content" id="pv-tab-stats" style="display:none">
+            <div class="pv-card"><h2 class="pv-section-title">Match Statistics</h2><p class="pv-text">Statistics will be available once the match begins.</p></div>
+          </div>
+          <!-- Tab Content: H2H -->
+          <div class="pv-tab-content" id="pv-tab-h2h" style="display:none">
+            <div class="pv-card"><h2 class="pv-section-title">Head to Head</h2><p class="pv-text">Head to head records will be displayed here.</p></div>
+          </div>
+          <!-- Tab Content: Lineups -->
+          <div class="pv-tab-content" id="pv-tab-lineups" style="display:none">
+            <div class="pv-card"><h2 class="pv-section-title">Lineups</h2><p class="pv-text">Lineups will be announced before kickoff.</p></div>
+          </div>
+          <!-- Tab Content: News -->
+          <div class="pv-tab-content" id="pv-tab-news" style="display:none">
+            <div class="pv-card"><h2 class="pv-section-title">Related News</h2><p class="pv-text">No related news at this time.</p></div>
+          </div>
         </div>
+        <div class="preview-sidebar">
+          <!-- Match Details -->
+          <div class="pv-card pv-sidebar-card">
+            <h3 class="pv-sidebar-title">Match Details</h3>
+            <div class="pv-divider"></div>
+            <div class="pv-detail-row"><span class="pv-detail-label">Competition</span><span class="pv-detail-value" id="pv-detail-league">Premier League</span></div>
+            <div class="pv-detail-row"><span class="pv-detail-label">Date</span><span class="pv-detail-value" id="pv-detail-date">26 Aug 2026</span></div>
+            <div class="pv-detail-row"><span class="pv-detail-label">Kick-off</span><span class="pv-detail-value" id="pv-detail-time">20:00</span></div>
+            <div class="pv-detail-row"><span class="pv-detail-label">Venue</span><span class="pv-detail-value" id="pv-detail-venue">-</span></div>
+            <div class="pv-detail-row"><span class="pv-detail-label">Status</span><span class="pv-detail-value pv-status-text" id="pv-detail-status">Upcoming</span></div>
+          </div>
+          <!-- Recent Form -->
+          <div class="pv-card pv-sidebar-card">
+            <h3 class="pv-sidebar-title">Recent Form</h3>
+            <div class="pv-form-team">
+              <span class="pv-form-name" id="pv-form-t1">Manchester City</span>
+              <div class="pv-form-dots" id="pv-form-t1-dots"></div>
+            </div>
+            <div class="pv-form-team">
+              <span class="pv-form-name" id="pv-form-t2">Newcastle United</span>
+              <div class="pv-form-dots" id="pv-form-t2-dots"></div>
+            </div>
+          </div>
+          <!-- Related Matches -->
+          <div class="pv-card pv-sidebar-card">
+            <h3 class="pv-sidebar-title">Related Matches</h3>
+            <div id="pv-related-matches"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -285,7 +316,7 @@
     <script src="js/api.js?v=13"></script>
     <script src="js/countdown.js?v=7"></script>
     <script src="js/search.js?v=7"></script>
-    <script src="js/app.js?v=22"></script>
+    <script src="js/app.js?v=23"></script>
     <script src="js/nfl-page.js?v=1"></script>
     <script src="js/favorites.js?v=3"></script>
     <script src="js/score-checker.js"></script>

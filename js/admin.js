@@ -1,4 +1,4 @@
-// ===== Admin Dashboard =====
+// ===== Admin Dashboard — SVG Spec =====
 
 const SESSION_KEY = 'admin_session';
 const ADMIN_API = '/api/admin';
@@ -96,16 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
 let allAdminMatches = [];
 
 function initDashboard() {
-    updateClock();
-    setInterval(updateClock, 1000);
-    loadSettings();
     refreshDashboard();
     loadAdminMatches();
-}
-
-function updateClock() {
-    const el = document.getElementById('admin-time');
-    if (el) el.textContent = new Date().toLocaleTimeString();
+    drawChart();
 }
 
 function toggleSidebar() {
@@ -119,9 +112,8 @@ function showPage(page) {
     if (el) el.classList.add('active');
     const link = document.querySelector(`[data-page="${page}"]`);
     if (link) link.classList.add('active');
-    const t = { dashboard: 'Dashboard', apis: 'API Status', matches: 'Matches', settings: 'Settings' };
+    const t = { dashboard: 'Dashboard', matches: 'Matches', settings: 'Settings', apis: 'API Status', leagues: 'Leagues', teams: 'Teams', streams: 'Streams', news: 'News', users: 'Users', analytics: 'Analytics' };
     document.getElementById('page-title').textContent = t[page] || 'Dashboard';
-    if (page === 'apis') renderAPIList();
     if (page === 'settings') loadSettings();
 }
 
@@ -154,176 +146,138 @@ async function refreshDashboard() {
             ...(data.basketball || []),
             ...(data.tennis || []),
             ...(data.mma || []),
-            ...(data.ufc || []),
             ...(data.nfl || [])
         ];
 
-        const live = all.filter(m => ['live','in'].includes((m.status||'').toLowerCase())).length;
-        const leagues = new Set(all.map(m => m.league).filter(Boolean));
+        const live = all.filter(m => ['live', 'in'].includes((m.status || '').toLowerCase())).length;
 
-        document.getElementById('stat-total').textContent = all.length;
+        document.getElementById('stat-total').textContent = all.length.toLocaleString();
         document.getElementById('stat-live').textContent = live;
-        document.getElementById('stat-leagues').textContent = leagues.size;
-        document.getElementById('stat-apis').textContent = '5';
 
-        const sports = [
-            { name: 'Football', icon: '⚽', key: 'football' },
-            { name: 'Cricket', icon: '🏏', key: 'cricket' },
-            { name: 'Basketball', icon: '🏀', key: 'basketball' },
-            { name: 'Tennis', icon: '🎾', key: 'tennis' },
-            { name: 'MMA', icon: '🥊', key: 'mma' },
-            { name: 'UFC', icon: '🥋', key: 'ufc' },
-            { name: 'NFL', icon: '🏈', key: 'nfl' }
-        ];
-
-        document.getElementById('sport-breakdown').innerHTML = sports.map(s => {
-            const c = (data[s.key] || []).length;
-            const l = (data[s.key] || []).filter(m => (m.status||'').toLowerCase() === 'live').length;
-            return `<div class="sport-cell">
-                <span class="sport-cell-icon">${s.icon}</span>
-                <div>
-                    <div class="sport-cell-name">${s.name}</div>
-                    <div class="sport-cell-meta">${c} matches${l > 0 ? ` · <span style="color:var(--red)">${l} live</span>` : ''}</div>
-                </div>
-            </div>`;
-        }).join('');
-
-        addLog(`Loaded: ${all.length} matches, ${live} live, ${leagues.size} leagues`);
+        addLog(`Loaded: ${all.length} matches, ${live} live`);
     } catch (e) {
         addLog(`Error: ${e.message}`, 'err');
     }
 }
 
-// ===== API Status =====
-const API_ENDPOINTS = [
-    { name: 'SportScore', url: 'sportscore.com/api/widget/matches/?sport=football&limit=1', type: 'direct' },
-    { name: 'SportSRC', url: 'api.sportsrc.org/?data=matches&category=football', type: 'direct' },
-    { name: 'nfldata.org', url: '/api/nfldata?season=2026&season_type=2', type: 'proxy' },
-    { name: 'TheSportsDB', url: 'www.thesportsdb.com/api/v1/json/3/searchteams.php?t=Arsenal', type: 'direct' },
-    { name: 'ESPN Cricket', url: 'site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket', type: 'direct' },
-    { name: 'Server: SportScore', url: '/api/sportscore?sport=football&limit=1', type: 'proxy' },
-    { name: 'Server: nfldata.org', url: '/api/nfldata?season=2026&season_type=2', type: 'proxy' },
-    { name: 'Server: TheSportsDB', url: '/api/thesportsdb?path=searchteams.php?t=Arsenal', type: 'proxy' }
-];
+// ===== Chart =====
+function drawChart() {
+    var canvas = document.getElementById('visitors-chart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width = canvas.parentElement.offsetWidth - 32;
+    var h = 200;
+    canvas.height = h;
 
-function renderAPIList() {
-    const list = document.getElementById('api-list');
-    const proxy = document.getElementById('proxy-list');
-    if (!list || !proxy) return;
+    var data = [85, 92, 78, 105, 98, 120, 110];
+    var labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var maxVal = Math.max(...data) * 1.2;
+    var padL = 40, padR = 20, padT = 20, padB = 30;
+    var chartW = w - padL - padR;
+    var chartH = h - padT - padB;
 
-    const render = (arr) => arr.map(a => `
-        <div class="api-row" id="api-${a.name.replace(/[^a-z]/gi,'')}">
-            <div class="api-dot pending"></div>
-            <div class="api-body">
-                <div class="api-name">${a.name}</div>
-                <div class="api-url">${a.url}</div>
-            </div>
-            <div class="api-right">
-                <div class="api-time">—</div>
-                <button class="api-btn" onclick="checkAPI('${a.name.replace(/'/g,"\\'")}','${a.url.replace(/'/g,"\\'")}')">Test</button>
-            </div>
-        </div>
-    `).join('');
+    ctx.clearRect(0, 0, w, h);
 
-    list.innerHTML = render(API_ENDPOINTS.filter(a => a.type === 'direct'));
-    proxy.innerHTML = render(API_ENDPOINTS.filter(a => a.type === 'proxy'));
-}
-
-async function checkAPI(name, url) {
-    const id = `api-${name.replace(/[^a-z]/gi,'')}`;
-    const el = document.getElementById(id);
-    if (!el) return;
-    const dot = el.querySelector('.api-dot');
-    const time = el.querySelector('.api-time');
-    dot.className = 'api-dot pending';
-    time.textContent = 'Testing...';
-    const t0 = Date.now();
-    try {
-        const proto = url.startsWith('/') ? '' : (url.startsWith('localhost') ? 'http://' : 'https://');
-        const res = await fetch(`${proto}${url}`, { signal: AbortSignal.timeout(8000) });
-        const ms = Date.now() - t0;
-        if (res.ok) {
-            dot.className = 'api-dot ok';
-            time.textContent = `${ms}ms ✓`;
-            addLog(`OK: ${name} (${ms}ms)`);
-        } else {
-            dot.className = 'api-dot fail';
-            time.textContent = `${res.status} ✗`;
-            addLog(`FAIL: ${name} → ${res.status}`, 'err');
-        }
-    } catch (e) {
-        dot.className = 'api-dot fail';
-        time.textContent = 'Error';
-        addLog(`ERR: ${name} → ${e.message}`, 'err');
+    // Grid lines
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+        var y = padT + (chartH / 4) * i;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
     }
-}
 
-async function checkAllAPIs() {
-    addLog('Checking all APIs...');
-    await Promise.allSettled(API_ENDPOINTS.map(a => checkAPI(a.name, a.url)));
-    addLog('All checks complete');
+    // X labels
+    ctx.fillStyle = '#737984';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    for (var i = 0; i < labels.length; i++) {
+        var x = padL + (chartW / (labels.length - 1)) * i;
+        ctx.fillText(labels[i], x, h - 8);
+    }
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = '#F22D55';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    for (var i = 0; i < data.length; i++) {
+        var x = padL + (chartW / (data.length - 1)) * i;
+        var y = padT + chartH - (data[i] / maxVal) * chartH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Dots
+    for (var i = 0; i < data.length; i++) {
+        var x = padL + (chartW / (data.length - 1)) * i;
+        var y = padT + chartH - (data[i] / maxVal) * chartH;
+        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#F22D55'; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    }
 }
 
 // ===== Matches =====
 function filterAdminMatches() {
-    const f = document.getElementById('match-sport-filter')?.value || 'all';
-    const m = f === 'all' ? allAdminMatches : allAdminMatches.filter(x => x.sport === f);
-    const tb = document.getElementById('matches-tbody');
+    var f = document.getElementById('match-sport-filter')?.value || 'all';
+    var m = f === 'all' ? allAdminMatches : allAdminMatches.filter(x => x.sport === f);
+    renderMatchTable(m, 'matches-tbody-full');
+    renderMatchTable(m.slice(0, 4), 'matches-tbody');
+}
+
+function renderMatchTable(matches, tbodyId) {
+    var tb = document.getElementById(tbodyId);
     if (!tb) return;
-    if (!m.length) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-3);padding:2rem;">No matches</td></tr>';
+    if (!matches.length) {
+        tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem;">No matches</td></tr>';
         return;
     }
-    const em = { football:'⚽', cricket:'🏏', basketball:'🏀', tennis:'🎾', mma:'🥊', ufc:'🥋', nfl:'🏈' };
-    tb.innerHTML = m.slice(0,100).map((x,i) => {
-        const s = (x.status||'').toLowerCase();
-        const live = s==='live'||s==='in';
-        const ft = s==='finished'||s==='post';
-        const tc = live?'tag-live':ft?'tag-ft':'tag-up';
-        const tt = live?'LIVE':ft?'FT':x.time||'TBD';
-        const origIdx = allAdminMatches.indexOf(x);
+    tb.innerHTML = matches.map((x, i) => {
+        var s = (x.status || '').toLowerCase();
+        var live = s === 'live' || s === 'in';
+        var ft = s === 'finished' || s === 'post';
+        var tc = live ? 'tag-live' : ft ? 'tag-ft' : 'tag-up';
+        var tt = live ? 'LIVE' : ft ? 'FINISHED' : 'UPCOMING';
+        var timeOrScore = live ? (x.time || 'LIVE') : ft ? (x.score?.team1 || '-') + ' - ' + (x.score?.team2 || '-') : (x.time || 'TBD');
+        var origIdx = allAdminMatches.indexOf(x);
         return `<tr>
-            <td><span class="tag tag-sport">${em[x.sport]||'🏆'} ${x.sport}</span></td>
-            <td>${x.team1?.name||'-'}</td>
-            <td>${x.team2?.name||'-'}</td>
-            <td>${x.score?.team1||'-'} - ${x.score?.team2||'-'}</td>
-            <td>${x.league||'-'}</td>
-            <td>${x.date||'-'}</td>
+            <td>${x.team1?.name || '-'} vs ${x.team2?.name || '-'}</td>
+            <td>${x.league || '-'}</td>
             <td><span class="tag ${tc}">${tt}</span></td>
-            <td><button class="action-btn" onclick="editMatch(${origIdx})">Edit</button> <button class="action-btn del" onclick="deleteMatch(${origIdx})">Del</button></td>
+            <td>${timeOrScore}</td>
+            <td><button class="action-btn" onclick="editMatch(${origIdx})">Edit</button> <button class="action-btn del" onclick="deleteMatch(${origIdx})">Delete</button></td>
         </tr>`;
     }).join('');
 }
 
 // ===== Settings =====
 function loadSettings() {
-    const r = localStorage.getItem('refresh_interval') || '5';
-    const ri = document.getElementById('setting-refresh');
-    const di = document.getElementById('setting-date');
+    var r = localStorage.getItem('refresh_interval') || '5';
+    var ri = document.getElementById('setting-refresh');
+    var di = document.getElementById('setting-date');
     if (ri) ri.value = r;
     if (di) di.value = new Date().toISOString().split('T')[0];
     updateStorageInfo();
 }
 
 function saveSetting(key, id) {
-    const el = document.getElementById(id);
+    var el = document.getElementById(id);
     if (!el) return;
     localStorage.setItem(key, el.value);
     addLog(`Saved: ${key} = ${el.value}`);
-    alert('Saved!');
 }
 
 function updateStorageInfo() {
-    let total = 0;
-    for (let k in localStorage) {
+    var total = 0;
+    for (var k in localStorage) {
         if (localStorage.hasOwnProperty(k)) total += localStorage.getItem(k).length * 2;
     }
-    const kb = (total / 1024).toFixed(1);
-    const pct = Math.min((total / (5120 * 1024)) * 100, 100);
-    const fill = document.getElementById('storage-fill');
-    const info = document.getElementById('storage-info');
-    if (fill) fill.style.width = `${pct}%`;
-    if (info) info.textContent = `${kb} KB used (${Object.keys(localStorage).length} keys)`;
+    var kb = (total / 1024).toFixed(1);
+    var pct = Math.min((total / (5120 * 1024)) * 100, 100);
+    var fill = document.getElementById('storage-fill');
+    var info = document.getElementById('storage-info');
+    if (fill) fill.style.width = pct + '%';
+    if (info) info.textContent = kb + ' KB used (' + Object.keys(localStorage).length + ' keys)';
 }
 
 function clearAllStorage() {
@@ -331,7 +285,6 @@ function clearAllStorage() {
         localStorage.clear();
         addLog('Storage cleared', 'warn');
         updateStorageInfo();
-        alert('Cleared!');
     }
 }
 
@@ -349,7 +302,7 @@ function getCustomMatches() {
 function saveCustomMatches(m) { localStorage.setItem(CUSTOM_MATCHES_KEY, JSON.stringify(m)); }
 
 function editMatch(idx) {
-    const m = allAdminMatches[idx];
+    var m = allAdminMatches[idx];
     if (!m) return;
     document.getElementById('edit-modal-title').textContent = 'Edit Match';
     document.getElementById('edit-match-idx').value = idx;
@@ -390,11 +343,11 @@ function closeEditModal() {
 
 function saveEditMatch(e) {
     e.preventDefault();
-    const idx = document.getElementById('edit-match-idx').value;
-    const sport = document.getElementById('edit-sport').value;
-    const status = document.getElementById('edit-status').value;
-    const matchData = {
-        sport,
+    var idx = document.getElementById('edit-match-idx').value;
+    var sport = document.getElementById('edit-sport').value;
+    var status = document.getElementById('edit-status').value;
+    var matchData = {
+        sport: sport,
         team1: { name: document.getElementById('edit-team1').value.trim() },
         team2: { name: document.getElementById('edit-team2').value.trim() },
         score: { team1: document.getElementById('edit-score1').value.trim() || '-', team2: document.getElementById('edit-score2').value.trim() || '-' },
@@ -402,96 +355,62 @@ function saveEditMatch(e) {
         time: document.getElementById('edit-time').value || '19:00',
         league: document.getElementById('edit-league').value.trim(),
         venue: document.getElementById('edit-venue').value.trim(),
-        status,
+        status: status,
         result: document.getElementById('edit-result').value.trim() || undefined
     };
 
     if (idx === 'new') {
         matchData.id = 'admin_' + Date.now();
-        const customs = getCustomMatches();
+        var customs = getCustomMatches();
         customs.push(matchData);
         saveCustomMatches(customs);
-        addLog(`NEW MATCH: ${matchData.team1.name} vs ${matchData.team2.name} (${sport})`);
+        addLog('NEW MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name + ' (' + sport + ')');
     } else {
-        const orig = allAdminMatches[idx];
+        var orig = allAdminMatches[idx];
         if (orig) {
-            const overrides = getOverrides();
-            const matchId = orig.id || `override_${idx}`;
+            var overrides = getOverrides();
+            var matchId = orig.id || 'override_' + idx;
             overrides[matchId] = matchData;
             saveOverrides(overrides);
-            addLog(`EDIT MATCH: ${matchData.team1.name} vs ${matchData.team2.name}`);
+            addLog('EDIT MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name);
         }
     }
     closeEditModal();
     loadAdminMatches();
-    alert('Match saved!');
 }
 
 function deleteMatch(idx) {
     if (!confirm('Delete this match?')) return;
-    const m = allAdminMatches[idx];
+    var m = allAdminMatches[idx];
     if (m && m.id && m.id.startsWith('admin_')) {
-        const customs = getCustomMatches().filter(c => c.id !== m.id);
+        var customs = getCustomMatches().filter(c => c.id !== m.id);
         saveCustomMatches(customs);
     } else if (m) {
-        const overrides = getOverrides();
+        var overrides = getOverrides();
         overrides[m.id] = { _deleted: true };
         saveOverrides(overrides);
     }
-    addLog(`DELETE MATCH: ${m?.team1?.name} vs ${m?.team2?.name}`);
+    addLog('DELETE MATCH: ' + (m?.team1?.name || '') + ' vs ' + (m?.team2?.name || ''));
     loadAdminMatches();
-}
-
-function clearAllOverrides() {
-    if (!confirm('Clear all admin overrides and custom matches?')) return;
-    localStorage.removeItem(OVERRIDES_KEY);
-    localStorage.removeItem(CUSTOM_MATCHES_KEY);
-    addLog('All overrides cleared');
-    loadAdminMatches();
-}
-
-function renderOverrides() {
-    const overrides = getOverrides();
-    const customs = getCustomMatches();
-    const keys = Object.keys(overrides).filter(k => !overrides[k]._deleted);
-    const card = document.getElementById('overrides-card');
-    const list = document.getElementById('overrides-list');
-    if (!card || !list) return;
-    if (keys.length === 0 && customs.length === 0) {
-        card.style.display = 'none';
-        return;
-    }
-    card.style.display = 'block';
-    let html = '';
-    keys.forEach(k => {
-        const o = overrides[k];
-        html += `<div class="override-item"><span>${o.sport} — ${o.team1?.name} vs ${o.team2?.name} (${o.date})</span><span class="tag tag-ft">edited</span></div>`;
-    });
-    customs.forEach(c => {
-        html += `<div class="override-item"><span>${c.sport} — ${c.team1?.name} vs ${c.team2?.name} (${c.date})</span><span class="tag tag-live">new</span></div>`;
-    });
-    list.innerHTML = html;
 }
 
 async function loadAdminMatches() {
     addLog('Loading matches...');
     try {
-        const result = await autoFetchMatches();
+        var result = await autoFetchMatches();
         allAdminMatches = [
-            ...(result.football || []).map(m => ({...m, sport:'football'})),
-            ...(result.cricket || []).map(m => ({...m, sport:'cricket'})),
-            ...(result.basketball || []).map(m => ({...m, sport:'basketball'})),
-            ...(result.tennis || []).map(m => ({...m, sport:'tennis'})),
-            ...(result.mma || []).map(m => ({...m, sport:'mma'})),
-            ...(result.ufc || []).map(m => ({...m, sport:'ufc'})),
-            ...(result.nfl || []).map(m => ({...m, sport:'nfl'}))
+            ...(result.football || []).map(m => ({ ...m, sport: 'football' })),
+            ...(result.cricket || []).map(m => ({ ...m, sport: 'cricket' })),
+            ...(result.basketball || []).map(m => ({ ...m, sport: 'basketball' })),
+            ...(result.tennis || []).map(m => ({ ...m, sport: 'tennis' })),
+            ...(result.mma || []).map(m => ({ ...m, sport: 'mma' })),
+            ...(result.nfl || []).map(m => ({ ...m, sport: 'nfl' }))
         ];
-        const customs = getCustomMatches();
+        var customs = getCustomMatches();
         if (customs.length > 0) allAdminMatches.push(...customs);
         filterAdminMatches();
-        renderOverrides();
-        addLog(`Loaded ${allAdminMatches.length} matches`);
+        addLog('Loaded ' + allAdminMatches.length + ' matches');
     } catch (e) {
-        addLog(`Error: ${e.message}`, 'err');
+        addLog('Error: ' + e.message, 'err');
     }
 }

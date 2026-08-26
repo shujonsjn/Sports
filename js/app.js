@@ -1398,52 +1398,102 @@ async function togglePlayerDetail(matchId, teamKey, playerId) {
     `;
 }
 
-// ===== Blog View =====
+// ===== Match Preview View =====
+function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || ''; }
+function hideAllPills() {
+    var sb = document.getElementById('sidebar-right');
+    var sf = document.querySelector('.sport-filters');
+    var df = document.querySelector('.date-filters');
+    var sbWrap = df ? df.parentElement : null;
+    if (sb) sb.style.display = 'none';
+    if (sbWrap) sbWrap.style.display = 'none';
+}
+function showAllPills() {
+    var sb = document.getElementById('sidebar-right');
+    var df = document.querySelector('.date-filters');
+    var sbWrap = df ? df.parentElement : null;
+    if (sb) sb.style.display = '';
+    if (sbWrap) sbWrap.style.display = '';
+}
 function showBlogView(name, date, time, league, sport) {
-    const blogView = document.getElementById('blog-view');
+    const pv = document.getElementById('blog-view');
     const mainContent = document.getElementById('main-content');
     const nflPage = document.getElementById('nfl-page');
-    if (!blogView) return;
-    blogView.style.display = 'block';
+    if (!pv) return;
+    pv.style.display = 'block';
     if (mainContent) mainContent.style.display = 'none';
     if (nflPage) nflPage.style.display = 'none';
+    hideAllPills();
 
-    document.getElementById('blog-team1-name').textContent = name || 'Team 1';
-    document.getElementById('blog-team2-name').textContent = name || 'Team 2';
-    document.getElementById('blog-title').textContent = (name || 'Match') + ' — Match Preview';
-    document.getElementById('blog-date').textContent = '📅 ' + (date || 'TBA');
-    document.getElementById('blog-league').textContent = '🏅 ' + (league || 'League');
-    document.getElementById('blog-time').textContent = '⏱️ ' + (time || 'TBA');
-    document.getElementById('blog-match-date').textContent = date || '-';
-    document.getElementById('blog-match-time').textContent = time || '-';
-    document.getElementById('blog-match-league').textContent = league || '-';
-    document.getElementById('blog-match-status').textContent = 'Upcoming';
-    document.getElementById('blog-tag-sport').textContent = '⚽ ' + (sport || 'Football');
-    document.getElementById('blog-tag-league').textContent = league || 'League';
+    var t1 = name || 'Team 1', t2 = 'Team 2';
+    if (name && name.toLowerCase().includes(' vs ')) {
+        var parts = name.split(/\s+vs\s+/i);
+        t1 = parts[0]; t2 = parts[1] || 'Team 2';
+    }
+    var sportLabel = sport || 'Football';
+    var leagueLabel = league || 'League';
 
-    const shareUrl = window.location.origin + '/blog.html?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || '');
-    document.getElementById('share-twitter').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(name || 'Match Preview') + '&url=' + encodeURIComponent(shareUrl);
-    document.getElementById('share-facebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+    setText('pv-sport', sportLabel);
+    setText('pv-league', leagueLabel);
+    setText('pv-vs', t1 + ' vs ' + t2);
+    setText('pv-league2', leagueLabel);
+    setText('pv-title', t1 + ' vs ' + t2);
+    setText('pv-t1-name', t1);
+    setText('pv-t2-name', t2);
+    setText('pv-time', time || 'TBA');
+    setText('pv-date', formatDate(date || '') + (time ? ' • ' + time : ''));
+    setText('pv-form-t1', t1);
+    setText('pv-form-t2', t2);
+    setText('pv-detail-league', leagueLabel);
+    setText('pv-detail-date', date || '-');
+    setText('pv-detail-time', time || '-');
+    setText('pv-detail-venue', '-');
+    setText('pv-detail-status', 'Upcoming');
+    setText('pv-info-date', date || '-');
+    setText('pv-info-time', time || '-');
+    setText('pv-time-label', 'Today');
+
+    var t1Logo = document.getElementById('pv-t1-logo');
+    var t2Logo = document.getElementById('pv-t2-logo');
+    if (t1Logo) t1Logo.innerHTML = teamLogoHtml({name: t1});
+    if (t2Logo) t2Logo.innerHTML = teamLogoHtml({name: t2});
+
+    var badge = document.getElementById('pv-status-badge');
+    if (badge) { badge.className = 'pv-status-badge'; badge.innerHTML = '<span class="pv-status-dot"></span> UPCOMING'; }
+
+    var formDots1 = document.getElementById('pv-form-t1-dots');
+    var formDots2 = document.getElementById('pv-form-t2-dots');
+    if (formDots1) formDots1.innerHTML = ['w','w','w','d','w'].map(r => '<span class="pv-form-dot '+r+'">'+r.toUpperCase()+'</span>').join('');
+    if (formDots2) formDots2.innerHTML = ['w','l','w','d','d'].map(r => '<span class="pv-form-dot '+r+'">'+r.toUpperCase()+'</span>').join('');
+
+    pvTab(document.querySelector('.pv-tab'), 'preview');
 
     window.history.pushState({ blog: true }, '', '/blog.html?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || ''));
     window.scrollTo(0, 0);
 }
 
 function hideBlogView() {
-    const blogView = document.getElementById('blog-view');
+    const pv = document.getElementById('blog-view');
     const mainContent = document.getElementById('main-content');
-    if (blogView) blogView.style.display = 'none';
+    if (pv) pv.style.display = 'none';
     if (mainContent) mainContent.style.display = '';
+    showAllPills();
     updateUrl(currentSport, currentDate, null);
+    initNavigation();
     window.scrollTo(0, 0);
 }
 
+function pvTab(el, tab) {
+    document.querySelectorAll('.pv-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pv-tab-content').forEach(c => c.style.display = 'none');
+    if (el) el.classList.add('active');
+    var content = document.getElementById('pv-tab-' + tab);
+    if (content) content.style.display = 'block';
+}
+
 function copyBlogLink() {
-    const url = window.location.href;
+    var url = window.location.href;
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-            const btn = document.querySelector('.blog-share-btn:last-child');
-            if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Link', 2000); }
-        });
+        navigator.clipboard.writeText(url);
     }
 }
