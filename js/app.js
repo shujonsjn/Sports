@@ -678,18 +678,23 @@ function renderMatchList(matches, container) {
 
             // Center content based on status
             let centerHtml = '';
+            let centerClass = 'mc-center';
             if (status === 'live') {
                 const hasS1 = s1 && s1 !== '-';
                 const hasS2 = s2 && s2 !== '-';
-                centerHtml = `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div>
+                centerClass += ' mc-scores';
+                centerHtml = `<div class="mc-score live">${hasS1 ? escHtml(s1) : '-'}</div>
                     <span class="mc-score-sep">-</span>
-                    <div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`;
+                    <div class="mc-score live">${hasS2 ? escHtml(s2) : '-'}</div>`;
             } else if (status === 'finished') {
                 const hasS1 = s1 && s1 !== '-';
                 const hasS2 = s2 && s2 !== '-';
-                centerHtml = hasS1 || hasS2
-                    ? `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`
-                    : `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">${escHtml(formatDate(match.date))}</div>`;
+                if (hasS1 || hasS2) {
+                    centerClass += ' mc-scores';
+                    centerHtml = `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`;
+                } else {
+                    centerHtml = `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">${escHtml(formatDate(match.date))}</div>`;
+                }
             } else {
                 centerHtml = `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">Today</div>`;
             }
@@ -709,7 +714,7 @@ function renderMatchList(matches, container) {
                         <div class="mc-team-dot" style="background:${dotColor}"></div>
                         <div class="mc-team-name">${t1Name}</div>
                     </div>
-                    <div class="mc-center">
+                    <div class="${centerClass}">
                         ${centerHtml}
                     </div>
                     <div class="mc-right">
@@ -788,8 +793,10 @@ function updateLiveScoresInPlace(matches, container) {
             const hasS1 = s1 && s1 !== '-';
             const hasS2 = s2 && s2 !== '-';
             if (status === 'live') {
+                center.classList.add('mc-scores');
                 center.innerHTML = `<div class="mc-score live">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score live">${hasS2 ? escHtml(s2) : '-'}</div>`;
             } else if (status === 'finished' && (hasS1 || hasS2)) {
+                center.classList.add('mc-scores');
                 center.innerHTML = `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`;
             }
         }
