@@ -197,37 +197,13 @@ function teamLogoHtml(team) {
     return `<div class="mc-logo"><img src="${escHtml(logo)}" alt="${escHtml(name)}" loading="lazy" onload="this.style.display='';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="team-initials" style="display:none">${escHtml(initials)}</span></div>`;
 }
 
-// ===== Loading Skeleton =====
+function updateSelectedDateDisplay(dateStr) {}
 function renderLoadingSkeleton(container) {
     if (!container) return;
-    let html = '<div class="loading-skeletons" aria-label="Loading matches" role="status"><span class="sr-only">Loading matches...</span>';
-    for (let i = 0; i < 4; i++) {
-        html += `<div class="skeleton-card">
-            <div class="skeleton-card-header">
-                <div class="skeleton skeleton-icon"></div>
-                <div class="skeleton skeleton-title"></div>
-            </div>
-            <div class="skeleton-card-body">
-                <div class="skeleton-team">
-                    <div class="skeleton skeleton-logo"></div>
-                    <div class="skeleton skeleton-name"></div>
-                </div>
-                <div class="skeleton-center">
-                    <div class="skeleton-score">
-                        <div class="skeleton skeleton-score-block"></div>
-                        <div class="skeleton skeleton-vs"></div>
-                        <div class="skeleton skeleton-score-block"></div>
-                    </div>
-                    <div class="skeleton skeleton-status"></div>
-                </div>
-                <div class="skeleton-team">
-                    <div class="skeleton skeleton-logo"></div>
-                    <div class="skeleton skeleton-name"></div>
-                </div>
-            </div>
-        </div>`;
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+        html += '<div class="skeleton-card"></div>';
     }
-    html += '</div>';
     container.innerHTML = html;
 }
 
@@ -308,33 +284,27 @@ function initTheme() {
 // Initialize application
 document.addEventListener('DOMContentLoaded', async function() {
     initTheme();
-    initCalendar();
-    initMobileCalendar();
     initNavigation();
-    initHamburger();
     initSearch();
 
     // Set sport from URL
     switchSport(currentSport, false);
 
-    // Set calendar to correct date
-    if (typeof highlightDate === 'function') highlightDate(currentDate);
-    if (typeof updateSelectedDateDisplay === 'function') updateSelectedDateDisplay(currentDate);
+    // Render date pills
+    renderDatePills();
 
     await loadMatchesForDate(currentDate);
-    refreshCalendarEvents();
 
     // Check for match slug in URL
     const slugInfo = getMatchFromSlug();
     if (slugInfo) {
-        // Try to find and select match after data loads
         setTimeout(() => {
             const match = findMatchBySlug(slugInfo);
             if (match) selectMatch(match.id, false);
         }, 1500);
     }
 
-    // Check for blog URL on page load — auto-open blog view
+    // Check for blog URL on page load
     if (window.location.pathname.includes('blog.html') || window.location.pathname.includes('blog')) {
         const params = new URLSearchParams(window.location.search);
         const matchName = params.get('match') || '';
@@ -347,21 +317,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    console.log('🚀 Live Streaming initialized');
-
-    // Start score checker
+    console.log('🚀 SportsLive initialized');
     setTimeout(startScoreChecker, 5000);
 });
 
 // Initialize navigation
 function initNavigation() {
-    const navButtons = document.querySelectorAll('.nav-btn');
-    
-    navButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.sport === currentSport) {
-            btn.classList.add('active');
-        }
+    document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === currentSport);
+    });
+    document.querySelectorAll('.sport-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === currentSport);
+    });
+    document.querySelectorAll('.mobile-nav-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === currentSport);
     });
 }
 
@@ -373,84 +342,139 @@ function switchSport(sport, updateUrlFlag = true) {
     // Hide blog view when switching sports
     const bv = document.getElementById('blog-view');
     const mc = document.getElementById('main-content');
+    const nfl = document.getElementById('nfl-page');
     if (bv) bv.style.display = 'none';
     if (mc) mc.style.display = '';
+    if (nfl) nfl.style.display = 'none';
 
-    // Update active tab
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.sport === sport) {
-            btn.classList.add('active');
-        }
+    // Update desktop nav links
+    document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === sport);
     });
-    
-    // Update mobile nav dropdown
-    document.querySelectorAll('.mobile-nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.sport === sport) {
-            item.classList.add('active');
-        }
+    // Update desktop sport pills
+    document.querySelectorAll('.sport-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === sport);
     });
-    const icons = { all:'🌍', football:'⚽', cricket:'🏏', basketball:'🏀', tennis:'🎾', mma:'🥊', ufc:'🥋', nfl:'🏈' };
-    const names = { all:'All Sports', football:'Football', cricket:'Cricket', basketball:'Basketball', tennis:'Tennis', mma:'MMA', ufc:'UFC', nfl:'NFL' };
-    const triggerIcon = document.querySelector('.mobile-nav-trigger-icon');
-    const triggerText = document.getElementById('mobile-nav-current');
-    if (triggerIcon) triggerIcon.textContent = icons[sport] || '🏟️';
-    if (triggerText) triggerText.textContent = names[sport] || sport;
-    const dropdown = document.getElementById('mobile-nav-dropdown');
-    if (dropdown) dropdown.classList.remove('open');
-    
-    // Update schedule header
-    const scheduleIcon = document.getElementById('schedule-icon');
-    const scheduleTitle = document.getElementById('schedule-title');
-    if (scheduleIcon) scheduleIcon.textContent = icons[sport] || '🏟️';
-    if (scheduleTitle) scheduleTitle.textContent = `${names[sport] || sport} Schedule`;
-    
-    // Close mobile menu
-    const navContent = document.querySelector('.nav-content');
-    if (navContent) navContent.classList.remove('active');
-    
+    // Update mobile nav pills
+    document.querySelectorAll('.mobile-nav-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sport === sport);
+    });
+    // Update bottom nav
+    document.querySelectorAll('.bottom-nav-item').forEach((btn, i) => {
+        btn.classList.toggle('active', (i === 0 && sport === 'all') || (i === 2 && sport === 'football'));
+    });
+
     if (updateUrlFlag) updateUrl(currentSport, currentDate, null);
-    
+
     // Reload matches
     selectedMatch = null;
     loadMatchesForDate(currentDate);
-    setTimeout(addMatchDots, 300);
+    renderDatePills();
+    updateLiveNowSidebar();
 }
 
 function toggleMobileNav() {
-    const dropdown = document.getElementById('mobile-nav-dropdown');
-    if (dropdown) dropdown.classList.toggle('open');
+    // no-op - mobile uses pills now
 }
-document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('mobile-nav-dropdown');
-    if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('open');
-});
 
-// Initialize hamburger menu
-function initHamburger() {
-    const hamburger = document.getElementById('hamburger');
-    const navContent = document.querySelector('.nav-content');
-
-    if (hamburger && navContent) {
-        hamburger.addEventListener('click', function(e) {
-            e.stopPropagation();
-            navContent.classList.toggle('active');
-        });
-
-        navContent.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                navContent.classList.remove('active');
-            });
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!navContent.contains(e.target) && !hamburger.contains(e.target)) {
-                navContent.classList.remove('active');
-            }
-        });
+// ===== Date Pills =====
+function renderDatePills() {
+    const today = new Date();
+    const dates = [];
+    for (let i = -1; i <= 2; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        dates.push(d);
+    }
+    const fmt = d => {
+        const str = d.toISOString().slice(0, 10);
+        if (i === 0) return 'Today';
+        if (i === -1) return 'Yesterday';
+        if (i === 1) return 'Tomorrow';
+        return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+    var i = 0;
+    // Desktop
+    const desktopContainer = document.getElementById('date-filters');
+    if (desktopContainer) {
+        desktopContainer.innerHTML = dates.map((d, idx) => {
+            const dateStr = d.toISOString().slice(0, 10);
+            const isActive = dateStr === currentDate;
+            let label = '';
+            if (idx === 0) label = 'Yesterday';
+            else if (idx === 1) label = 'Today';
+            else if (idx === 2) label = 'Tomorrow';
+            else label = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            return `<button class="date-pill ${isActive ? 'active' : ''}" onclick="loadMatchesForDate('${dateStr}');renderDatePills()">${label}</button>`;
+        }).join('');
+        // Add custom date option
+        desktopContainer.innerHTML += `<button class="date-pill" onclick="pickCustomDate()" title="Pick a date">📅 ${today.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</button>`;
+    }
+    // Mobile
+    const mobileContainer = document.getElementById('mobile-date-pills');
+    if (mobileContainer) {
+        mobileContainer.innerHTML = dates.map((d, idx) => {
+            const dateStr = d.toISOString().slice(0, 10);
+            const isActive = dateStr === currentDate;
+            let label = '';
+            if (idx === 0) label = 'Yesterday';
+            else if (idx === 1) label = 'Today';
+            else if (idx === 2) label = 'Tomorrow';
+            else label = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            return `<button class="mobile-date-pill ${isActive ? 'active' : ''}" onclick="loadMatchesForDate('${dateStr}');renderDatePills()">${label}</button>`;
+        }).join('');
     }
 }
+
+function pickCustomDate() {
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.value = currentDate;
+    input.onchange = () => {
+        if (input.value) {
+            loadMatchesForDate(input.value);
+            renderDatePills();
+        }
+    };
+    input.click();
+}
+
+// ===== Live Now Sidebar =====
+function updateLiveNowSidebar() {
+    const container = document.getElementById('live-now-list');
+    if (!container) return;
+
+    const today = getTodayString();
+    const allMatches = getMatchesForDate(today);
+    const liveMatches = allMatches.filter(m => getMatchStatus(m) === 'live').slice(0, 3);
+
+    if (liveMatches.length === 0) {
+        container.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--muted);font-size:0.82rem">No live matches</div>';
+        return;
+    }
+
+    container.innerHTML = liveMatches.map(match => {
+        const t1 = cleanDisplayName(match.team1?.name || 'TBD');
+        const t2 = cleanDisplayName(match.team2?.name || 'TBD');
+        const s1 = scoreValue(match.score?.team1);
+        const s2 = scoreValue(match.score?.team2);
+        const league = match.league || '';
+        const minute = match.statusText || '';
+
+        return `<div class="live-mini-card" onclick="selectMatch('${esc(String(match.id))}')">
+            <div class="live-mini-league">${escHtml(league)}</div>
+            <div class="live-mini-teams">
+                <div class="live-mini-team">${escHtml(t1)}</div>
+                <div class="live-mini-score">${s1 && s1 !== '-' ? escHtml(s1) : '-'} - ${s2 && s2 !== '-' ? escHtml(s2) : '-'}</div>
+                <div class="live-mini-team">${escHtml(t2)}</div>
+            </div>
+            ${minute ? `<div class="live-mini-minute">${escHtml(minute)}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+// Initialize hamburger menu (no-op - mobile uses bottom nav now)
+function initHamburger() {}
 
 // Filter matches by current sport/league and render
 function filterAndRender(matches, container) {
@@ -591,8 +615,7 @@ function renderMatchList(matches, container) {
     if (!container) return;
     matches = Array.isArray(matches) ? matches.filter(Boolean) : [];
     stopAllCountdowns();
-    matches = (Array.isArray(matches) ? matches : []).map(normalizeDisplayMatch).filter(Boolean);
-    // Remove duplicate cards without changing the provider's match identity.
+    matches = matches.map(normalizeDisplayMatch).filter(Boolean);
     const seen = new Set();
     matches = matches.filter(m => {
         const key = String(m.id || `${m.date}|${m.time}|${m.team1?.name}|${m.team2?.name}`);
@@ -607,32 +630,36 @@ function renderMatchList(matches, container) {
         const isPastDate = currentDate < today;
         const isFutureDate = currentDate > today;
         if (isPastDate) {
-            renderEmptyState(container, { icon: '📅', title: 'No historical data', desc: 'Match data for past dates is not available yet.' });
+            container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><div class="title">No historical data</div><div class="desc">Match data for past dates is not available yet.</div></div>';
         } else if (isFutureDate) {
-            renderEmptyState(container, { icon: '⏳', title: 'No upcoming matches', desc: 'No matches have been scheduled for this date yet.' });
+            container.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><div class="title">No upcoming matches</div><div class="desc">No matches have been scheduled for this date yet.</div></div>';
         } else {
-            renderEmptyState(container, { icon: '📭', title: 'No live matches right now', desc: 'Check back later for live match updates.', action: "filterByStatus('live')", actionText: 'View Live Matches' });
+            container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="title">No live matches right now</div><div class="desc">Check back later for live match updates.</div></div>';
         }
+        updateLiveNowSidebar();
         return;
     }
 
+    // Group by league
     const groupedByLeague = {};
     matches.forEach(m => { const league = m?.league || 'Other'; (groupedByLeague[league] ||= []).push(m); });
-    const sortedLeagues = Object.keys(groupedByLeague).sort((a,b)=>groupedByLeague[b].length-groupedByLeague[a].length);
-    let html='';
+    const sortedLeagues = Object.keys(groupedByLeague).sort((a,b) => groupedByLeague[b].length - groupedByLeague[a].length);
 
+    let html = '';
     sortedLeagues.forEach(league => {
         const leagueMatches = groupedByLeague[league];
-        const icons = [...new Set(leagueMatches.map(m=>m?.icon||'🏟️'))].join(' ');
-        const compLogo = leagueMatches.find(m=>m?.competitionLogo)?.competitionLogo || '';
-        const generic = sortedLeagues.length===1 && ['Football','Cricket','Basketball','Tennis','MMA','UFC','NFL'].includes(league) && !leagueMatches.some(m=>m?.competitionLogo);
-        html += `<div class="league-group">${generic?'':`<div class="league-header">${compLogo?`<img src="${escHtml(compLogo)}" class="league-logo" alt="" loading="lazy" onerror="this.style.display='none'">`:`<span class="league-icons">${escHtml(icons)}</span>`}<span class="league-name">${escHtml(league)}</span><span class="league-count">${leagueMatches.length} match${leagueMatches.length>1?'es':''}</span></div>`}<div class="league-matches">`;
+        const leagueIcon = leagueMatches[0]?.icon || '🏟️';
+        html += `<div class="league-section">
+            <div class="league-header">
+                <div class="league-title">${escHtml(leagueIcon)} ${escHtml(league)}</div>
+                <span class="league-view-all" onclick="filterByLeague('${escHtml(league)}')">View All ›</span>
+            </div>`;
 
         leagueMatches.forEach(match => {
             const status = getMatchStatus(match);
             const id = String(match?.id ?? '');
-            const team1 = match?.team1 || {name:'Home Team'};
-            const team2 = match?.team2 || {name:'Away Team'};
+            const team1 = match?.team1 || { name: 'Home Team' };
+            const team2 = match?.team2 || { name: 'Away Team' };
             let s1 = scoreValue(match?.score?.team1);
             let s2 = scoreValue(match?.score?.team2);
             if (match.sport === 'cricket' && match.innings && match.innings.length >= 2) {
@@ -643,111 +670,71 @@ function renderMatchList(matches, container) {
                 if (lastT2.length > 0) s2 = lastT2[lastT2.length - 1].runs;
             }
             const idJson = JSON.stringify(id);
-            const time = match?.time && match.time!=='00:00' ? match.time : 'TBA';
-            const label = status==='live'?'LIVE':status==='finished'?'FINISHED':'UPCOMING';
-            const active = selectedMatch && String(selectedMatch.id)===id;
+            const time = match?.time && match.time !== '00:00' ? match.time : 'TBA';
+            const active = selectedMatch && String(selectedMatch.id) === id;
+            const isFav = typeof Favorites !== 'undefined' && Favorites.isFavorite(id);
+            const t1Name = escHtml(cleanDisplayName(team1.name || 'Home'));
+            const t2Name = escHtml(cleanDisplayName(team2.name || 'Away'));
 
-            if (match.sport === 'ufc' || match.sport === 'mma') {
-                const method = s1 && s1 !== '-' ? escHtml(s1) : '';
-                const boutType = match.league ? escHtml(match.league) : '';
-                const result = s1 && s1 !== '-' ? s1 : '';
-                const isKO = /ko|tko/i.test(result);
-                const isSUB = /sub/i.test(result);
-                const isDec = /ud|sd|md|dec/i.test(result);
-                let methodClass = 'pending';
-                let methodLabel = 'TBD';
-                if (result) {
-                    if (isKO) { methodClass = 'ko'; methodLabel = result; }
-                    else if (isSUB) { methodClass = 'sub'; methodLabel = result; }
-                    else if (isDec) { methodClass = 'dec'; methodLabel = result; }
-                    else { methodClass = ''; methodLabel = result; }
-                }
-                const winnerSide = (status === 'finished' && s1 && s1 !== '-') ? 'left' : '';
-                const t1Logo = team1.logo || '';
-                const t2Logo = team2.logo || '';
-                const t1Img = t1Logo ? `<img src="${escHtml(t1Logo)}" alt="${escHtml(cleanDisplayName(team1.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
-                const t2Img = t2Logo ? `<img src="${escHtml(t2Logo)}" alt="${escHtml(cleanDisplayName(team2.name))}" class="ufc-fighter-img" onerror="this.outerHTML='<div class=\\'ufc-fighter-img fallback\\'>🥊</div>'">` : `<div class="ufc-fighter-img fallback">🥊</div>`;
-                const isFavUfc = typeof Favorites !== 'undefined' && Favorites.isFavorite(id);
-                html += `<div class="match-card-wrapper"><div class="ufc-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
-                    <div class="ufc-fighter fighter-left" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name))}, ${jsAttr(t1Logo)})">
-                        ${status==='finished' && s1 && s1!=='-' ? '<span class="ufc-win-badge">WIN</span>' : ''}
-                        ${t1Img}
-                        <div class="ufc-fighter-name">${escHtml(cleanDisplayName(team1.name))}</div>
-                    </div>
-                    <div class="ufc-center">
-                        <div class="ufc-bout-type">${boutType || 'UFC BOUT'}</div>
-                        <div class="ufc-vs">VS</div>
-                        <div class="ufc-stats">
-                            <div class="ufc-stat-row">
-                                <span class="ufc-stat-label">METHOD</span>
-                            </div>
-                            <div class="ufc-method ${methodClass}">${methodLabel}</div>
-                        </div>
-                        <button class="fav-btn ufc-fav-btn ${isFavUfc ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFavUfc ? 'Remove from Favorites' : 'Add to Favorites'}" aria-label="${isFavUfc ? 'Remove from favorites' : 'Add to favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-                        <div class="ufc-status ${status}">${label}</div>
-                    </div>
-                    <div class="ufc-fighter fighter-right" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name))}, ${jsAttr(t2Logo)})">
-                        ${t2Img}
-                        <div class="ufc-fighter-name">${escHtml(cleanDisplayName(team2.name))}</div>
-                    </div>
-                </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
+            // Center content based on status
+            let centerHtml = '';
+            if (status === 'live') {
+                const hasS1 = s1 && s1 !== '-';
+                const hasS2 = s2 && s2 !== '-';
+                centerHtml = `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div>
+                    <span class="mc-score-sep">-</span>
+                    <div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`;
+            } else if (status === 'finished') {
+                const hasS1 = s1 && s1 !== '-';
+                const hasS2 = s2 && s2 !== '-';
+                centerHtml = hasS1 || hasS2
+                    ? `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`
+                    : `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">${escHtml(formatDate(match.date))}</div>`;
             } else {
-                const isCricket = match.sport === 'cricket';
-                const ov1 = match?.overs?.team1 || '';
-                const ov2 = match?.overs?.team2 || '';
-                const hasScore1 = s1 && s1 !== '-';
-                const hasScore2 = s2 && s2 !== '-';
-                const ov1Text = isCricket && ov1 ? ` <span class="mc-overs">(${escHtml(ov1)})</span>` : '';
-                const ov2Text = isCricket && ov2 ? ` <span class="mc-overs">(${escHtml(ov2)})</span>` : '';
-                let scoreLeft = '', scoreRight = '';
-                if (status === 'live' || status === 'finished') {
-                    if (isCricket) {
-                        scoreLeft = hasScore1 ? `${escHtml(s1)}${ov1Text}` : '<span class="mc-dash">-</span>';
-                        scoreRight = hasScore2 ? `${escHtml(s2)}${ov2Text}` : '<span class="mc-dash">-</span>';
-                    } else {
-                        scoreLeft = hasScore1 ? escHtml(s1) : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
-                        scoreRight = hasScore2 ? escHtml(s2) : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
-                    }
-                } else {
-                    scoreLeft = `<span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span>`;
-                    scoreRight = '';
-                }
-                const hideNamesForCricket = false;
-                const isFav = typeof Favorites !== 'undefined' && Favorites.isFavorite(id);
-                const t1Name = escHtml(cleanDisplayName(team1.name||'Home'));
-                const t2Name = escHtml(cleanDisplayName(team2.name||'Away'));
-                html += `<div class="match-card-wrapper"><div class="match-card ${status} ${active?'active':''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
-                    <div class="mc-row">
-                        <div class="mc-team-block">
-                            ${teamLogoHtml(team1)}
-                            <div class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team1&quot;, ${jsAttr(cleanDisplayName(team1.name||'Home Team'))}, ${jsAttr(team1.logo||'')})">${t1Name}</div>
-                        </div>
-                        <div class="mc-center">
-                            <div class="mc-score-row">
-                                <span class="mc-score-val">${scoreLeft}</span>
-                                <span class="mc-vs">VS</span>
-                                <span class="mc-score-val">${scoreRight}</span>
-                            </div>
-                            <div class="mc-bottom-row">
-                                <button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation(); toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-                                <div class="mc-status ${status}">${label}</div>
-                            </div>
-                        </div>
-                        <div class="mc-team-block mc-team-block-right">
-                            ${teamLogoHtml(team2)}
-                            <div class="mc-name team-clickable" onclick="event.stopPropagation(); toggleTeamPlayers(${idJson}, &quot;team2&quot;, ${jsAttr(cleanDisplayName(team2.name||'Away Team'))}, ${jsAttr(team2.logo||'')})">${t2Name}</div>
-                        </div>
-                    </div>
-                </div><div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div></div>`;
+                centerHtml = `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">Today</div>`;
             }
-        });
-        html += `</div></div>`;
-    });
-    container.innerHTML=html;
 
-    matches.forEach(m=>{ if(getMatchStatus(m)==='upcoming' && m.date && m.time && m.time!=='00:00') startCountdown(String(m.id),m.date,m.time); });
-    if(selectedMatch){ const acc=document.getElementById(`accordion-${CSS.escape(String(selectedMatch.id))}`); if(acc){renderAccordionContent(selectedMatch,acc);acc.style.display='block';} }
-    updateLiveFilterBtn();
+            // Right side - Preview button for upcoming, fav for all
+            const rightHtml = status === 'upcoming'
+                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();selectMatch(${idJson})">Preview</button>`
+                : `<button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation();toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>`;
+
+            // Team dot color
+            const dotColors = { football:'#3b82f6', cricket:'#10b981', basketball:'#f97316', tennis:'#8b5cf6', mma:'#ef4444', ufc:'#dc2626', nfl:'#6366f1' };
+            const dotColor = dotColors[match.sport] || '#747A84';
+
+            html += `<div class="match-card-wrapper">
+                <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
+                    <div class="mc-left">
+                        <div class="mc-team-dot" style="background:${dotColor}"></div>
+                        <div class="mc-team-name">${t1Name}</div>
+                    </div>
+                    <div class="mc-center">
+                        ${centerHtml}
+                    </div>
+                    <div class="mc-right">
+                        <div class="mc-team-name" style="text-align:right">${t2Name}</div>
+                        ${rightHtml}
+                    </div>
+                </div>
+                <div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div>
+            </div>`;
+        });
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+
+    matches.forEach(m => {
+        if (getMatchStatus(m) === 'upcoming' && m.date && m.time && m.time !== '00:00') {
+            startCountdown(String(m.id), m.date, m.time);
+        }
+    });
+    if (selectedMatch) {
+        const acc = document.getElementById(`accordion-${CSS.escape(String(selectedMatch.id))}`);
+        if (acc) { renderAccordionContent(selectedMatch, acc); acc.style.display = 'block'; }
+    }
+    updateLiveNowSidebar();
 }
 
 // Update live scores in-place without rebuilding DOM
@@ -768,7 +755,7 @@ function updateLiveScoresInPlace(matches, container) {
         return true;
     });
 
-    const existingCards = container.querySelectorAll('.match-card[data-match-id], .ufc-card[data-match-id]');
+    const existingCards = container.querySelectorAll('.match-card[data-match-id]');
     const existingIds = new Set();
     existingCards.forEach(card => existingIds.add(card.getAttribute('data-match-id')));
 
@@ -779,7 +766,7 @@ function updateLiveScoresInPlace(matches, container) {
 
     matches.forEach(match => {
         const id = String(match.id);
-        const card = container.querySelector(`.match-card[data-match-id="${CSS.escape(id)}"], .ufc-card[data-match-id="${CSS.escape(id)}"]`);
+        const card = container.querySelector(`.match-card[data-match-id="${CSS.escape(id)}"]`);
         if (!card) return;
 
         const status = getMatchStatus(match);
@@ -792,65 +779,18 @@ function updateLiveScoresInPlace(matches, container) {
             if (lastT1.length > 0) s1 = lastT1[lastT1.length - 1].runs;
             if (lastT2.length > 0) s2 = lastT2[lastT2.length - 1].runs;
         }
-        const label = status === 'live' ? 'LIVE' : status === 'finished' ? 'FINISHED' : 'UPCOMING';
 
         card.className = card.className.replace(/\b(live|finished|upcoming)\b/g, '').trim() + ' ' + status;
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
-        const scoreEls = card.querySelectorAll('.mc-score-center .mc-score-val');
-        const hasScore1 = s1 && s1 !== '-';
-        const hasScore2 = s2 && s2 !== '-';
-        const isCricketCard = match.sport === 'cricket';
-        if (scoreEls.length >= 2) {
-            const ov1 = match?.overs?.team1 || '';
-            const ov2 = match?.overs?.team2 || '';
-            const ov1Text = isCricketCard && ov1 ? ` <span class="mc-overs">(${escHtml(ov1)})</span>` : '';
-            const ov2Text = isCricketCard && ov2 ? ` <span class="mc-overs">(${escHtml(ov2)})</span>` : '';
-            let leftHtml, rightHtml;
-            if (status === 'live' || status === 'finished') {
-                leftHtml = hasScore1 ? `${escHtml(s1)}${ov1Text}` : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
-                rightHtml = hasScore2 ? `${escHtml(s2)}${ov2Text}` : (status === 'live' ? '<span class="mc-live-text">LIVE</span>' : '<span class="mc-dash">-</span>');
-            } else {
-                leftHtml = `<span class="mc-countdown" data-match-id="${escHtml(id)}">${escHtml(time)}</span>`;
-                rightHtml = '';
-            }
-            if (scoreEls[0].innerHTML !== leftHtml) scoreEls[0].innerHTML = leftHtml;
-            if (scoreEls[1].innerHTML !== rightHtml) scoreEls[1].innerHTML = rightHtml;
-        }
-
-        const statusEl = card.querySelector('.mc-status, .ufc-status');
-        if (statusEl) {
-            const isUFC = card.classList.contains('ufc-card');
-            statusEl.className = isUFC ? `ufc-status ${status}` : `mc-status ${status}`;
-            if (statusEl.textContent !== label) statusEl.textContent = label;
-        }
-
-        if (card.classList.contains('ufc-card')) {
-            const methodEl = card.querySelector('.ufc-method');
-            if (methodEl) {
-                const result = s1 && s1 !== '-' ? s1 : '';
-                const isKO = /ko|tko/i.test(result);
-                const isSUB = /sub/i.test(result);
-                const isDec = /ud|sd|md|dec/i.test(result);
-                let methodClass = 'pending';
-                let methodLabel = 'TBD';
-                if (result) {
-                    if (isKO) { methodClass = 'ko'; methodLabel = result; }
-                    else if (isSUB) { methodClass = 'sub'; methodLabel = result; }
-                    else if (isDec) { methodClass = 'dec'; methodLabel = result; }
-                    else { methodClass = ''; methodLabel = result; }
-                }
-                methodEl.className = `ufc-method ${methodClass}`;
-                if (methodEl.textContent !== methodLabel) methodEl.textContent = methodLabel;
-            }
-            const winBadge = card.querySelector('.ufc-win-badge');
-            if (status === 'finished' && s1 && s1 !== '-') {
-                if (!winBadge) {
-                    const fighterLeft = card.querySelector('.fighter-left');
-                    if (fighterLeft) fighterLeft.insertAdjacentHTML('afterbegin', '<span class="ufc-win-badge">WIN</span>');
-                }
-            } else if (winBadge) {
-                winBadge.remove();
+        const center = card.querySelector('.mc-center');
+        if (center) {
+            const hasS1 = s1 && s1 !== '-';
+            const hasS2 = s2 && s2 !== '-';
+            if (status === 'live') {
+                center.innerHTML = `<div class="mc-score live">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score live">${hasS2 ? escHtml(s2) : '-'}</div>`;
+            } else if (status === 'finished' && (hasS1 || hasS2)) {
+                center.innerHTML = `<div class="mc-score">${hasS1 ? escHtml(s1) : '-'}</div><span class="mc-score-sep">-</span><div class="mc-score">${hasS2 ? escHtml(s2) : '-'}</div>`;
             }
         }
 
@@ -863,7 +803,7 @@ function updateLiveScoresInPlace(matches, container) {
     });
 
     currentRenderedMatches = matches;
-    updateLiveFilterBtn();
+    updateLiveNowSidebar();
     return true;
 }
 
@@ -995,7 +935,7 @@ function closeAllAccordions() {
         acc.style.display = 'none';
         acc.innerHTML = '';
     });
-    document.querySelectorAll('.match-card, .ufc-card').forEach(card => {
+    document.querySelectorAll('.match-card').forEach(card => {
         card.classList.remove('active');
     });
     selectedMatch = null;
@@ -1010,55 +950,28 @@ function formatDate(dateStr) {
 
 // Update league list in sidebar
 function updateLeagueList(matches) {
-    const container = document.getElementById('league-list');
-    const mobileContainer = document.getElementById('mobile-league-list');
+    // Update Top Leagues sidebar
+    const container = document.getElementById('top-leagues-list');
+    if (!container) return;
 
     if (!matches || matches.length === 0) {
-        if (container) renderEmptyState(container, { icon: '🏆', title: 'No leagues available', desc: 'Leagues will appear here when matches are loaded.', subtle: true });
-        if (mobileContainer) renderEmptyState(mobileContainer, { icon: '🏆', title: 'No leagues available', desc: 'Leagues will appear here when matches are loaded.', subtle: true });
+        container.innerHTML = '<div style="padding:0.5rem;color:var(--muted);font-size:0.82rem">No leagues available</div>';
         return;
     }
 
-    // Group matches by league
     const leagueCount = {};
     matches.forEach(match => {
         const league = match.league || 'Other';
         if (!leagueCount[league]) {
-            leagueCount[league] = { count: 0, icon: match.icon || '🏟️', logo: match.competitionLogo || '' };
+            leagueCount[league] = { count: 0, icon: match.icon || '🏟️' };
         }
         leagueCount[league].count++;
     });
 
-    const genericLeagues = ['Football', 'Cricket', 'Basketball', 'Tennis', 'MMA', 'UFC', 'NFL'];
-    const hasRealLeagues = Object.keys(leagueCount).some(l => !genericLeagues.includes(l) || Object.values(leagueCount).some(d => d.logo));
-
-    let html = '';
-    if (!hasRealLeagues && Object.keys(leagueCount).length <= 1) {
-        const total = matches.length;
-        const icon = matches[0]?.icon || '🏟️';
-        html = `
-            <div class="league-list-item" onclick="filterByLeague(null)">
-                <span class="league-list-icon">${icon}</span>
-                <span class="league-list-name">All Matches</span>
-                <span class="league-list-count">${total}</span>
-            </div>
-        `;
-    } else {
-        const sortedLeagues = Object.entries(leagueCount)
-            .sort((a, b) => b[1].count - a[1].count);
-        sortedLeagues.forEach(([league, data]) => {
-            html += `
-                <div class="league-list-item" onclick="filterByLeague('${league.replace(/'/g, "\\'")}')">
-                    ${data.logo ? `<img src="${data.logo}" alt="" class="league-list-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="league-list-icon" style="display:none">${data.icon}</span>` : `<span class="league-list-icon">${data.icon}</span>`}
-                    <span class="league-list-name">${league}</span>
-                    <span class="league-list-count">${data.count}</span>
-                </div>
-            `;
-        });
-    }
-
-    if (container) container.innerHTML = html;
-    if (mobileContainer) mobileContainer.innerHTML = html;
+    const sortedLeagues = Object.entries(leagueCount).sort((a, b) => b[1].count - a[1].count);
+    container.innerHTML = sortedLeagues.slice(0, 6).map(([league, data]) => {
+        return `<div class="top-league-item" onclick="filterByLeague('${esc(league)}')">${escHtml(league)} <span class="top-league-arrow">›</span></div>`;
+    }).join('');
 }
 
 // Filter matches by status
@@ -1106,24 +1019,11 @@ function updateLiveFilterBtn() {
 let currentLeagueFilter = null;
 
 function filterByLeague(league) {
-    const items = document.querySelectorAll('.league-list-item');
-    
     if (currentLeagueFilter === league) {
-        // Toggle off - show all
         currentLeagueFilter = null;
-        items.forEach(item => item.classList.remove('active'));
     } else {
-        // Filter by league
         currentLeagueFilter = league;
-        items.forEach(item => {
-            item.classList.remove('active');
-            if (item.querySelector('.league-list-name').textContent === league) {
-                item.classList.add('active');
-            }
-        });
     }
-    
-    // Re-render matches
     loadMatchesForDate(currentDate);
 }
 
@@ -1131,7 +1031,6 @@ function filterByLeague(league) {
 function setMyApiKey(key) {
     setApiKey(key);
     loadMatchesForDate(currentDate);
-    refreshCalendarEvents();
     console.log('API key set! Fetching live data...');
 }
 
@@ -1143,40 +1042,12 @@ function toggleProfile() {
     }
 }
 
-// Mobile calendar toggle
-function toggleMobileCalendar() {
-    const sheet = document.getElementById('mobile-calendar-sheet');
-    const overlay = document.getElementById('calendar-overlay');
-    if (sheet && overlay) {
-        const isOpening = !sheet.classList.contains('active');
-        sheet.classList.toggle('active');
-        overlay.classList.toggle('active');
-        if (isOpening && typeof openMobileCalendar === 'function') {
-            openMobileCalendar();
-        }
-    }
-}
+// Mobile calendar toggle (no-op - mobile uses date pills now)
+function toggleMobileCalendar() {}
 
-// Mobile sidebar toggle
-function toggleMobileSidebar() {
-    const sidebar = document.getElementById('mobile-sidebar');
-    const hamburger = document.getElementById('hamburger');
-    const overlay = document.getElementById('calendar-overlay');
-    if (sidebar) {
-        sidebar.classList.toggle('active');
-        if (hamburger) hamburger.classList.toggle('active');
-        if (overlay) overlay.classList.toggle('active');
-    }
-}
-
-function closeMobileSidebar() {
-    const sidebar = document.getElementById('mobile-sidebar');
-    const hamburger = document.getElementById('hamburger');
-    const overlay = document.getElementById('calendar-overlay');
-    if (sidebar) sidebar.classList.remove('active');
-    if (hamburger) hamburger.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
-}
+// Mobile sidebar toggle (no-op - mobile uses bottom nav now)
+function toggleMobileSidebar() {}
+function closeMobileSidebar() {}
 
 // Close profile dropdown when clicking outside
 document.addEventListener('click', function(e) {
@@ -1288,10 +1159,6 @@ function stopLiveAgent() {
 
 document.addEventListener('DOMContentLoaded', () => {
     startLiveAgent();
-    const sidebar = document.querySelector('.sidebar-left');
-    const overlay = document.getElementById('calendar-overlay');
-    if (sidebar) sidebar.classList.remove('mobile-open');
-    if (overlay) overlay.classList.remove('active');
 });
 
 document.addEventListener('visibilitychange', () => {
