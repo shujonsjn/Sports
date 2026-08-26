@@ -426,17 +426,91 @@ function renderDatePills() {
     }
 }
 
+var calViewDate = null;
+var calPopup = null;
+
 function pickCustomDate() {
-    const input = document.createElement('input');
-    input.type = 'date';
-    input.value = currentDate;
-    input.onchange = () => {
-        if (input.value) {
-            loadMatchesForDate(input.value);
-            renderDatePills();
-        }
-    };
-    input.click();
+    calPopup = document.getElementById('calendar-popup');
+    if (!calPopup) return;
+    const parts = currentDate.split('-');
+    calViewDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    if (calPopup.style.display === 'none') {
+        renderCalendar();
+        calPopup.style.display = 'block';
+        document.addEventListener('click', calCloseOutside);
+    } else {
+        closeCalendar();
+    }
+}
+
+function calCloseOutside(e) {
+    var popup = document.getElementById('calendar-popup');
+    var btn = document.querySelector('.date-pill:last-child');
+    if (popup && !popup.contains(e.target) && btn && !btn.contains(e.target)) {
+        closeCalendar();
+    }
+}
+
+function closeCalendar() {
+    var popup = document.getElementById('calendar-popup');
+    if (popup) popup.style.display = 'none';
+    document.removeEventListener('click', calCloseOutside);
+}
+
+function calPrevMonth() {
+    calViewDate.setMonth(calViewDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function calNextMonth() {
+    calViewDate.setMonth(calViewDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    var titleEl = document.getElementById('cal-title');
+    var daysEl = document.getElementById('cal-days');
+    if (!titleEl || !daysEl) return;
+
+    var year = calViewDate.getFullYear();
+    var month = calViewDate.getMonth();
+    var today = new Date();
+    var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+    var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    titleEl.textContent = monthNames[month] + ' ' + year;
+
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var daysInPrev = new Date(year, month, 0).getDate();
+
+    var html = '';
+    // Previous month trailing days
+    for (var p = firstDay - 1; p >= 0; p--) {
+        html += '<button class="cal-day other-month" disabled>' + (daysInPrev - p) + '</button>';
+    }
+    // Current month days
+    for (var d = 1; d <= daysInMonth; d++) {
+        var ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var cls = 'cal-day';
+        if (ds === todayStr) cls += ' today';
+        if (ds === currentDate) cls += ' selected';
+        html += '<button class="' + cls + '" onclick="calSelectDate(\'' + ds + '\')">' + d + '</button>';
+    }
+    // Next month leading days
+    var totalCells = firstDay + daysInMonth;
+    var remaining = (7 - (totalCells % 7)) % 7;
+    for (var n = 1; n <= remaining; n++) {
+        html += '<button class="cal-day other-month" disabled>' + n + '</button>';
+    }
+
+    daysEl.innerHTML = html;
+}
+
+function calSelectDate(dateStr) {
+    loadMatchesForDate(dateStr);
+    renderDatePills();
+    closeCalendar();
 }
 
 // ===== Live Now Sidebar =====

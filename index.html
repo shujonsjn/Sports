@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=43">
+    <link rel="stylesheet" href="css/style.css?v=44">
 </head>
 <body>
     <a href="#match-list" class="skip-link">Skip to matches</a>
@@ -137,8 +137,21 @@
         <button class="sport-pill" data-sport="nfl" onclick="switchSport('nfl')">NFL</button>
     </div>
 
-    <!-- Date Filter Pills (Desktop) -->
-    <div class="date-filters desktop-header" id="date-filters"></div>
+    <!-- Date Filter Pills (Desktop) + Calendar -->
+    <div style="position:relative;max-width:1120px;margin:0 auto;padding:0 2rem;">
+      <div class="date-filters desktop-header" id="date-filters"></div>
+      <div class="calendar-popup" id="calendar-popup" style="display:none">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrevMonth()">&#9664;</button>
+          <span class="cal-title" id="cal-title"></span>
+          <button class="cal-nav" onclick="calNextMonth()">&#9654;</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="cal-days" id="cal-days"></div>
+      </div>
+    </div>
 
     <!-- NFL Premium Page -->
     <div id="nfl-page" class="nfl-page"></div>
@@ -272,7 +285,7 @@
     <script src="js/api.js?v=13"></script>
     <script src="js/countdown.js?v=7"></script>
     <script src="js/search.js?v=7"></script>
-    <script src="js/app.js?v=21"></script>
+    <script src="js/app.js?v=22"></script>
     <script src="js/nfl-page.js?v=1"></script>
     <script src="js/favorites.js?v=3"></script>
     <script src="js/score-checker.js"></script>

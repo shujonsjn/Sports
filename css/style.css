@@ -110,8 +110,8 @@ body{
 
 /* ===== Date Pills ===== */
 .date-filters{
-  max-width:1120px;margin:0 auto;
-  display:flex;gap:0.5rem;padding:0.65rem 2rem 0;
+  display:flex;gap:0.5rem;padding:0.65rem 0 0;
+  position:relative;
 }
 .date-pill{
   padding:0.5rem 0.85rem;border-radius:var(--radius);
@@ -658,6 +658,37 @@ body{
   .blog-hero-logo{width:50px;height:50px;font-size:1.3rem}
   .blog-info-grid{grid-template-columns:1fr}
 }
+
+/* ===== Calendar Popup ===== */
+.calendar-popup{
+  position:absolute;top:100%;left:0;z-index:1000;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:0.85rem;width:260px;
+}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem}
+.cal-title{font-size:0.88rem;font-weight:700;color:var(--text)}
+.cal-nav{
+  background:none;border:1px solid var(--border);border-radius:6px;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:0.7rem;color:var(--muted);transition:var(--transition);
+}
+.cal-nav:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-bottom:0.3rem}
+.cal-weekdays span{
+  text-align:center;font-size:0.65rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.5px;padding:0.2rem 0;
+}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+.cal-day{
+  text-align:center;padding:0.35rem 0;font-size:0.78rem;color:var(--text);
+  border-radius:6px;cursor:pointer;transition:var(--transition);font-family:var(--font);
+  background:none;border:none;
+}
+.cal-day:hover{background:rgba(242,45,85,0.08)}
+.cal-day.today{font-weight:800;color:var(--accent)}
+.cal-day.selected{background:var(--accent);color:#fff;font-weight:700}
+.cal-day.empty{visibility:hidden}
+.cal-day.other-month{color:var(--muted);opacity:0.4}
 
 /* ===== NFL Page ===== */
 .nfl-page{display:none}
