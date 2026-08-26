@@ -778,9 +778,14 @@ function renderMatchList(matches, container) {
                 centerHtml = `<div class="mc-time">${escHtml(time)}</div><div class="mc-subtitle">Today</div>`;
             }
 
-            // Right side - Preview button for upcoming, fav for all
+            // Helper for preview onclick
+            const pvCall = `showBlogView('${esc((match.team1?.name||'') + ' vs ' + (match.team2?.name||''))}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(currentSport)}','${esc(status)}')`;
+
+            // Right side - Preview for upcoming, Live for live, Fav for finished
             const rightHtml = status === 'upcoming'
-                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();showBlogView('${esc((match.team1?.name||'') + ' vs ' + (match.team2?.name||''))}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(currentSport)}')">Preview</button>`
+                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();${pvCall}">Preview</button>`
+                : status === 'live'
+                ? `<button class="mc-live-btn" onclick="event.stopPropagation();${pvCall}">Live ▶</button>`
                 : `<button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation();toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>`;
 
             // Team dot color
@@ -788,7 +793,7 @@ function renderMatchList(matches, container) {
             const dotColor = dotColors[match.sport] || '#747A84';
 
             html += `<div class="match-card-wrapper">
-                <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick='selectMatch(${idJson})'>
+                <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="${pvCall}">
                     <div class="mc-left">
                         <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
                         <div class="mc-team-name">${t1Name}</div>
@@ -1416,7 +1421,7 @@ function showAllPills() {
     if (sb) sb.style.display = '';
     if (sbWrap) sbWrap.style.display = '';
 }
-function showBlogView(name, date, time, league, sport) {
+function showBlogView(name, date, time, league, sport, status) {
     const pv = document.getElementById('blog-view');
     const mainContent = document.getElementById('main-content');
     const nflPage = document.getElementById('nfl-page');
@@ -1433,6 +1438,7 @@ function showBlogView(name, date, time, league, sport) {
     }
     var sportLabel = sport || 'Football';
     var leagueLabel = league || 'League';
+    var st = (status || 'upcoming').toLowerCase();
 
     setText('pv-sport', sportLabel);
     setText('pv-league', leagueLabel);
@@ -1449,7 +1455,6 @@ function showBlogView(name, date, time, league, sport) {
     setText('pv-detail-date', date || '-');
     setText('pv-detail-time', time || '-');
     setText('pv-detail-venue', '-');
-    setText('pv-detail-status', 'Upcoming');
     setText('pv-info-date', date || '-');
     setText('pv-info-time', time || '-');
     setText('pv-time-label', 'Today');
@@ -1460,7 +1465,21 @@ function showBlogView(name, date, time, league, sport) {
     if (t2Logo) t2Logo.innerHTML = teamLogoHtml({name: t2});
 
     var badge = document.getElementById('pv-status-badge');
-    if (badge) { badge.className = 'pv-status-badge'; badge.innerHTML = '<span class="pv-status-dot"></span> UPCOMING'; }
+    if (badge) {
+        if (st === 'live' || st === 'in') {
+            badge.className = 'pv-status-badge live';
+            badge.innerHTML = '<span class="pv-status-dot"></span> LIVE';
+            setText('pv-detail-status', 'Live');
+        } else if (st === 'finished' || st === 'post') {
+            badge.className = 'pv-status-badge finished';
+            badge.innerHTML = '<span class="pv-status-dot"></span> FINISHED';
+            setText('pv-detail-status', 'Finished');
+        } else {
+            badge.className = 'pv-status-badge';
+            badge.innerHTML = '<span class="pv-status-dot"></span> UPCOMING';
+            setText('pv-detail-status', 'Upcoming');
+        }
+    }
 
     var formDots1 = document.getElementById('pv-form-t1-dots');
     var formDots2 = document.getElementById('pv-form-t2-dots');

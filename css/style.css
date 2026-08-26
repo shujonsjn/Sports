@@ -225,6 +225,14 @@ body{
 .mc-preview-btn:hover{
   background:var(--accent);color:var(--white);
 }
+.mc-live-btn{
+  padding:0.35rem 0.85rem;border-radius:8px;
+  border:none;background:var(--accent);
+  color:#fff;font-size:0.78rem;font-weight:600;
+  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  font-family:var(--font);animation:pulse 2s infinite;
+}
+.mc-live-btn:hover{opacity:0.85}
 
 /* Score display (live/finished) */
 .mc-score{
