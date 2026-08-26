@@ -109,6 +109,18 @@ function findMatchBySlug(slugInfo) {
 }
 
 window.addEventListener('popstate', function() {
+    // Check if navigating to/from blog view
+    if (window.location.pathname.includes('blog.html') || window.location.pathname.includes('blog')) {
+        const params = new URLSearchParams(window.location.search);
+        const matchName = params.get('match') || '';
+        if (matchName) {
+            showBlogView(matchName, params.get('date') || '', params.get('time') || '', params.get('league') || '', params.get('sport') || '');
+            return;
+        }
+    } else {
+        hideBlogView();
+    }
+
     const info = parseUrlPath();
     if (info.sport !== currentSport) {
         switchSport(info.sport, false);
@@ -322,6 +334,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 1500);
     }
 
+    // Check for blog URL on page load — auto-open blog view
+    if (window.location.pathname.includes('blog.html') || window.location.pathname.includes('blog')) {
+        const params = new URLSearchParams(window.location.search);
+        const matchName = params.get('match') || '';
+        const matchDate = params.get('date') || '';
+        const matchTime = params.get('time') || '';
+        const matchLeague = params.get('league') || '';
+        const matchSport = params.get('sport') || '';
+        if (matchName || matchDate) {
+            setTimeout(() => showBlogView(matchName, matchDate, matchTime, matchLeague, matchSport), 500);
+        }
+    }
+
     console.log('🚀 Live Streaming initialized');
 
     // Start score checker
@@ -344,7 +369,13 @@ function initNavigation() {
 function switchSport(sport, updateUrlFlag = true) {
     currentSport = sport;
     currentLeagueFilter = null;
-    
+
+    // Hide blog view when switching sports
+    const bv = document.getElementById('blog-view');
+    const mc = document.getElementById('main-content');
+    if (bv) bv.style.display = 'none';
+    if (mc) mc.style.display = '';
+
     // Update active tab
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -1412,4 +1443,54 @@ async function togglePlayerDetail(matchId, teamKey, playerId) {
             ${desc ? `<div class="player-blog-desc">${desc.split('\n').filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('')}</div>` : ''}
         </div>
     `;
+}
+
+// ===== Blog View =====
+function showBlogView(name, date, time, league, sport) {
+    const blogView = document.getElementById('blog-view');
+    const mainContent = document.getElementById('main-content');
+    const nflPage = document.getElementById('nfl-page');
+    if (!blogView) return;
+    blogView.style.display = 'block';
+    if (mainContent) mainContent.style.display = 'none';
+    if (nflPage) nflPage.style.display = 'none';
+
+    document.getElementById('blog-team1-name').textContent = name || 'Team 1';
+    document.getElementById('blog-team2-name').textContent = name || 'Team 2';
+    document.getElementById('blog-title').textContent = (name || 'Match') + ' — Match Preview';
+    document.getElementById('blog-date').textContent = '📅 ' + (date || 'TBA');
+    document.getElementById('blog-league').textContent = '🏅 ' + (league || 'League');
+    document.getElementById('blog-time').textContent = '⏱️ ' + (time || 'TBA');
+    document.getElementById('blog-match-date').textContent = date || '-';
+    document.getElementById('blog-match-time').textContent = time || '-';
+    document.getElementById('blog-match-league').textContent = league || '-';
+    document.getElementById('blog-match-status').textContent = 'Upcoming';
+    document.getElementById('blog-tag-sport').textContent = '⚽ ' + (sport || 'Football');
+    document.getElementById('blog-tag-league').textContent = league || 'League';
+
+    const shareUrl = window.location.origin + '/blog.html?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || '');
+    document.getElementById('share-twitter').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(name || 'Match Preview') + '&url=' + encodeURIComponent(shareUrl);
+    document.getElementById('share-facebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+
+    window.history.pushState({ blog: true }, '', '/blog.html?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || ''));
+    window.scrollTo(0, 0);
+}
+
+function hideBlogView() {
+    const blogView = document.getElementById('blog-view');
+    const mainContent = document.getElementById('main-content');
+    if (blogView) blogView.style.display = 'none';
+    if (mainContent) mainContent.style.display = '';
+    updateUrl(currentSport, currentDate, null);
+    window.scrollTo(0, 0);
+}
+
+function copyBlogLink() {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.querySelector('.blog-share-btn:last-child');
+            if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Link', 2000); }
+        });
+    }
 }

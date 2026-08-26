@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=41">
+    <link rel="stylesheet" href="css/style.css?v=42">
     <noscript>
         <style>
             .main-container { display: block; padding: 2rem; text-align: center; }
@@ -357,6 +357,91 @@
         </div>
     </nav>
 
+    <!-- NFL Premium Page -->
+    <div id="nfl-page" class="nfl-page"></div>
+
+    <!-- Blog View -->
+    <div id="blog-view" class="blog-view" style="display:none">
+        <div class="blog-layout">
+            <div class="blog-page">
+                <div class="blog-hero">
+                    <a class="blog-hero-back" onclick="event.preventDefault();hideBlogView()" href="#">← Back to LiveScores</a>
+                    <div class="blog-hero-badge" id="blog-hero-badge">Match Preview</div>
+                    <div class="blog-hero-teams">
+                        <div class="blog-hero-team">
+                            <div class="blog-hero-logo" id="blog-team1-logo">T1</div>
+                            <div class="blog-hero-team-name" id="blog-team1-name">Team 1</div>
+                        </div>
+                        <div class="blog-hero-vs">VS</div>
+                        <div class="blog-hero-team">
+                            <div class="blog-hero-logo" id="blog-team2-logo">T2</div>
+                            <div class="blog-hero-team-name" id="blog-team2-name">Team 2</div>
+                        </div>
+                    </div>
+                    <h1 class="blog-hero-title" id="blog-title">Match Preview</h1>
+                    <div class="blog-hero-meta">
+                        <span class="blog-hero-meta-item" id="blog-date">📅 Loading...</span>
+                        <span class="blog-hero-meta-item" id="blog-league">🏅 Loading...</span>
+                        <span class="blog-hero-meta-item" id="blog-time">⏱️ --:--</span>
+                    </div>
+                </div>
+                <div class="blog-info-card">
+                    <div class="blog-info-grid">
+                        <div class="blog-info-item"><span class="blog-info-icon">📅</span><div><div class="blog-info-label">Date</div><div class="blog-info-value" id="blog-match-date">-</div></div></div>
+                        <div class="blog-info-item"><span class="blog-info-icon">⏰</span><div><div class="blog-info-label">Time</div><div class="blog-info-value" id="blog-match-time">-</div></div></div>
+                        <div class="blog-info-item"><span class="blog-info-icon">🏅</span><div><div class="blog-info-label">League</div><div class="blog-info-value" id="blog-match-league">-</div></div></div>
+                        <div class="blog-info-item"><span class="blog-info-icon">📋</span><div><div class="blog-info-label">Status</div><div class="blog-info-value" id="blog-match-status">Upcoming</div></div></div>
+                    </div>
+                </div>
+                <div id="blog-dynamic-content">
+                    <div class="blog-default-content">
+                        <h2>Match Overview</h2>
+                        <p id="blog-overview">Loading match preview...</p>
+                        <h2>What to Expect</h2>
+                        <p>Both teams will be looking to secure a win in this upcoming fixture. Follow LiveScores for real-time match updates, live scores, and detailed statistics.</p>
+                    </div>
+                </div>
+                <div class="blog-tags">
+                    <span class="blog-tag" id="blog-tag-sport">⚽ Football</span>
+                    <span class="blog-tag" id="blog-tag-league">League</span>
+                    <span class="blog-tag">Live Scores</span>
+                    <span class="blog-tag">Match Preview</span>
+                </div>
+                <div class="blog-share-card">
+                    <span class="blog-share-label">Share this match</span>
+                    <div class="blog-share-btns">
+                        <a class="blog-share-btn" id="share-twitter" href="#" target="_blank" rel="noopener">Twitter</a>
+                        <a class="blog-share-btn" id="share-facebook" href="#" target="_blank" rel="noopener">Facebook</a>
+                        <button class="blog-share-btn" onclick="copyBlogLink()">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+            <aside class="blog-sidebar">
+                <div class="ad-container">
+                    <div class="ad-label">Sponsored</div>
+                    <div class="demo-ad">
+                        <div class="demo-ad-badge">AD</div>
+                        <div class="demo-ad-content">
+                            <div class="demo-ad-icon" aria-hidden="true">⚽</div>
+                            <h4 class="demo-ad-title">Live Sports Premium</h4>
+                            <p class="demo-ad-text">Watch all matches live in HD. No ads, no buffering.</p>
+                            <button class="demo-ad-btn" onclick="window.open('https://www.google.com/search?q=live+sports+streaming', '_blank')" aria-label="Try Live Sports Premium free">Try Free →</button>
+                        </div>
+                    </div>
+                    <div class="demo-ad">
+                        <div class="demo-ad-badge">AD</div>
+                        <div class="demo-ad-content">
+                            <div class="demo-ad-icon" aria-hidden="true">🎰</div>
+                            <h4 class="demo-ad-title">SportsBet Pro</h4>
+                            <p class="demo-ad-text">Predict match outcomes & win real prizes daily.</p>
+                            <button class="demo-ad-btn" onclick="window.open('https://www.google.com/search?q=sports+betting', '_blank')" aria-label="Play SportsBet Pro now">Play Now →</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-container" id="main-content">
 
@@ -460,6 +545,7 @@
     <script src="js/countdown.js?v=7"></script>
     <script src="js/search.js?v=7"></script>
     <script src="js/app.js?v=20"></script>
+    <script src="js/nfl-page.js?v=1"></script>
     <script src="js/favorites.js?v=3"></script>
     <script src="js/score-checker.js"></script>
     <script src="js/site-audit.js"></script>

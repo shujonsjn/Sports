@@ -4,3 +4,6 @@ node_modules/
 jobs/data/
 jobs/cache.log
 .vercel
+.playwright-mcp/
+*.png
+css/style-backup.css
