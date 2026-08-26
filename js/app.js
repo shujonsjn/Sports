@@ -781,12 +781,12 @@ function renderMatchList(matches, container) {
             // Helper for preview onclick
             const pvCall = `showBlogView('${esc((match.team1?.name||'') + ' vs ' + (match.team2?.name||''))}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(currentSport)}','${esc(status)}')`;
 
-            // Right side - Preview for upcoming, Live for live, Fav for finished
+            // Right side - Preview for upcoming, Live for live, Highlights for finished
             const rightHtml = status === 'upcoming'
                 ? `<button class="mc-preview-btn" onclick="event.stopPropagation();${pvCall}">Preview</button>`
                 : status === 'live'
                 ? `<button class="mc-live-btn" onclick="event.stopPropagation();${pvCall}">Live ▶</button>`
-                : `<button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation();toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>`;
+                : `<button class="mc-highlights-btn" onclick="event.stopPropagation();${pvCall}">Watch Highlights ▶</button>`;
 
             // Team dot color
             const dotColors = { football:'#3b82f6', cricket:'#10b981', basketball:'#f97316', tennis:'#8b5cf6', mma:'#ef4444', ufc:'#dc2626', nfl:'#6366f1' };
@@ -802,8 +802,8 @@ function renderMatchList(matches, container) {
                         ${centerHtml}
                     </div>
                     <div class="mc-right">
-                        <div class="mc-logo-wrap mc-logo-right"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                         <div class="mc-team-name" style="text-align:right">${t2Name}</div>
+                        <div class="mc-logo-wrap mc-logo-right"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                         ${rightHtml}
                     </div>
                 </div>
@@ -1478,6 +1478,20 @@ function showBlogView(name, date, time, league, sport, status) {
             badge.className = 'pv-status-badge';
             badge.innerHTML = '<span class="pv-status-dot"></span> UPCOMING';
             setText('pv-detail-status', 'Upcoming');
+        }
+    }
+
+    var watchBtn = document.getElementById('pv-watch-btn');
+    if (watchBtn) {
+        if (st === 'live' || st === 'in') {
+            watchBtn.textContent = 'Watch Live ▶';
+            watchBtn.className = 'pv-watch-btn live';
+        } else if (st === 'finished' || st === 'post') {
+            watchBtn.textContent = 'Watch Highlights ▶';
+            watchBtn.className = 'pv-watch-btn';
+        } else {
+            watchBtn.textContent = 'Watch Live ▶';
+            watchBtn.className = 'pv-watch-btn';
         }
     }
 

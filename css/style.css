@@ -233,6 +233,14 @@ body{
   font-family:var(--font);animation:pulse 2s infinite;
 }
 .mc-live-btn:hover{opacity:0.85}
+.mc-highlights-btn{
+  padding:0.35rem 0.85rem;border-radius:8px;
+  border:1px solid var(--accent);background:var(--white);
+  color:var(--accent);font-size:0.78rem;font-weight:600;
+  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  font-family:var(--font);
+}
+.mc-highlights-btn:hover{background:var(--accent);color:var(--white)}
 
 /* Score display (live/finished) */
 .mc-score{
@@ -679,6 +687,7 @@ body{
   font-family:var(--font);cursor:pointer;transition:var(--transition);
 }
 .pv-watch-btn:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.pv-watch-btn.live{animation:pulse 2s infinite}
 .pv-tabs{
   display:flex;gap:0;background:var(--white);border:1px solid var(--border);
   border-radius:12px;padding:0.3rem;margin:1rem 0;overflow-x:auto;
