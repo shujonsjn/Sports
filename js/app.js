@@ -780,7 +780,7 @@ function renderMatchList(matches, container) {
 
             // Right side - Preview button for upcoming, fav for all
             const rightHtml = status === 'upcoming'
-                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();selectMatch(${idJson})">Preview</button>`
+                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();showBlogView('${esc((match.team1?.name||'') + ' vs ' + (match.team2?.name||''))}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(currentSport)}')">Preview</button>`
                 : `<button class="fav-btn ${isFav ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="event.stopPropagation();toggleFavorite('${escHtml(id)}')" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>`;
 
             // Team dot color
