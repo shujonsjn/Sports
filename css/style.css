@@ -30,8 +30,10 @@ body{
 /* ===== Header ===== */
 .header{
   position:sticky;top:0;z-index:100;
-  background:var(--white);
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .header-content{
   max-width:1120px;margin:0 auto;
@@ -61,11 +63,12 @@ body{
 .search-bar{flex:1;max-width:245px;position:relative}
 .search-bar input{
   width:100%;padding:0.55rem 1rem;border-radius:18px;
-  border:none;background:var(--bg);color:var(--text);
+  border:1px solid var(--border);background:var(--bg);color:var(--text);
   font-size:0.82rem;font-family:var(--font);outline:none;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
 }
 .search-bar input::placeholder{color:var(--muted)}
-.search-bar input:focus{box-shadow:0 0 0 2px rgba(242,45,85,0.15)}
+.search-bar input:focus{box-shadow:0 0 0 3px rgba(242,45,85,0.1);border-color:rgba(242,45,85,0.3)}
 .search-results{
   position:absolute;top:calc(100% + 6px);left:0;right:0;
   background:var(--white);border-radius:var(--radius-lg);
@@ -102,10 +105,12 @@ body{
   transition:var(--transition);white-space:nowrap;
   border:1px solid var(--border);background:var(--white);color:var(--text);
   display:flex;align-items:center;gap:0.4rem;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
 }
-.sport-pill:hover{border-color:var(--accent);color:var(--accent)}
+.sport-pill:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(242,45,85,0.1)}
 .sport-pill.active{
   background:var(--accent);color:var(--white);border-color:var(--accent);
+  box-shadow:0 2px 10px rgba(242,45,85,0.25);
 }
 
 /* ===== Date Pills ===== */
@@ -118,9 +123,10 @@ body{
   font-size:0.9rem;font-family:var(--font);cursor:pointer;
   transition:var(--transition);white-space:nowrap;
   border:1px solid var(--border);background:var(--white);color:var(--text);
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
 }
-.date-pill:hover{border-color:var(--accent);color:var(--accent)}
-.date-pill.active{background:var(--accent);color:var(--white);border-color:var(--accent)}
+.date-pill:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 8px rgba(242,45,85,0.1)}
+.date-pill.active{background:var(--accent);color:var(--white);border-color:var(--accent);box-shadow:0 2px 10px rgba(242,45,85,0.25)}
 
 /* ===== Main Layout ===== */
 .main-content{
@@ -137,11 +143,12 @@ body{
 .league-section{margin-bottom:1.5rem}
 .league-header{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:0.75rem;
+  margin-bottom:0.75rem;padding-bottom:0.5rem;
+  border-bottom:2px solid var(--border);
 }
 .league-title{
-  font-size:1.3rem;font-weight:700;color:var(--text);
-  display:flex;align-items:center;gap:0.5rem;
+  font-size:1.2rem;font-weight:700;color:var(--text);
+  display:flex;align-items:center;gap:0.5rem;letter-spacing:-0.02em;
 }
 .league-view-all{
   font-size:0.78rem;color:var(--accent);cursor:pointer;
@@ -155,17 +162,18 @@ body{
   background:var(--white);border:1px solid var(--border);
   border-radius:10px;padding:0;
   height:70px;margin-bottom:0.65rem;
-  cursor:pointer;transition:var(--transition);
+  cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   overflow:hidden;position:relative;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .match-card:hover{
   border-color:rgba(242,45,85,0.3);
-  box-shadow:0 4px 16px rgba(0,0,0,0.06);
-  transform:translateY(-1px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  transform:translateY(-2px);
 }
 .match-card.active{
   border-color:var(--accent);
-  box-shadow:0 0 0 2px rgba(242,45,85,0.15);
+  box-shadow:0 0 0 2px rgba(242,45,85,0.15),0 4px 20px rgba(242,45,85,0.08);
 }
 
 /* Card Sections */
@@ -174,22 +182,24 @@ body{
   padding:0 1.25rem;gap:0.5rem;min-width:0;
 }
 .mc-team-name{
-  font-size:0.9rem;font-weight:500;color:var(--text);
+  font-size:0.9rem;font-weight:600;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:-0.01em;
 }
 .mc-team-dot{
   width:10px;height:10px;border-radius:50%;
   flex-shrink:0;background:var(--muted);
 }
 .mc-logo-wrap{
-  width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
   background:var(--bg);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 2px rgba(0,0,0,0.06);
 }
 .mc-logo-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .mc-logo-fallback{
   width:100%;height:100%;align-items:center;justify-content:center;
-  font-size:0.65rem;font-weight:700;color:var(--muted);background:var(--bg);
+  font-size:0.65rem;font-weight:700;color:var(--accent);background:rgba(242,45,85,0.06);
   border-radius:50%;
 }
 .mc-logo-right{margin-left:auto}
@@ -219,28 +229,30 @@ body{
   padding:0.35rem 0.85rem;border-radius:8px;
   border:1px solid var(--accent);background:var(--white);
   color:var(--accent);font-size:0.78rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;
   font-family:var(--font);
 }
 .mc-preview-btn:hover{
   background:var(--accent);color:var(--white);
+  box-shadow:0 2px 10px rgba(242,45,85,0.25);transform:translateY(-1px);
 }
 .mc-live-btn{
   padding:0.35rem 0.85rem;border-radius:8px;
   border:none;background:var(--accent);
   color:#fff;font-size:0.78rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;
   font-family:var(--font);animation:pulse 2s infinite;
+  box-shadow:0 2px 10px rgba(242,45,85,0.25);
 }
-.mc-live-btn:hover{opacity:0.85}
+.mc-live-btn:hover{opacity:0.85;transform:translateY(-1px)}
 .mc-highlights-btn{
   padding:0.35rem 0.85rem;border-radius:8px;
   border:1px solid var(--accent);background:var(--white);
   color:var(--accent);font-size:0.78rem;font-weight:600;
-  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;
   font-family:var(--font);
 }
-.mc-highlights-btn:hover{background:var(--accent);color:var(--white)}
+.mc-highlights-btn:hover{background:var(--accent);color:var(--white);box-shadow:0 2px 10px rgba(242,45,85,0.25);transform:translateY(-1px)}
 
 /* Score display (live/finished) */
 .mc-score{
@@ -281,10 +293,12 @@ body{
 .live-now-card{
   background:var(--white);border:1px solid var(--border);
   border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .live-now-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:0.85rem 1rem;
+  border-bottom:1px solid var(--border);
 }
 .live-now-title{
   font-size:1rem;font-weight:700;color:var(--text);
@@ -292,7 +306,7 @@ body{
 }
 .live-now-title .live-dot{
   width:8px;height:8px;border-radius:50%;background:#ef4444;
-  display:inline-block;
+  display:inline-block;animation:pulse 2s infinite;
 }
 .live-now-view-all{
   font-size:0.72rem;color:var(--accent);cursor:pointer;font-weight:600;
@@ -303,10 +317,11 @@ body{
 .live-mini-card{
   background:var(--white);border:1px solid var(--border);
   border-radius:10px;padding:0.65rem 0.75rem;
-  margin-bottom:0.5rem;cursor:pointer;transition:var(--transition);
+  margin-bottom:0.5rem;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
 }
 .live-mini-card:last-child{margin-bottom:0}
-.live-mini-card:hover{border-color:rgba(242,45,85,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.live-mini-card:hover{border-color:rgba(242,45,85,0.3);box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px)}
 .live-mini-league{font-size:0.68rem;color:var(--muted);font-weight:500;margin-bottom:0.3rem}
 .live-mini-teams{
   display:flex;align-items:center;justify-content:space-between;
@@ -314,52 +329,57 @@ body{
 }
 .live-mini-team{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .live-mini-team:last-child{text-align:right}
-.live-mini-score{font-size:1rem;font-weight:700;color:var(--text);flex-shrink:0}
+.live-mini-score{font-size:1rem;font-weight:700;color:var(--text);flex-shrink:0;font-variant-numeric:tabular-nums}
 .live-mini-minute{
   text-align:center;font-size:0.68rem;color:var(--accent);font-weight:600;
-  margin-top:0.2rem;
+  margin-top:0.2rem;letter-spacing:0.5px;
 }
 
 /* Top Leagues Card */
 .top-leagues-card{
   background:var(--white);border:1px solid var(--border);
   border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .top-leagues-header{
   padding:0.85rem 1rem;
+  border-bottom:1px solid var(--border);
 }
 .top-leagues-title{font-size:1rem;font-weight:700;color:var(--text)}
 .top-leagues-list{padding:0 0.5rem 0.5rem}
 .top-league-item{
   display:flex;align-items:center;justify-content:space-between;
-  padding:0.65rem 0.5rem;cursor:pointer;transition:var(--transition);
+  padding:0.65rem 0.5rem;cursor:pointer;transition:all 0.2s ease;
   border-radius:var(--radius);font-size:0.9rem;color:var(--text);
 }
-.top-league-item:hover{background:rgba(242,45,85,0.05);color:var(--accent)}
-.top-league-arrow{color:var(--muted);font-size:0.85rem}
+.top-league-item:hover{background:rgba(242,45,85,0.06);color:var(--accent);padding-left:0.7rem}
+.top-league-arrow{color:var(--muted);font-size:0.85rem;transition:transform 0.2s ease}
+.top-league-item:hover .top-league-arrow{transform:translateX(3px);color:var(--accent)}
 
 /* ===== Empty State ===== */
 .empty-state{
   text-align:center;padding:3rem 1rem;color:var(--muted);
 }
 .empty-state .icon{font-size:2.5rem;display:block;margin-bottom:0.75rem;opacity:0.4}
-.empty-state .title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:0.3rem}
-.empty-state .desc{font-size:0.85rem}
+.empty-state .title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:0.3rem;letter-spacing:-0.01em}
+.empty-state .desc{font-size:0.85rem;line-height:1.6}
 
 /* ===== Loading Skeletons ===== */
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .skeleton{
-  background:linear-gradient(90deg,var(--border) 25%,#f0f0f0 50%,var(--border) 75%);
+  background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
   background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;
   border-radius:var(--radius);
 }
 .skeleton-card{
   height:70px;background:var(--white);border:1px solid var(--border);
   border-radius:10px;margin-bottom:0.65rem;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .skeleton-mini{
   height:75px;background:var(--white);border:1px solid var(--border);
   border-radius:10px;margin-bottom:0.5rem;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 
 /* ===== Accordion ===== */

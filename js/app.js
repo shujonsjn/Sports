@@ -540,7 +540,7 @@ function updateLiveNowSidebar() {
         const league = match.league || '';
         const minute = match.statusText || '';
 
-        return `<div class="live-mini-card" onclick="selectMatch('${esc(String(match.id))}')">
+        return `<div class="live-mini-card" onclick="showBlogView('${esc(t1 + ' vs ' + t2)}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(match.sport||currentSport)}','live')">
             <div class="live-mini-league">${escHtml(league)}</div>
             <div class="live-mini-teams">
                 <div class="live-mini-team">${escHtml(t1)}</div>
