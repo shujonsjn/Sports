@@ -901,7 +901,7 @@ function selectMatch(matchId, updateUrl = true) {
         acc.style.display = 'none';
         acc.innerHTML = '';
     });
-    document.querySelectorAll('.match-card, .ufc-card').forEach(card => {
+    document.querySelectorAll('.match-card').forEach(card => {
         card.classList.remove('active');
     });
 

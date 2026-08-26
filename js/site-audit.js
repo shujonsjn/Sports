@@ -86,7 +86,7 @@ function auditDOM(report) {
         return;
     }
 
-    const cards = container.querySelectorAll('.match-card, .ufc-card');
+    const cards = container.querySelectorAll('.match-card');
     if (cards.length === 0) {
         report.issues.push('DOM: no match cards rendered');
     } else {
