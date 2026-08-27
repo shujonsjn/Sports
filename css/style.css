@@ -130,8 +130,23 @@ body{
 
 /* ===== Main Layout ===== */
 .main-content{
-  max-width:1120px;margin:0 auto;
-  display:grid;grid-template-columns:1fr 290px;
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:220px 1fr 290px;
+  gap:1.5rem;padding:0 1.5rem;
+}
+.sidebar-left{
+  position:sticky;top:80px;
+  display:flex;flex-direction:column;gap:1rem;
+  height:fit-content;
+}
+.sidebar-left .leagues-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.sidebar-left .league-item{
+  padding:0.5rem 0.85rem;font-size:0.78rem;
+}
   gap:1.5rem;padding:1.5rem 2rem 3rem;
   align-items:start;
 }
@@ -666,6 +681,7 @@ body{
   .desktop-nav{display:none}
   .sport-filters,.date-filters{display:none}
   .main-content{grid-template-columns:1fr;padding:0.75rem;padding-bottom:5rem}
+  .sidebar-left{display:none}
   .sidebar-right{display:none}
   .mobile-toolbar{display:flex}
   .mobile-logo-bar{display:flex}
