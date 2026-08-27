@@ -109,18 +109,6 @@ function findMatchBySlug(slugInfo) {
 }
 
 window.addEventListener('popstate', function() {
-    // Check if navigating to/from blog view
-    if (window.location.pathname.includes('blog.html') || window.location.pathname.includes('blog')) {
-        const params = new URLSearchParams(window.location.search);
-        const matchName = params.get('match') || '';
-        if (matchName) {
-            showBlogView(matchName, params.get('date') || '', params.get('time') || '', params.get('league') || '', params.get('sport') || '');
-            return;
-        }
-    } else {
-        hideBlogView();
-    }
-
     const info = parseUrlPath();
     if (info.sport !== currentSport) {
         switchSport(info.sport, false);
@@ -313,7 +301,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         const matchLeague = params.get('league') || '';
         const matchSport = params.get('sport') || '';
         if (matchName || matchDate) {
-            setTimeout(() => showBlogView(matchName, matchDate, matchTime, matchLeague, matchSport), 500);
+            const openPreview = () => {
+                if (currentRenderedMatches && currentRenderedMatches.length > 0) {
+                    showBlogView(matchName, matchDate, matchTime, matchLeague, matchSport);
+                } else {
+                    setTimeout(openPreview, 200);
+                }
+            };
+            setTimeout(openPreview, 800);
         }
     }
 
