@@ -173,7 +173,7 @@ body{
 
 /* ===== Match Card ===== */
 .match-card{
-  display:flex;align-items:center;
+  display:flex;align-items:stretch;
   background:var(--white);
   border-radius:12px;padding:0;
   margin-bottom:0.65rem;
@@ -226,12 +226,11 @@ body{
 /* Status Button (right side) */
 .mc-status-box{
   flex-shrink:0;padding:0.6rem 0.7rem;
-  border:none;border-radius:8px;
+  border:none;border-radius:0 12px 12px 0;
   text-align:center;cursor:pointer;
   transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   min-width:72px;background:#fff5f5;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;min-height:58px;
 }
 .mc-status-box:hover{background:var(--accent)}
 .mc-status-box:hover .mc-status-text,
