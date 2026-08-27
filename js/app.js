@@ -346,6 +346,7 @@ function switchSport(sport, updateUrlFlag = true) {
     if (bv) bv.style.display = 'none';
     if (mc) mc.style.display = '';
     if (nfl) nfl.style.display = 'none';
+    showAllPills();
 
     // Update desktop nav links
     document.querySelectorAll('.nav-link').forEach(btn => {
