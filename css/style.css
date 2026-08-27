@@ -131,7 +131,7 @@ body{
 /* ===== Main Layout ===== */
 .main-content{
   max-width:1120px;margin:0 auto;
-  display:grid;grid-template-columns:1fr 235px;
+  display:grid;grid-template-columns:1fr 290px;
   gap:1.5rem;padding:1.5rem 2rem 3rem;
   align-items:start;
 }
@@ -179,19 +179,19 @@ body{
 /* Team Rows */
 .mc-rows{display:flex;flex-direction:column;flex:1}
 .mc-team-row{
-  display:flex;align-items:center;gap:0.6rem;
-  padding:0.6rem 1rem;
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.45rem 0.8rem;
 }
 .mc-team-row:first-child{border-bottom:1px solid #e8eaed}
 .mc-team-name{
   flex:1;
-  font-size:0.9rem;font-weight:600;color:#1a1d23;
+  font-size:0.82rem;font-weight:600;color:#1a1d23;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .mc-score-box{
-  min-width:44px;padding:0.2rem 0.5rem;
-  border:1px solid #e5e7eb;border-radius:6px;
-  text-align:center;font-size:0.8rem;font-weight:700;color:#374151;
+  min-width:38px;padding:0.15rem 0.4rem;
+  border:1px solid #e5e7eb;border-radius:5px;
+  text-align:center;font-size:0.75rem;font-weight:700;color:#374151;
   font-variant-numeric:tabular-nums;background:#f9fafb;
 }
 .mc-time-box{
@@ -210,11 +210,11 @@ body{
 
 /* Status Button (right side) */
 .mc-status-box{
-  flex-shrink:0;padding:0.55rem 0.8rem;
-  border:1.5px solid #fca5a5;border-radius:10px;
+  flex-shrink:0;padding:0.45rem 0.7rem;
+  border:1.5px solid #fca5a5;border-radius:8px;
   text-align:center;cursor:pointer;
   transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
-  min-width:80px;background:#fff5f5;
+  min-width:72px;background:#fff5f5;
 }
 .mc-status-box:hover{background:var(--accent);border-color:var(--accent)}
 .mc-status-box:hover .mc-status-text,
@@ -236,7 +236,7 @@ body{
   animation:pulse 2s infinite;border-color:#fca5a5;background:#fff5f5;
 }
 .mc-logo-wrap{
-  width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;
   background:#fef2f2;border:1px solid #fecaca;
   display:flex;align-items:center;justify-content:center;
 }
