@@ -781,25 +781,32 @@ function renderMatchList(matches, container) {
             // Helper for preview onclick
             const pvCall = `showBlogView('${esc((match.team1?.name||'') + ' vs ' + (match.team2?.name||''))}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(currentSport)}','${esc(status)}')`;
 
-            // Right side - Preview for upcoming, Live for live, Highlights for finished
-            const rightHtml = status === 'upcoming'
-                ? `<button class="mc-preview-btn" onclick="event.stopPropagation();${pvCall}">Preview</button>`
-                : status === 'live'
-                ? `<button class="mc-live-btn" onclick="event.stopPropagation();${pvCall}">Live ▶</button>`
-                : `<button class="mc-highlights-btn" onclick="event.stopPropagation();${pvCall}">Watch Highlights ▶</button>`;
-
-            // Team dot color
-            const dotColors = { football:'#3b82f6', cricket:'#10b981', basketball:'#f97316', tennis:'#8b5cf6', mma:'#ef4444', ufc:'#dc2626', nfl:'#6366f1' };
-            const dotColor = dotColors[match.sport] || '#747A84';
-
-            // Score/time values for right side
-            let t1Score = '', t2Score = '', scoreText = '';
+            // Score/time values
+            let t1Score = '', t2Score = '';
             if (status === 'live' || status === 'finished') {
-                const hasS1 = s1 && s1 !== '-';
-                const hasS2 = s2 && s2 !== '-';
-                t1Score = hasS1 ? escHtml(s1) : '-';
-                t2Score = hasS2 ? escHtml(s2) : '-';
-                scoreText = t1Score + ' - ' + t2Score;
+                t1Score = (s1 && s1 !== '-') ? escHtml(s1) : '-';
+                t2Score = (s2 && s2 !== '-') ? escHtml(s2) : '-';
+            }
+
+            // Score boxes (live/finished only)
+            const scoreBoxHtml = (score) => `<div class="mc-score-box">${score}</div>`;
+            const scoreRow = (status === 'live' || status === 'finished');
+
+            // Status box on right side
+            let statusBoxHtml = '';
+            if (status === 'upcoming') {
+                statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
+                    <div class="mc-time-val">${escHtml(time)}</div>
+                    <div class="mc-time-label">UPCOMING</div>
+                </div>`;
+            } else if (status === 'live') {
+                statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
+                    <div class="mc-status-text">LIVE</div>
+                </div>`;
+            } else {
+                statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
+                    <div class="mc-status-text">Watch<br>Highlights</div>
+                </div>`;
             }
 
             html += `<div class="match-card-wrapper">
@@ -808,15 +815,15 @@ function renderMatchList(matches, container) {
                         <div class="mc-team-row">
                             <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
                             <div class="mc-team-name">${t1Name}</div>
-                            <div class="mc-score-right">${(status==='live'||status==='finished') ? (scoreText.split(' - ')[0] || '-') : escHtml(time)}</div>
+                            ${scoreRow ? scoreBoxHtml(t1Score) : ''}
                         </div>
                         <div class="mc-team-row">
                             <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                             <div class="mc-team-name">${t2Name}</div>
-                            <div class="mc-score-right">${(status==='live'||status==='finished') ? (scoreText.split(' - ')[1] || '-') : ''}</div>
+                            ${scoreRow ? scoreBoxHtml(t2Score) : ''}
                         </div>
                     </div>
-                    <div class="mc-actions-center">${rightHtml}</div>
+                    ${statusBoxHtml}
                 </div>
                 <div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div>
             </div>`;

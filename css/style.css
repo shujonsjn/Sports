@@ -159,12 +159,11 @@ body{
 /* ===== Match Card ===== */
 .match-card{
   display:flex;align-items:center;
-  background:var(--white);border:1px solid var(--border);
-  border-radius:10px;padding:0;
+  background:var(--white);border:1px solid #e8eaed;
+  border-radius:12px;padding:0;
   margin-bottom:0.65rem;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   overflow:visible;position:relative;
-  box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .match-card:hover{
   border-color:rgba(242,45,85,0.3);
@@ -177,38 +176,72 @@ body{
 }
 
 /* Team Rows */
-.mc-rows{display:flex;flex-direction:column}
+.mc-rows{display:flex;flex-direction:column;flex:1}
 .mc-team-row{
-  display:flex;align-items:center;gap:0.5rem;
-  padding:0.55rem 0.75rem;
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.6rem 1rem;
 }
-.mc-team-row:first-child{border-bottom:1px solid var(--border)}
+.mc-team-row:first-child{border-bottom:1px solid #e8eaed}
 .mc-team-name{
   flex:1;
-  font-size:0.88rem;font-weight:600;color:var(--text);
+  font-size:0.9rem;font-weight:600;color:#1a1d23;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  letter-spacing:-0.01em;
 }
-.mc-score-right{
-  font-size:0.88rem;font-weight:700;color:var(--text);
-  min-width:30px;text-align:right;font-variant-numeric:tabular-nums;
+.mc-score-box{
+  min-width:44px;padding:0.25rem 0.5rem;
+  border:1px solid #e8eaed;border-radius:6px;
+  text-align:center;font-size:0.82rem;font-weight:700;color:#1a1d23;
+  font-variant-numeric:tabular-nums;
 }
-.match-card.live .mc-score-right{color:var(--live-green)}
-.mc-actions-center{
-  position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
-  flex-shrink:0;
+.mc-time-box{
+  min-width:70px;padding:0.4rem 0.6rem;
+  border:1px solid var(--accent);border-radius:8px;
+  text-align:center;
+}
+.mc-time-box .mc-time-val{
+  font-size:0.85rem;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.mc-time-box .mc-time-label{
+  font-size:0.6rem;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;
+}
+
+/* Status Button (right side) */
+.mc-status-box{
+  flex-shrink:0;padding:0.6rem 0.9rem;
+  border:2px solid var(--accent);border-radius:10px;
+  text-align:center;cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+  min-width:80px;
+}
+.mc-status-box:hover{background:var(--accent);color:#fff}
+.mc-status-box:hover .mc-status-text,
+.mc-status-box:hover .mc-status-label{color:#fff}
+.mc-status-text{
+  font-size:0.95rem;font-weight:800;color:var(--accent);
+}
+.mc-status-label{
+  font-size:0.6rem;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.match-card.live .mc-status-box{
+  animation:pulse 2s infinite;
 }
 .mc-logo-wrap{
-  width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
-  background:var(--bg);border:1px solid var(--border);
+  width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:#f5f6f8;border:1px solid #e8eaed;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 1px 2px rgba(0,0,0,0.06);
 }
 .mc-logo-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .mc-logo-fallback{
   width:100%;height:100%;align-items:center;justify-content:center;
-  font-size:0.65rem;font-weight:700;color:var(--accent);background:rgba(242,45,85,0.06);
+  font-size:0.7rem;font-weight:700;color:var(--accent);background:rgba(242,45,85,0.08);
   border-radius:50%;
+}
+.mc-actions-center{
+  position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
+  flex-shrink:0;
 }
 
 /* Preview Button */
