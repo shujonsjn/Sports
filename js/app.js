@@ -746,6 +746,9 @@ function renderMatchList(matches, container) {
             const team2 = match?.team2 || { name: 'Away Team' };
             let s1 = scoreValue(match?.score?.team1);
             let s2 = scoreValue(match?.score?.team2);
+            // Strip <...> tags (cricket overs like <9.2>)
+            s1 = String(s1).replace(/<[^>]*>/g, '').trim();
+            s2 = String(s2).replace(/<[^>]*>/g, '').trim();
             if (match.sport === 'cricket' && match.innings && match.innings.length >= 2) {
                 const inn = match.innings;
                 const lastT1 = (inn[0] || []).filter(i => i && i.runs && i.runs !== '-');
@@ -1504,9 +1507,9 @@ function showBlogView(name, date, time, league, sport, status) {
             return mn === sn || mn.includes(sn) || sn.includes(mn.split(' vs ')[0]);
         });
         if (matchData) {
-            var sc1 = matchData.score?.team1;
-            var sc2 = matchData.score?.team2;
-            if (sc1 !== undefined && sc2 !== undefined) {
+            var sc1 = String(matchData.score?.team1 || '').replace(/<[^>]*>/g, '').trim();
+            var sc2 = String(matchData.score?.team2 || '').replace(/<[^>]*>/g, '').trim();
+            if (sc1 && sc2) {
                 setText('pv-time', sc1 + ' - ' + sc2);
                 setText('pv-time-label', st === 'live' || st === 'in' ? 'Live' : 'Finished');
             }
