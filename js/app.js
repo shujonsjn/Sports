@@ -1443,18 +1443,15 @@ async function togglePlayerDetail(matchId, teamKey, playerId) {
 function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || ''; }
 function hideAllPills() {
     var sb = document.getElementById('sidebar-right');
-    var sf = document.querySelector('.sport-filters');
-    var df = document.querySelector('.date-filters');
-    var sbWrap = df ? df.parentElement : null;
+    var sl = document.getElementById('sidebar-left');
     if (sb) sb.style.display = 'none';
-    if (sbWrap) sbWrap.style.display = 'none';
+    if (sl) sl.style.display = 'none';
 }
 function showAllPills() {
     var sb = document.getElementById('sidebar-right');
-    var df = document.querySelector('.date-filters');
-    var sbWrap = df ? df.parentElement : null;
+    var sl = document.getElementById('sidebar-left');
     if (sb) sb.style.display = '';
-    if (sbWrap) sbWrap.style.display = '';
+    if (sl) sl.style.display = '';
 }
 function showBlogView(name, date, time, league, sport, status) {
     const pv = document.getElementById('blog-view');
