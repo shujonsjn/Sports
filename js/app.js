@@ -271,11 +271,7 @@ function initTheme() {
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async function() {
-    initTheme();
-    initNavigation();
-    initSearch();
-
-    // Check for blog URL FIRST - use query params only (works with Vercel rewrites)
+    // Check for blog URL FIRST - before ANY init
     const urlParams = new URLSearchParams(window.location.search);
     const blogName = urlParams.get('match') || '';
     if (blogName) {
@@ -285,18 +281,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         const matchSport = urlParams.get('sport') || '';
         const matchStatus = urlParams.get('status') || '';
 
-        // Set sport/date WITHOUT calling switchSport (it hides blog-view)
+        // Show blog view IMMEDIATELY - no flash of home page
+        const mc = document.getElementById('main-content');
+        const bv = document.getElementById('blog-view');
+        if (mc) mc.style.display = 'none';
+        if (bv) bv.style.display = 'block';
+
+        // Set sport/date
         currentSport = matchSport || currentSport;
         currentDate = matchDate || currentDate;
 
-        // Load matches for the date
+        initTheme();
+        initNavigation();
+        initSearch();
         renderDatePills();
         await loadMatchesForDate(currentDate);
-
-        // Show blog view directly
         showBlogView(blogName, matchDate, matchTime, matchLeague, matchSport, matchStatus);
         return;
     }
+
+    initTheme();
+    initNavigation();
+    initSearch();
 
     // Set sport from URL
     switchSport(currentSport, false);
