@@ -158,12 +158,12 @@ body{
 
 /* ===== Match Card ===== */
 .match-card{
-  display:flex;flex-direction:column;
+  display:flex;align-items:center;
   background:var(--white);border:1px solid var(--border);
   border-radius:10px;padding:0;
   margin-bottom:0.65rem;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
-  overflow:hidden;position:relative;
+  overflow:visible;position:relative;
   box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .match-card:hover{
@@ -194,7 +194,10 @@ body{
   min-width:30px;text-align:right;font-variant-numeric:tabular-nums;
 }
 .match-card.live .mc-score-right{color:var(--live-green)}
-.mc-actions-inline{flex-shrink:0;margin-left:0.5rem}
+.mc-actions-center{
+  position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
+  flex-shrink:0;
+}
 .mc-logo-wrap{
   width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
   background:var(--bg);border:1px solid var(--border);
