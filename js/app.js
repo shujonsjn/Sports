@@ -1498,8 +1498,8 @@ function showBlogView(name, date, time, league, sport, status) {
 
     var t1Logo = document.getElementById('pv-t1-logo');
     var t2Logo = document.getElementById('pv-t2-logo');
-    if (t1Logo) t1Logo.innerHTML = teamLogoHtml({name: t1});
-    if (t2Logo) t2Logo.innerHTML = teamLogoHtml({name: t2});
+    if (t1Logo) t1Logo.innerHTML = teamLogoHtml({name: t1, logo: fetchTeamLogo(t1)});
+    if (t2Logo) t2Logo.innerHTML = teamLogoHtml({name: t2, logo: fetchTeamLogo(t2)});
 
     var badge = document.getElementById('pv-status-badge');
     if (badge) {
