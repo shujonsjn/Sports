@@ -792,20 +792,31 @@ function renderMatchList(matches, container) {
             const dotColors = { football:'#3b82f6', cricket:'#10b981', basketball:'#f97316', tennis:'#8b5cf6', mma:'#ef4444', ufc:'#dc2626', nfl:'#6366f1' };
             const dotColor = dotColors[match.sport] || '#747A84';
 
+            // Score/time values for right side
+            let t1Score = '', t2Score = '', scoreText = '';
+            if (status === 'live' || status === 'finished') {
+                const hasS1 = s1 && s1 !== '-';
+                const hasS2 = s2 && s2 !== '-';
+                t1Score = hasS1 ? escHtml(s1) : '-';
+                t2Score = hasS2 ? escHtml(s2) : '-';
+                scoreText = t1Score + ' - ' + t2Score;
+            }
+
             html += `<div class="match-card-wrapper">
                 <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="${pvCall}">
-                    <div class="mc-left">
-                        <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
-                        <div class="mc-team-name">${t1Name}</div>
+                    <div class="mc-rows">
+                        <div class="mc-team-row">
+                            <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
+                            <div class="mc-team-name">${t1Name}</div>
+                            <div class="mc-score-right">${(status==='live'||status==='finished') ? (scoreText.split(' - ')[0] || '-') : escHtml(time)}</div>
+                        </div>
+                        <div class="mc-team-row">
+                            <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
+                            <div class="mc-team-name">${t2Name}</div>
+                            <div class="mc-score-right">${(status==='live'||status==='finished') ? (scoreText.split(' - ')[1] || '-') : ''}</div>
+                        </div>
                     </div>
-                    <div class="${centerClass}">
-                        ${centerHtml}
-                    </div>
-                    <div class="mc-right">
-                        <div class="mc-team-name" style="text-align:right">${t2Name}</div>
-                        <div class="mc-logo-wrap mc-logo-right"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
-                        ${rightHtml}
-                    </div>
+                    <div class="mc-actions">${rightHtml}</div>
                 </div>
                 <div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div>
             </div>`;

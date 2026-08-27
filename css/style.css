@@ -158,10 +158,10 @@ body{
 
 /* ===== Match Card ===== */
 .match-card{
-  display:flex;align-items:center;
+  display:flex;flex-direction:column;
   background:var(--white);border:1px solid var(--border);
   border-radius:10px;padding:0;
-  height:70px;margin-bottom:0.65rem;
+  margin-bottom:0.65rem;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   overflow:hidden;position:relative;
   box-shadow:0 1px 3px rgba(0,0,0,0.04);
@@ -176,19 +176,26 @@ body{
   box-shadow:0 0 0 2px rgba(242,45,85,0.15),0 4px 20px rgba(242,45,85,0.08);
 }
 
-/* Card Sections */
-.mc-left{
-  flex:1;display:flex;align-items:center;
-  padding:0 1.25rem;gap:0.5rem;min-width:0;
+/* Team Rows */
+.mc-rows{display:flex;flex-direction:column}
+.mc-team-row{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.55rem 0.75rem;
 }
+.mc-team-row:first-child{border-bottom:1px solid var(--border)}
 .mc-team-name{
-  font-size:0.9rem;font-weight:600;color:var(--text);
+  flex:1;
+  font-size:0.88rem;font-weight:600;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   letter-spacing:-0.01em;
 }
-.mc-team-dot{
-  width:10px;height:10px;border-radius:50%;
-  flex-shrink:0;background:var(--muted);
+.mc-score-right{
+  font-size:0.88rem;font-weight:700;color:var(--text);
+  min-width:30px;text-align:right;font-variant-numeric:tabular-nums;
+}
+.match-card.live .mc-score-right{color:var(--live-green)}
+.mc-actions{
+  padding:0.35rem 0.75rem;display:flex;justify-content:center;
 }
 .mc-logo-wrap{
   width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
@@ -201,27 +208,6 @@ body{
   width:100%;height:100%;align-items:center;justify-content:center;
   font-size:0.65rem;font-weight:700;color:var(--accent);background:rgba(242,45,85,0.06);
   border-radius:50%;
-}
-.mc-logo-right{margin-left:auto}
-
-.mc-center{
-  display:flex;flex-direction:column;align-items:center;
-  gap:0.1rem;min-width:90px;flex-shrink:0;
-}
-.mc-center.mc-scores{
-  flex-direction:row;gap:0.3rem;
-}
-.mc-time{
-  font-size:1.15rem;font-weight:700;color:var(--text);
-  font-variant-numeric:tabular-nums;line-height:1.2;
-}
-.mc-subtitle{
-  font-size:0.7rem;color:var(--muted);font-weight:500;line-height:1;
-}
-
-.mc-right{
-  flex:1;display:flex;align-items:center;justify-content:flex-end;
-  padding:0 1.25rem;gap:0.5rem;min-width:0;
 }
 
 /* Preview Button */
@@ -254,34 +240,7 @@ body{
 }
 .mc-highlights-btn:hover{background:var(--accent);color:var(--white);box-shadow:0 2px 10px rgba(242,45,85,0.25);transform:translateY(-1px)}
 
-/* Score display (live/finished) */
-.mc-score{
-  font-size:1rem;font-weight:700;color:var(--text);
-  font-variant-numeric:tabular-nums;line-height:1;
-}
-.mc-score.live{color:var(--live-green)}
-.mc-score-sep{
-  font-size:0.85rem;color:var(--muted);line-height:1;
-}
-.mc-live-badge{
-  font-size:0.65rem;font-weight:700;color:var(--live-green);
-  letter-spacing:0.5px;
-}
-.mc-finished-label{
-  font-size:0.72rem;color:var(--muted);font-weight:500;
-}
-
-/* Favorites */
-.fav-btn{
-  background:none;border:none;cursor:pointer;
-  padding:2px;transition:all 0.2s;opacity:0.3;
-  display:flex;align-items:center;flex-shrink:0;
-}
-.fav-btn:hover{opacity:1;transform:scale(1.15)}
-.fav-btn.active{opacity:1}
-.fav-btn svg{width:14px;height:14px}
-.fav-btn:not(.active) svg{fill:none;stroke:var(--muted);stroke-width:2}
-.fav-btn.active svg{fill:var(--accent);stroke:var(--accent)}
+/* Score display */
 
 /* ===== Right Sidebar ===== */
 .sidebar-right{
