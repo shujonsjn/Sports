@@ -275,23 +275,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     initNavigation();
     initSearch();
 
-    // Check for blog URL FIRST - before any init
-    const blogMatch = window.location.pathname.includes('blog.html') || window.location.pathname.includes('/blog');
+    // Check for blog URL FIRST - use query params only (works with Vercel rewrites)
     const urlParams = new URLSearchParams(window.location.search);
     const blogName = urlParams.get('match') || '';
-    if (blogMatch && blogName) {
-        // Hide main content immediately
-        const mc = document.getElementById('main-content');
-        if (mc) mc.style.display = 'none';
-        const blogView = document.getElementById('blog-view');
-        if (blogView) blogView.style.display = 'block';
-        hideAllPills();
+    if (blogName) {
+        const matchDate = urlParams.get('date') || '';
+        const matchTime = urlParams.get('time') || '';
+        const matchLeague = urlParams.get('league') || '';
+        const matchSport = urlParams.get('sport') || '';
+        const matchStatus = urlParams.get('status') || '';
 
-        // Load data then open preview
-        switchSport(urlParams.get('sport') || currentSport, false);
+        // Set sport/date WITHOUT calling switchSport (it hides blog-view)
+        currentSport = matchSport || currentSport;
+        currentDate = matchDate || currentDate;
+
+        // Load matches for the date
         renderDatePills();
-        await loadMatchesForDate(urlParams.get('date') || currentDate);
-        showBlogView(blogName, urlParams.get('date')||'', urlParams.get('time')||'', urlParams.get('league')||'', urlParams.get('sport')||'', urlParams.get('status')||'');
+        await loadMatchesForDate(currentDate);
+
+        // Show blog view directly
+        showBlogView(blogName, matchDate, matchTime, matchLeague, matchSport, matchStatus);
         return;
     }
 
