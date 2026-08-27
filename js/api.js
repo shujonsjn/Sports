@@ -37,7 +37,7 @@ let CRICKET_API_KEY = '';
 const CRICKET_API_BASE = 'https://api.cricapi.com/v1';
 
 // ===== Team Logo Cache =====
-const LOGO_CACHE_KEY = 'team_logos_v3';
+const LOGO_CACHE_KEY = 'team_logos_v4';
 let teamLogoCache = {};
 try { teamLogoCache = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || '{}'); } catch(e) {}
 Object.keys(teamLogoCache).forEach(k => { if (teamLogoCache[k] === '_NOT_FOUND_') delete teamLogoCache[k]; });
@@ -144,51 +144,23 @@ const TEAM_LOGO_URLS = {
     'melbourne victory': 'https://img.thesports.com/football/team/c540f8f279c09a2a3df1cbbfe82d7184.png',
     'fc barcelona atlètic': 'https://img.thesports.com/football/team/45181f51a6e79ead8e9f2a18fc616deb.png',
     'fc cartagena': 'https://img.thesports.com/football/team/d5809db0321d41ee34ba5b481f86e01f.png',
-    // === NBA (SportScore logos) ===
+    // === NBA ===
     'los angeles lakers': 'https://r2.thesportsdb.com/images/media/team/badge/0m51zd1784716955.png',
     'golden state warriors': 'https://r2.thesportsdb.com/images/media/team/badge/uqvtl21637784985.png',
-    'boston celtics': 'https://r2.thesportsdb.com/images/media/team/badge/xzqdr11517660252.png',
     'miami heat': 'https://r2.thesportsdb.com/images/media/team/badge/uwv2jg1676262765.png',
     'brooklyn nets': 'https://r2.thesportsdb.com/images/media/team/badge/ir1anl1676262831.png',
     'chicago bulls': 'https://r2.thesportsdb.com/images/media/team/badge/1mrlk01676262895.png',
-    'phoenix suns': 'https://r2.thesportsdb.com/images/media/team/badge/xzqdr11517660252.png',
     'milwaukee bucks': 'https://r2.thesportsdb.com/images/media/team/badge/6gy3oj1676262976.png',
     'dallas mavericks': 'https://r2.thesportsdb.com/images/media/team/badge/l4y9wq1676263042.png',
-    'philadelphia 76ers': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'denver nuggets': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'oklahoma city thunder': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'cleveland cavaliers': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'minnesota timberwolves': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
     'new york knicks': 'https://r2.thesportsdb.com/images/media/team/badge/l2kcnh1676263177.png',
-    'sacramento kings': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'atlanta hawks': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'charlotte hornets': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'detroit pistons': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'indiana pacers': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'toronto raptors': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'washington wizards': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'orlando magic': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'san antonio spurs': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'houston rockets': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'memphis grizzlies': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'new orleans pelicans': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'utah jazz': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'portland trail blazers': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'la clippers': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    // === WNBA (SportScore logos) ===
+    // === WNBA ===
     'las vegas aces': 'https://img.thesports.com/basketball/team/ce8ab1125fdb3fdbd8c09dba8c437c49.png',
     'atlanta dream': 'https://img.thesports.com/basketball/team/be3ef0f7745b3b45b846fac31ca987c6.png',
     'chicago sky': 'https://img.thesports.com/basketball/team/96c0adc8a98bb466bfa539f11ce8ae04.png',
     'new york liberty': 'https://img.thesports.com/basketball/team/67cf5b4cfacab3792d2fde73e0af4ac0.png',
     'washington mystics': 'https://img.thesports.com/basketball/team/f619a41699e34ed5b9c8047ecb688ca3.png',
     'toronto tempo': 'https://img.thesports.com/basketball/team/d994ab69186bb52d6b0967e1567a217e.png',
-    'connecticut sun': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'seattle storm': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'phoenix mercury': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'minnesota lynx': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'indiana fever': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    'dallas wings': 'https://r2.thesportsdb.com/images/media/team/badge/8v2ato1676263110.png',
-    // === Basketball national teams (SportScore logos) ===
+    // === Basketball national teams ===
     'malaysia': 'https://img.thesports.com/basketball/team/d580436ffcf5531ff33500bb724315da.png',
     'slovenia': 'https://img.thesports.com/basketball/team/35ddc4d975ebf4ca72e69c453bc89d44.png',
     'latvia': 'https://img.thesports.com/basketball/team/4b626c0ef3e30f8f4954927d1d8b0edc.png',
@@ -199,26 +171,7 @@ const TEAM_LOGO_URLS = {
     'cairns taipans': 'https://img.thesports.com/basketball/team/2f4677e5f2089fb794a968f25c2dcb3a.png',
     'california irvine': 'https://img.thesports.com/basketball/team/3623f97813f92214463237691477f56d.png',
     'wonju dongbu promy': 'https://img.thesports.com/basketball/team/e94f441698752284a7b2f6c37ea3aee6.png',
-    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png',
-    // === County Championship Cricket ===
-    'warwickshire': 'https://r2.thesportsdb.com/images/media/team/badge/vwvwrw1473502969.png',
-    'nottinghamshire': 'https://r2.thesportsdb.com/images/media/team/badge/xzqdr11517660252.png',
-    'essex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'surrey': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'yorkshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'leicestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'glamorgan': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'hampshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'sussex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'somerset': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'derbyshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'middlesex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'worcestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'lancashire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'durham': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'northamptonshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'kent': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
-    'gloucestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png'
+    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png'
 };
 
 function fetchTeamLogo(teamName) {
