@@ -1496,19 +1496,19 @@ function showBlogView(name, date, time, league, sport, status) {
     setText('pv-info-time', time || '-');
     setText('pv-time-label', 'Today');
 
-    // For live matches, show score instead of time in center
-    if (st === 'live' || st === 'in') {
-        var liveMatch = (currentRenderedMatches || []).find(m => {
+    // For live/finished matches, show score instead of time in center
+    if (st === 'live' || st === 'in' || st === 'finished' || st === 'post') {
+        var matchData = (currentRenderedMatches || []).find(m => {
             var mn = ((m.team1?.name||'') + ' vs ' + (m.team2?.name||'')).toLowerCase();
             var sn = (name || '').toLowerCase();
             return mn === sn || mn.includes(sn) || sn.includes(mn.split(' vs ')[0]);
         });
-        if (liveMatch) {
-            var sc1 = liveMatch.score?.team1;
-            var sc2 = liveMatch.score?.team2;
+        if (matchData) {
+            var sc1 = matchData.score?.team1;
+            var sc2 = matchData.score?.team2;
             if (sc1 !== undefined && sc2 !== undefined) {
                 setText('pv-time', sc1 + ' - ' + sc2);
-                setText('pv-time-label', 'Live');
+                setText('pv-time-label', st === 'live' || st === 'in' ? 'Live' : 'Finished');
             }
         }
     }
