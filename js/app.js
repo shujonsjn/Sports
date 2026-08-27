@@ -293,23 +293,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Check for blog URL on page load
-    if (window.location.pathname.includes('blog.html') || window.location.pathname.includes('blog')) {
-        const params = new URLSearchParams(window.location.search);
-        const matchName = params.get('match') || '';
-        const matchDate = params.get('date') || '';
-        const matchTime = params.get('time') || '';
-        const matchLeague = params.get('league') || '';
-        const matchSport = params.get('sport') || '';
-        if (matchName || matchDate) {
-            const openPreview = () => {
-                if (currentRenderedMatches && currentRenderedMatches.length > 0) {
-                    showBlogView(matchName, matchDate, matchTime, matchLeague, matchSport);
-                } else {
-                    setTimeout(openPreview, 200);
-                }
-            };
-            setTimeout(openPreview, 800);
-        }
+    const blogMatch = window.location.pathname.includes('blog.html') || window.location.pathname.includes('/blog');
+    const urlParams = new URLSearchParams(window.location.search);
+    const blogName = urlParams.get('match') || '';
+    if (blogMatch && blogName) {
+        const matchDate = urlParams.get('date') || '';
+        const matchTime = urlParams.get('time') || '';
+        const matchLeague = urlParams.get('league') || '';
+        const matchSport = urlParams.get('sport') || '';
+        const matchStatus = urlParams.get('status') || '';
+        setTimeout(() => {
+            showBlogView(blogName, matchDate, matchTime, matchLeague, matchSport, matchStatus);
+        }, 300);
     }
 
     console.log('🚀 SportsLive initialized');
