@@ -164,6 +164,7 @@ body{
   margin-bottom:0.65rem;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
   overflow:visible;position:relative;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
 }
 .match-card:hover{
   border-color:rgba(242,45,85,0.3);
@@ -230,14 +231,20 @@ body{
 }
 .mc-logo-wrap{
   width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;
-  background:#f5f6f8;border:1px solid #e8eaed;
+  background:#fef2f2;border:1px solid #fecaca;
   display:flex;align-items:center;justify-content:center;
 }
 .mc-logo-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .mc-logo-fallback{
   width:100%;height:100%;align-items:center;justify-content:center;
-  font-size:0.7rem;font-weight:700;color:var(--accent);background:rgba(242,45,85,0.08);
+  font-size:0.7rem;font-weight:700;color:#e74c5a;background:#fef2f2;
   border-radius:50%;
+}
+.mc-team-row:nth-child(2) .mc-logo-wrap{
+  background:#eff6ff;border-color:#bfdbfe;
+}
+.mc-team-row:nth-child(2) .mc-logo-fallback{
+  color:#3b82f6;background:#eff6ff;
 }
 .mc-actions-center{
   position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
