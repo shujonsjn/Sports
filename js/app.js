@@ -808,9 +808,8 @@ function renderMatchList(matches, container) {
                     <div class="mc-time-label">UPCOMING</div>
                 </div>`;
             } else if (status === 'live') {
-                const liveScoreText = (t1Score && t1Score !== '-') ? t1Score + ' - ' + t2Score : 'LIVE';
                 statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
-                    <div class="mc-status-text">${liveScoreText}</div>
+                    <div class="mc-status-text">LIVE</div>
                 </div>`;
             } else {
                 statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
