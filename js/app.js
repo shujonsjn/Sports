@@ -1496,6 +1496,23 @@ function showBlogView(name, date, time, league, sport, status) {
     setText('pv-info-time', time || '-');
     setText('pv-time-label', 'Today');
 
+    // For live matches, show score instead of time in center
+    if (st === 'live' || st === 'in') {
+        var liveMatch = (currentRenderedMatches || []).find(m => {
+            var mn = ((m.team1?.name||'') + ' vs ' + (m.team2?.name||'')).toLowerCase();
+            var sn = (name || '').toLowerCase();
+            return mn === sn || mn.includes(sn) || sn.includes(mn.split(' vs ')[0]);
+        });
+        if (liveMatch) {
+            var sc1 = liveMatch.score?.team1;
+            var sc2 = liveMatch.score?.team2;
+            if (sc1 !== undefined && sc2 !== undefined) {
+                setText('pv-time', sc1 + ' - ' + sc2);
+                setText('pv-time-label', 'Live');
+            }
+        }
+    }
+
     var t1Logo = document.getElementById('pv-t1-logo');
     var t2Logo = document.getElementById('pv-t2-logo');
     if (t1Logo) t1Logo.innerHTML = teamLogoHtml({name: t1, logo: fetchTeamLogo(t1)});
