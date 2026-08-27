@@ -159,7 +159,7 @@ body{
 /* ===== Match Card ===== */
 .match-card{
   display:flex;align-items:center;
-  background:var(--white);border:1px solid #e8eaed;
+  background:var(--white);
   border-radius:12px;padding:0;
   margin-bottom:0.65rem;
   cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
@@ -177,12 +177,12 @@ body{
 }
 
 /* Team Rows */
-.mc-rows{display:flex;flex-direction:column;flex:1}
+.mc-rows{display:flex;flex-direction:column;flex:1;padding-right:0.5rem}
 .mc-team-row{
   display:flex;align-items:center;gap:0.5rem;
-  padding:0.45rem 0.8rem;
+  padding:0.45rem 0.8rem 0.45rem 0.8rem;
 }
-.mc-team-row:first-child{border-bottom:1px solid #e8eaed}
+.mc-team-row:first-child{border-bottom:1px solid #f0f0f0}
 .mc-team-name{
   flex:1;
   font-size:0.82rem;font-weight:600;color:#1a1d23;
