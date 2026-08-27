@@ -814,9 +814,9 @@ function renderMatchList(matches, container) {
                             <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                             <div class="mc-team-name">${t2Name}</div>
                             <div class="mc-score-right">${(status==='live'||status==='finished') ? (scoreText.split(' - ')[1] || '-') : ''}</div>
+                            <div class="mc-actions-inline">${rightHtml}</div>
                         </div>
                     </div>
-                    <div class="mc-actions">${rightHtml}</div>
                 </div>
                 <div class="match-detail-accordion" id="accordion-${escHtml(id)}" style="display:none"></div>
             </div>`;

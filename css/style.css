@@ -194,9 +194,7 @@ body{
   min-width:30px;text-align:right;font-variant-numeric:tabular-nums;
 }
 .match-card.live .mc-score-right{color:var(--live-green)}
-.mc-actions{
-  padding:0.35rem 0.75rem;display:flex;justify-content:center;
-}
+.mc-actions-inline{flex-shrink:0;margin-left:0.5rem}
 .mc-logo-wrap{
   width:30px;height:30px;border-radius:50%;overflow:hidden;flex-shrink:0;
   background:var(--bg);border:1px solid var(--border);
