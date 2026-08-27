@@ -263,12 +263,10 @@ body{
   font-size:0.7rem;font-weight:700;color:#e74c5a;background:#fef2f2;
   border-radius:50%;
 }
-.mc-team-row:nth-child(2) .mc-logo-wrap{
-  background:#eff6ff;border-color:#bfdbfe;
-}
-.mc-team-row:nth-child(2) .mc-logo-fallback{
-  color:#3b82f6;background:#eff6ff;
-}
+.mc-logo-t1{background:#fef2f2;border-color:#fecaca}
+.mc-logo-t1 .mc-logo-fallback{color:#e74c5a;background:#fef2f2}
+.mc-logo-t2{background:#eff6ff;border-color:#bfdbfe}
+.mc-logo-t2 .mc-logo-fallback{color:#3b82f6;background:#eff6ff}
 .mc-actions-center{
   position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
   flex-shrink:0;

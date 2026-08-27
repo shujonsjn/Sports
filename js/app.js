@@ -815,12 +815,12 @@ function renderMatchList(matches, container) {
                 <div class="match-card ${status} ${active ? 'active' : ''}" data-match-id="${escHtml(id)}" onclick="${pvCall}">
                     <div class="mc-rows">
                         <div class="mc-team-row">
-                            <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
+                            <div class="mc-logo-wrap mc-logo-t1"><img class="mc-logo-img" src="${escHtml(match.team1?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team1?.logo ? 'none' : 'flex'}">${escHtml((t1Name||'T')[0])}</span></div>
                             <div class="mc-team-name">${t1Name}</div>
                             ${scoreRow ? scoreBoxHtml(t1Score) : ''}
                         </div>
                         <div class="mc-team-row">
-                            <div class="mc-logo-wrap"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
+                            <div class="mc-logo-wrap mc-logo-t2"><img class="mc-logo-img" src="${escHtml(match.team2?.logo || '')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><span class="mc-logo-fallback" style="display:${match.team2?.logo ? 'none' : 'flex'}">${escHtml((t2Name||'T')[0])}</span></div>
                             <div class="mc-team-name">${t2Name}</div>
                             ${scoreRow ? scoreBoxHtml(t2Score) : ''}
                         </div>

@@ -199,7 +199,26 @@ const TEAM_LOGO_URLS = {
     'cairns taipans': 'https://img.thesports.com/basketball/team/2f4677e5f2089fb794a968f25c2dcb3a.png',
     'california irvine': 'https://img.thesports.com/basketball/team/3623f97813f92214463237691477f56d.png',
     'wonju dongbu promy': 'https://img.thesports.com/basketball/team/e94f441698752284a7b2f6c37ea3aee6.png',
-    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png'
+    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png',
+    // === County Championship Cricket ===
+    'warwickshire': 'https://r2.thesportsdb.com/images/media/team/badge/vwvwrw1473502969.png',
+    'nottinghamshire': 'https://r2.thesportsdb.com/images/media/team/badge/xzqdr11517660252.png',
+    'essex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'surrey': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'yorkshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'leicestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'glamorgan': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'hampshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'sussex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'somerset': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'derbyshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'middlesex': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'worcestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'lancashire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'durham': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'northamptonshire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'kent': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png',
+    'gloucestershire': 'https://r2.thesportsdb.com/images/media/team/badge/867nzz1681703222.png'
 };
 
 function fetchTeamLogo(teamName) {
