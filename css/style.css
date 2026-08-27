@@ -189,10 +189,10 @@ body{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .mc-score-box{
-  min-width:44px;padding:0.25rem 0.5rem;
-  border:1px solid #e8eaed;border-radius:6px;
-  text-align:center;font-size:0.82rem;font-weight:700;color:#1a1d23;
-  font-variant-numeric:tabular-nums;
+  min-width:44px;padding:0.2rem 0.5rem;
+  border:1px solid #e5e7eb;border-radius:6px;
+  text-align:center;font-size:0.8rem;font-weight:700;color:#374151;
+  font-variant-numeric:tabular-nums;background:#f9fafb;
 }
 .mc-time-box{
   min-width:70px;padding:0.4rem 0.6rem;
@@ -210,24 +210,30 @@ body{
 
 /* Status Button (right side) */
 .mc-status-box{
-  flex-shrink:0;padding:0.6rem 0.9rem;
-  border:2px solid var(--accent);border-radius:10px;
+  flex-shrink:0;padding:0.55rem 0.8rem;
+  border:1.5px solid #fca5a5;border-radius:10px;
   text-align:center;cursor:pointer;
   transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
-  min-width:80px;
+  min-width:80px;background:#fff5f5;
 }
-.mc-status-box:hover{background:var(--accent);color:#fff}
+.mc-status-box:hover{background:var(--accent);border-color:var(--accent)}
 .mc-status-box:hover .mc-status-text,
-.mc-status-box:hover .mc-status-label{color:#fff}
+.mc-status-box:hover .mc-time-val,
+.mc-status-box:hover .mc-time-label{color:#fff}
 .mc-status-text{
-  font-size:0.95rem;font-weight:800;color:var(--accent);
+  font-size:0.85rem;font-weight:800;color:#dc2626;
+  line-height:1.2;
 }
-.mc-status-label{
-  font-size:0.6rem;font-weight:700;color:var(--accent);
-  text-transform:uppercase;letter-spacing:0.5px;
+.mc-time-val{
+  font-size:0.82rem;font-weight:700;color:#dc2626;
+  font-variant-numeric:tabular-nums;
+}
+.mc-time-label{
+  font-size:0.55rem;font-weight:700;color:#dc2626;
+  text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;
 }
 .match-card.live .mc-status-box{
-  animation:pulse 2s infinite;
+  animation:pulse 2s infinite;border-color:#fca5a5;background:#fff5f5;
 }
 .mc-logo-wrap{
   width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;
