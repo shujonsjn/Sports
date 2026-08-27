@@ -1082,6 +1082,22 @@ function updateLeagueList(matches) {
     container.innerHTML = sortedLeagues.slice(0, 6).map(([league, data]) => {
         return `<div class="top-league-item" onclick="filterByLeague('${esc(league)}')">${escHtml(league)} <span class="top-league-arrow">›</span></div>`;
     }).join('');
+
+    // Update Leagues sidebar section
+    const leaguesContainer = document.getElementById('leagues-list');
+    if (leaguesContainer) {
+        if (sortedLeagues.length === 0) {
+            leaguesContainer.innerHTML = '<div style="padding:0.5rem 1rem;color:var(--muted);font-size:0.82rem">No leagues</div>';
+        } else {
+            leaguesContainer.innerHTML = sortedLeagues.map(([league, data]) => {
+                return `<div class="league-item" onclick="filterByLeague('${esc(league)}')">
+                    <span class="league-item-icon">${data.icon}</span>
+                    <span class="league-item-name">${escHtml(league)}</span>
+                    <span class="league-item-count">${data.count}</span>
+                </div>`;
+            }).join('');
+        }
+    }
 }
 
 // Filter matches by status

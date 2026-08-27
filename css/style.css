@@ -362,6 +362,34 @@ body{
 .top-league-arrow{color:var(--muted);font-size:0.85rem;transition:transform 0.2s ease}
 .top-league-item:hover .top-league-arrow{transform:translateX(3px);color:var(--accent)}
 
+/* Leagues Card */
+.leagues-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.leagues-header{
+  padding:0.85rem 1rem;
+  border-bottom:1px solid var(--border);
+}
+.leagues-title{
+  font-size:0.95rem;font-weight:700;color:var(--text);
+}
+.leagues-list{padding:0.4rem 0}
+.league-item{
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.55rem 1rem;cursor:pointer;
+  transition:all 0.2s ease;font-size:0.82rem;color:var(--text);
+}
+.league-item:hover{background:var(--bg);color:var(--accent)}
+.league-item.active{color:var(--accent);font-weight:600;background:rgba(242,45,85,0.04)}
+.league-item-icon{font-size:1rem;flex-shrink:0}
+.league-item-name{flex:1;font-weight:500}
+.league-item-count{
+  font-size:0.7rem;color:var(--muted);background:var(--bg);
+  padding:0.15rem 0.45rem;border-radius:10px;font-weight:600;
+}
+
 /* ===== Empty State ===== */
 .empty-state{
   text-align:center;padding:3rem 1rem;color:var(--muted);
