@@ -1595,6 +1595,9 @@ async function fetchNFLSeason(year) {
 }
 
 async function fetchNFLData(dateStr) {
+    const matches = [];
+
+    // Source 1: nfldata.org (regular/post season)
     try {
         const targetDate = new Date(`${dateStr}T00:00:00`);
         const year = targetDate.getFullYear();
@@ -1614,17 +1617,38 @@ async function fetchNFLData(dateStr) {
             return true;
         });
 
-        return uniqueGames
+        matches.push(...uniqueGames
             .sort((a, b) => {
                 const aTime = `${a?.gameday || ''}T${a?.gametime || '00:00'}`;
                 const bTime = `${b?.gameday || ''}T${b?.gametime || '00:00'}`;
                 return aTime.localeCompare(bTime);
             })
-            .map(convertNFLDataMatch);
+            .map(convertNFLDataMatch));
     } catch (e) {
         console.log(`ℹ️ nfldata.org NFL: ${e.message}`);
-        return [];
     }
+
+    // Source 2: ESPN NFL (preseason + current games)
+    try {
+        const espnDate = dateStr.replace(/-/g, '');
+        const espnUrl = `/api/espn-scores?sport=nfl&date=${espnDate}`;
+        const res = await fetch(espnUrl, { signal: AbortSignal.timeout(6000) });
+        if (res.ok) {
+            const data = await res.json();
+            const existingNames = new Set(matches.map(m => `${m.team1?.name}_vs_${m.team2?.name}`));
+            (data.matches || []).forEach(m => {
+                const key = `${m.team1?.name}_vs_${m.team2?.name}`;
+                if (!existingNames.has(key)) {
+                    matches.push(m);
+                    existingNames.add(key);
+                }
+            });
+        }
+    } catch (e) {
+        console.log(`ℹ️ ESPN NFL: ${e.message}`);
+    }
+
+    return matches;
 }
 
 // Used by the calendar to show every NFL game already loaded for the season.
