@@ -57,7 +57,7 @@ export default async function handler(req, res) {
                         logo: away.team?.logo || '',
                         score: away.score || '-'
                     },
-                    league: comp.series?.type || lg,
+                    league: comp.series?.type || ev.league?.slug || lg,
                     venue: comp.venue?.fullName || '',
                     date: matchDate,
                     time: matchTime,

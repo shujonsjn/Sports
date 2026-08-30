@@ -499,6 +499,39 @@ async function fetchSportScore(sport, limit = 20) {
 }
 
 // ===== ESPN Fallback (Google-style live scores) =====
+function mapLeagueName(id) {
+    if (!id) return '';
+    const map = {
+        'eng.1': 'Premier League', 'eng.2': 'Championship', 'eng.3': 'League One', 'eng.4': 'League Two',
+        'esp.1': 'La Liga', 'esp.2': 'La Liga 2',
+        'ita.1': 'Serie A', 'ita.2': 'Serie B',
+        'ger.1': 'Bundesliga', 'ger.2': '2. Bundesliga',
+        'fra.1': 'Ligue 1', 'fra.2': 'Ligue 2',
+        'ned.1': 'Eredivisie',
+        'por.1': 'Liga Portugal', 'tur.1': 'Super Lig',
+        'bra.1': 'Brasileirão', 'bra.2': 'Série B',
+        'arg.1': 'Liga Profesional', 'mex.1': 'Liga MX',
+        'usa.1': 'MLS', 'chn.1': 'Chinese Super League',
+        'jpn.1': 'J1 League', 'kor.1': 'K League 1',
+        'aus.1': 'A-League', 'ind.1': 'ISL',
+        'sau.1': 'Saudi Pro League', 'are.1': 'UAE Pro League',
+        'chn.cba': 'CBA', 'jpn.bj': 'B.League',
+        'fiba.asia': 'FIBA Asia Cup Qualifiers',
+        'fiba.world': 'FIBA World Cup Qualifiers',
+        'fiba.euro': 'EuroBasket Qualifiers',
+        'nba': 'NBA', 'wnba': 'WNBA',
+        'nfl': 'NFL',
+        'nhl': 'NHL',
+        'mlb': 'MLB',
+        'ucl': 'UEFA Champions League', 'uel': 'UEFA Europa League',
+        'uecl': 'UEFA Conference League',
+        'efl': 'EFL Cup', 'fac': 'FA Cup',
+        'cdf': 'Copa del Rey', 'dfb': 'DFB Pokal',
+        'copa_lib': 'Copa Libertadores', 'copa_su': 'Copa Sudamericana',
+    };
+    return map[id] || id.split('.').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 async function fetchESPNFallback(sport) {
     try {
         const url = `/api/espn-scores?sport=${sport}`;
@@ -511,7 +544,7 @@ async function fetchESPNFallback(sport) {
             icon: getSportIcon(m.sport),
             team1: { name: m.team1.name, short: m.team1.name.slice(0,3).toUpperCase(), logo: m.team1.logo || '', flag: '' },
             team2: { name: m.team2.name, short: m.team2.name.slice(0,3).toUpperCase(), logo: m.team2.logo || '', flag: '' },
-            league: m.league || '',
+            league: mapLeagueName(m.league) || m.league || '',
             venue: m.venue || '',
             date: m.date,
             time: m.time,
