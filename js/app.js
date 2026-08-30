@@ -411,8 +411,11 @@ function renderDatePills() {
             else label = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
             return `<button class="date-pill ${isActive ? 'active' : ''}" onclick="loadMatchesForDate('${dateStr}');renderDatePills()">${label}</button>`;
         }).join('');
-        // Add custom date option
-        desktopContainer.innerHTML += `<button class="date-pill" onclick="pickCustomDate(event)" title="Pick a date">📅 ${today.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</button>`;
+        // Add custom date option — show currently selected date
+        const selParts = currentDate.split('-');
+        const selDate = new Date(parseInt(selParts[0]), parseInt(selParts[1]) - 1, parseInt(selParts[2]));
+        const selLabel = selDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        desktopContainer.innerHTML += `<button class="date-pill" onclick="pickCustomDate(event)" title="Pick a date">📅 ${selLabel}</button>`;
     }
     // Mobile
     const mobileContainer = document.getElementById('mobile-date-pills');
