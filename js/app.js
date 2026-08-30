@@ -899,6 +899,23 @@ function updateLiveScoresInPlace(matches, container) {
         card.className = card.className.replace(/\b(live|finished|upcoming)\b/g, '').trim() + ' ' + status;
         if (selectedMatch && String(selectedMatch.id) === id) card.classList.add('active');
 
+        const rows = card.querySelectorAll('.mc-team-row');
+        if (rows.length >= 2) {
+            ['team1','team2'].forEach((side, i) => {
+                const team = match[side];
+                if (!team || !team.logo) return;
+                const wrap = rows[i].querySelector('.mc-logo-wrap');
+                if (!wrap) return;
+                const img = wrap.querySelector('.mc-logo-img');
+                const fb = wrap.querySelector('.mc-logo-fallback');
+                if (img && team.logo && (!img.src || img.src === window.location.href || img.src.endsWith('/'))) {
+                    img.src = team.logo;
+                    img.style.display = '';
+                    if (fb) fb.style.display = 'none';
+                }
+            });
+        }
+
         const center = card.querySelector('.mc-center');
         if (center) {
             const hasS1 = s1 && s1 !== '-';

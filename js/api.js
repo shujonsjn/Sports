@@ -161,9 +161,9 @@ const TEAM_LOGO_URLS = {
     'washington mystics': 'https://img.thesports.com/basketball/team/f619a41699e34ed5b9c8047ecb688ca3.png',
     'toronto tempo': 'https://img.thesports.com/basketball/team/d994ab69186bb52d6b0967e1567a217e.png',
     // === Basketball national teams ===
-    'malaysia': 'https://img.thesports.com/basketball/team/d580436ffcf5531ff33500bb724315da.png',
-    'slovenia': 'https://img.thesports.com/basketball/team/35ddc4d975ebf4ca72e69c453bc89d44.png',
-    'latvia': 'https://img.thesports.com/basketball/team/4b626c0ef3e30f8f4954927d1d8b0edc.png',
+    'malaysia': 'https://img.thesportsdb.com/basketball/team/d580436ffcf5531ff33500bb724315da.png',
+    'slovenia': 'https://img.thesportsdb.com/basketball/team/35ddc4d975ebf4ca72e69c453bc89d44.png',
+    'latvia': 'https://img.thesportsdb.com/basketball/team/4b626c0ef3e30f8f4954927d1d8b0edc.png',
     'vietnam': 'https://r2.thesportsdb.com/images/media/team/badge/gux95f1651458848.png',
     'thailand': 'https://r2.thesportsdb.com/images/media/team/badge/dbpt9n1624098160.png',
     'philippines': 'https://r2.thesportsdb.com/images/media/team/badge/3yw3jn1560688980.png',
@@ -191,7 +191,22 @@ const TEAM_LOGO_URLS = {
     'cairns taipans': 'https://img.thesports.com/basketball/team/2f4677e5f2089fb794a968f25c2dcb3a.png',
     'california irvine': 'https://img.thesports.com/basketball/team/3623f97813f92214463237691477f56d.png',
     'wonju dongbu promy': 'https://img.thesports.com/basketball/team/e94f441698752284a7b2f6c37ea3aee6.png',
-    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png'
+    'new taipei kings': 'https://img.thesports.com/basketball/team/8f7d23dd938fc64b4a4df43c94bbf3ff.png',
+    // === Football (Soccer) national teams ===
+    'myanmar': 'https://r2.thesportsdb.com/images/media/team/badge/vwpvry1467462651.png',
+    'cambodia': 'https://r2.thesportsdb.com/images/media/team/badge/xzqg8h1448813550.png',
+    'laos': 'https://r2.thesportsdb.com/images/media/team/badge/rwqmsg1448813550.png',
+    'singapore': 'https://r2.thesportsdb.com/images/media/team/badge/iupwrj1448813458.png',
+    'hong kong': 'https://r2.thesportsdb.com/images/media/team/badge/xzaydr1448813216.png',
+    'bangladesh': 'https://r2.thesportsdb.com/images/media/team/badge/j74o4t1646775146.png',
+    'nepal': 'https://r2.thesportsdb.com/images/media/team/badge/bzu3v71646775261.png',
+    'sri lanka': 'https://r2.thesportsdb.com/images/media/team/badge/i5fqg01646775193.png',
+    'pakistan': 'https://r2.thesportsdb.com/images/media/team/badge/03o8241646775177.png',
+    'oman': 'https://r2.thesportsdb.com/images/media/team/badge/5byj8h1548813550.png',
+    'yemen': 'https://r2.thesportsdb.com/images/media/team/badge/fihvwb1448813550.png',
+    'syria': 'https://r2.thesportsdb.com/images/media/team/badge/jxy8ht1448813504.png',
+    'palestine': 'https://r2.thesportsdb.com/images/media/team/badge/bqnlmz1448813383.png',
+    'afghanistan': 'https://r2.thesportsdb.com/images/media/team/badge/bzu3v71646775261.png'
 };
 
 function fetchTeamLogo(teamName) {
@@ -236,7 +251,7 @@ async function lookupTeamLogoFromServer(teamName) {
 }
 
 function enrichMatchLogos(matches) {
-    if (!matches || !matches.length) return;
+    if (!matches || !matches.length) return Promise.resolve();
     const ufcMatches = matches.filter(m => m.sport === 'ufc' || m.sport === 'mma');
     const ufcPromise = ufcMatches.length > 0 ? fetchUFCFighterPhotos(ufcMatches) : Promise.resolve();
     const missing = [];
@@ -256,7 +271,33 @@ function enrichMatchLogos(matches) {
         const logo = await lookupTeamLogoFromServer(name);
         if (logo && logo !== '_NOT_FOUND_') x.match[x.side].logo = logo;
     });
-    return Promise.allSettled([...jobs, ufcPromise]);
+    return Promise.allSettled([...jobs, ufcPromise]).then(() => {
+        requestAnimationFrame(() => refreshLogosInDOM(matches));
+    });
+}
+
+function refreshLogosInDOM(matches) {
+    if (!matches) return;
+    const cards = document.querySelectorAll('.match-card[data-match-id]');
+    cards.forEach(card => {
+        const id = card.getAttribute('data-match-id');
+        const m = matches.find(x => String(x.id) === id);
+        if (!m) return;
+        ['team1','team2'].forEach(side => {
+            const team = m[side];
+            if (!team || !team.logo) return;
+            const idx = side === 'team1' ? 0 : 1;
+            const wrap = card.querySelectorAll('.mc-logo-wrap')[idx];
+            if (!wrap) return;
+            const img = wrap.querySelector('.mc-logo-img');
+            const fb = wrap.querySelector('.mc-logo-fallback');
+            if (img && (!img.src || img.src === window.location.href || img.src.endsWith('/'))) {
+                img.src = team.logo;
+                img.style.display = '';
+                if (fb) fb.style.display = 'none';
+            }
+        });
+    });
 }
 
 function updateLastUpdated() {
