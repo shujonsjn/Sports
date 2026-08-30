@@ -1021,6 +1021,164 @@ function getAugust2026Data() {
     add('nfl','2026-09-13','Patriots','-','Jaguars','-','NFL Week 1','Gillette Stadium','upcoming');
     add('nfl','2026-09-13','Panthers','-','Buccaneers','-','NFL Week 1','Bank of America Stadium','upcoming');
 
+    // === NFL — Week 2 (Sep 17-18) ===
+    add('nfl','2026-09-17','Ravens','-','Bills','-','NFL Week 2','M&T Bank Stadium','upcoming');
+    add('nfl','2026-09-17','Eagles','-','Chiefs','-','NFL Week 2','Lincoln Financial Field','upcoming');
+    add('nfl','2026-09-17','Seahawks','-','49ers','-','NFL Week 2','Lumen Field','upcoming');
+    add('nfl','2026-09-17','Lions','-','Packers','-','NFL Week 2','Ford Field','upcoming');
+    add('nfl','2026-09-17','Dolphins','-','Bengals','-','NFL Week 2','Hard Rock Stadium','upcoming');
+    add('nfl','2026-09-17','Steelers','-','Chargers','-','NFL Week 2','Acrisure Stadium','upcoming');
+    add('nfl','2026-09-17','Broncos','-','Colts','-','NFL Week 2','Empower Field','upcoming');
+    add('nfl','2026-09-17','Cardinals','-','Cowboys','-','NFL Week 2','State Farm Stadium','upcoming');
+    add('nfl','2026-09-18','Saints','-','Falcons','-','NFL Week 2','Caesars Superdome','upcoming');
+    add('nfl','2026-09-18','Jets','-','Patriots','-','NFL Week 2','MetLife Stadium','upcoming');
+    add('nfl','2026-09-18','Titans','-','Rams','-','NFL Week 2','Nissan Stadium','upcoming');
+    add('nfl','2026-09-18','Vikings','-','Bears','-','NFL Week 2','U.S. Bank Stadium','upcoming');
+    add('nfl','2026-09-18','Browns','-','Giants','-','NFL Week 2','Cleveland Browns Stadium','upcoming');
+    add('nfl','2026-09-18','Commanders','-','Buccaneers','-','NFL Week 2','FedExField','upcoming');
+    add('nfl','2026-09-18','Panthers','-','Jaguars','-','NFL Week 2','Bank of America Stadium','upcoming');
+    add('nfl','2026-09-18','Texans','-','Raiders','-','NFL Week 2','NRG Stadium','upcoming');
+
+    // === NFL — Week 3 (Sep 24-25) ===
+    add('nfl','2026-09-24','Chiefs','-','Giants','-','NFL Week 3','Arrowhead Stadium','upcoming');
+    add('nfl','2026-09-24','Cowboys','-','Ravens','-','NFL Week 3','AT&T Stadium','upcoming');
+    add('nfl','2026-09-24','49ers','-','Cardinals','-','NFL Week 3','Levi\'s Stadium','upcoming');
+    add('nfl','2026-09-24','Packers','-','Browns','-','NFL Week 3','Lambeau Field','upcoming');
+    add('nfl','2026-09-24','Chargers','-','Steelers','-','NFL Week 3','SoFi Stadium','upcoming');
+    add('nfl','2026-09-24','Bills','-','Dolphins','-','NFL Week 3','Highmark Stadium','upcoming');
+    add('nfl','2026-09-24','Eagles','-','Buccaneers','-','NFL Week 3','Lincoln Financial Field','upcoming');
+    add('nfl','2026-09-24','Lions','-','Falcons','-','NFL Week 3','Ford Field','upcoming');
+    add('nfl','2026-09-25','Bengals','-','Jets','-','NFL Week 3','Paycor Stadium','upcoming');
+    add('nfl','2026-09-25','Bears','-','Colts','-','NFL Week 3','Soldier Field','upcoming');
+    add('nfl','2026-09-25','Vikings','-','Texans','-','NFL Week 3','U.S. Bank Stadium','upcoming');
+    add('nfl','2026-09-25','Patriots','-','Saints','-','NFL Week 3','Gillette Stadium','upcoming');
+    add('nfl','2026-09-25','Rams','-','Seahawks','-','NFL Week 3','SoFi Stadium','upcoming');
+    add('nfl','2026-09-25','Commanders','-','Bears','-','NFL Week 3','FedExField','upcoming');
+    add('nfl','2026-09-25','Jaguars','-','Panthers','-','NFL Week 3','EverBank Stadium','upcoming');
+    add('nfl','2026-09-25','Raiders','-','Titans','-','NFL Week 3','Allegiant Stadium','upcoming');
+
+    // === FOOTBALL — Premier League GW2-3 (Sep 13-14) ===
+    add('football','2026-09-13','Arsenal','-','Liverpool','-','Premier League','Emirates Stadium','upcoming');
+    add('football','2026-09-13','Newcastle','-','Manchester City','-','Premier League','St James Park','upcoming');
+    add('football','2026-09-13','West Ham','-','Chelsea','-','Premier League','London Stadium','upcoming');
+    add('football','2026-09-13','Brighton','-','Tottenham','-','Premier League','Amex Stadium','upcoming');
+    add('football','2026-09-14','Bournemouth','-','Everton','-','Premier League','Vitality Stadium','upcoming');
+    add('football','2026-09-14','Crystal Palace','-','Brentford','-','Premier League','Selhurst Park','upcoming');
+    add('football','2026-09-14','Fulham','-','Wolves','-','Premier League','Craven Cottage','upcoming');
+    add('football','2026-09-14','Nottm Forest','-','Leicester','-','Premier League','City Ground','upcoming');
+    add('football','2026-09-14','Aston Villa','-','Sunderland','-','Premier League','Villa Park','upcoming');
+    add('football','2026-09-14','Leeds','-','Ipswich','-','Premier League','Elland Road','upcoming');
+
+    // === FOOTBALL — Premier League GW3 (Sep 20-21) ===
+    add('football','2026-09-20','Liverpool','-','West Ham','-','Premier League','Anfield','upcoming');
+    add('football','2026-09-20','Man City','-','Arsenal','-','Premier League','Etihad Stadium','upcoming');
+    add('football','2026-09-20','Chelsea','-','Brighton','-','Premier League','Stamford Bridge','upcoming');
+    add('football','2026-09-20','Tottenham','-','Newcastle','-','Premier League','Tottenham Hotspur Stadium','upcoming');
+    add('football','2026-09-21','Everton','-','Crystal Palace','-','Premier League','Goodison Park','upcoming');
+    add('football','2026-09-21','Wolves','-','Aston Villa','-','Premier League','Molineux','upcoming');
+    add('football','2026-09-21','Leicester','-','Fulham','-','Premier League','King Power Stadium','upcoming');
+    add('football','2026-09-21','Brentford','-','Nottm Forest','-','Premier League','Gtech Community Stadium','upcoming');
+    add('football','2026-09-21','Ipswich','-','Bournemouth','-','Premier League','Portman Road','upcoming');
+    add('football','2026-09-21','Sunderland','-','Leeds','-','Premier League','Stadium of Light','upcoming');
+
+    // === FOOTBALL — Premier League GW4 (Sep 27-28) ===
+    add('football','2026-09-27','Arsenal','-','Man City','-','Premier League','Emirates Stadium','upcoming');
+    add('football','2026-09-27','Newcastle','-','Liverpool','-','Premier League','St James Park','upcoming');
+    add('football','2026-09-27','West Ham','-','Tottenham','-','Premier League','London Stadium','upcoming');
+    add('football','2026-09-27','Crystal Palace','-','Chelsea','-','Premier League','Selhurst Park','upcoming');
+    add('football','2026-09-28','Brighton','-','Wolves','-','Premier League','Amex Stadium','upcoming');
+    add('football','2026-09-28','Fulham','-','Aston Villa','-','Premier League','Craven Cottage','upcoming');
+    add('football','2026-09-28','Brentford','-','Everton','-','Premier League','Gtech Community Stadium','upcoming');
+    add('football','2026-09-28','Bournemouth','-','Sunderland','-','Premier League','Vitality Stadium','upcoming');
+    add('football','2026-09-28','Nottm Forest','-','Leicester','-','Premier League','City Ground','upcoming');
+    add('football','2026-09-28','Leeds','-','Ipswich','-','Premier League','Elland Road','upcoming');
+
+    // === FOOTBALL — La Liga GW4-6 (Sep 13-28) ===
+    add('football','2026-09-13','Barcelona','-','Valencia','-','La Liga','Camp Nou','upcoming');
+    add('football','2026-09-13','Villarreal','-','Atletico Madrid','-','La Liga','Estadio de la Ceramica','upcoming');
+    add('football','2026-09-14','Real Madrid','-','Real Sociedad','-','La Liga','Santiago Bernabeu','upcoming');
+    add('football','2026-09-14','Espanyol','-','Sevilla','-','La Liga','RCDE Stadium','upcoming');
+    add('football','2026-09-20','Atletico Madrid','-','Real Madrid','-','La Liga','Metropolitano','upcoming');
+    add('football','2026-09-20','Valencia','-','Barcelona','-','La Liga','Mestalla','upcoming');
+    add('football','2026-09-21','Real Sociedad','-','Athletic Bilbao','-','La Liga','Reale Arena','upcoming');
+    add('football','2026-09-21','Sevilla','-','Villarreal','-','La Liga','Ramon Sanchez Pizjuan','upcoming');
+    add('football','2026-09-27','Barcelona','-','Sevilla','-','La Liga','Camp Nou','upcoming');
+    add('football','2026-09-27','Real Madrid','-','Athletic Bilbao','-','La Liga','Santiago Bernabeu','upcoming');
+    add('football','2026-09-28','Atletico Madrid','-','Real Sociedad','-','La Liga','Metropolitano','upcoming');
+
+    // === FOOTBALL — Serie A GW3-5 (Sep 14-28) ===
+    add('football','2026-09-14','Napoli','-','Roma','-','Serie A','Diego Armando Maradona','upcoming');
+    add('football','2026-09-14','Lazio','-','Inter Milan','-','Serie A','Stadio Olimpico','upcoming');
+    add('football','2026-09-14','Juventus','-','Fiorentina','-','Serie A','Allianz Stadium','upcoming');
+    add('football','2026-09-14','AC Milan','-','Udinese','-','Serie A','San Siro','upcoming');
+    add('football','2026-09-21','Inter Milan','-','AC Milan','-','Serie A','San Siro','upcoming');
+    add('football','2026-09-21','Roma','-','Lazio','-','Serie A','Stadio Olimpico','upcoming');
+    add('football','2026-09-21','Atalanta','-','Juventus','-','Serie A','Gewiss Stadium','upcoming');
+    add('football','2026-09-21','Fiorentina','-','Napoli','-','Serie A','Artemio Franchi','upcoming');
+    add('football','2026-09-28','AC Milan','-','Lazio','-','Serie A','San Siro','upcoming');
+    add('football','2026-09-28','Inter Milan','-','Juventus','-','Serie A','San Siro','upcoming');
+    add('football','2026-09-28','Napoli','-','Atalanta','-','Serie A','Diego Armando Maradona','upcoming');
+    add('football','2026-09-28','Roma','-','Fiorentina','-','Serie A','Stadio Olimpico','upcoming');
+
+    // === FOOTBALL — Bundesliga GW3-5 (Sep 12-27) ===
+    add('football','2026-09-12','Bayern Munich','-','Bayer Leverkusen','-','Bundesliga','Allianz Arena','upcoming');
+    add('football','2026-09-12','Dortmund','-','Stuttgart','-','Bundesliga','Signal Iduna Park','upcoming');
+    add('football','2026-09-13','RB Leipzig','-','Frankfurt','-','Bundesliga','Red Bull Arena','upcoming');
+    add('football','2026-09-20','Bayer Leverkusen','-','Dortmund','-','Bundesliga','BayArena','upcoming');
+    add('football','2026-09-20','Frankfurt','-','Bayern Munich','-','Bundesliga','Deutsche Bank Park','upcoming');
+    add('football','2026-09-21','Stuttgart','-','RB Leipzig','-','Bundesliga','MHPArena','upcoming');
+    add('football','2026-09-27','Dortmund','-','Bayern Munich','-','Bundesliga','Signal Iduna Park','upcoming');
+    add('football','2026-09-27','RB Leipzig','-','Bayer Leverkusen','-','Bundesliga','Red Bull Arena','upcoming');
+    add('football','2026-09-28','Stuttgart','-','Frankfurt','-','Bundesliga','MHPArena','upcoming');
+
+    // === FOOTBALL — Ligue 1 GW3-5 (Sep 12-28) ===
+    add('football','2026-09-12','Marseille','-','PSG','-','Ligue 1','Stade Velodrome','upcoming');
+    add('football','2026-09-13','Monaco','-','Lyon','-','Ligue 1','Stade Louis II','upcoming');
+    add('football','2026-09-20','PSG','-','Lille','-','Ligue 1','Parc des Princes','upcoming');
+    add('football','2026-09-21','Lyon','-','Marseille','-','Ligue 1','Groupama Stadium','upcoming');
+    add('football','2026-09-27','PSG','-','Lyon','-','Ligue 1','Parc des Princes','upcoming');
+    add('football','2026-09-28','Marseille','-','Monaco','-','Ligue 1','Stade Velodrome','upcoming');
+    add('football','2026-09-28','Lille','-','Nice','-','Ligue 1','Stade Pierre-Mauroy','upcoming');
+
+    // === FOOTBALL — International Break Return (Sep 8-10) ===
+    add('football','2026-09-08','South Korea','-','Japan','-','World Cup Qualifier','Seoul World Cup Stadium','upcoming');
+    add('football','2026-09-08','Australia','-','Saudi Arabia','-','World Cup Qualifier','Stadium Australia','upcoming');
+    add('football','2026-09-09','Iran','-','Iraq','-','World Cup Qualifier','Azadi Stadium','upcoming');
+
+    // === CRICKET — Asia Cup 2026 continued (Sep 12-17) ===
+    add('cricket','2026-09-12','India','-','Sri Lanka','-','Asia Cup 2026 Super 4','Dubai International Stadium','upcoming');
+    add('cricket','2026-09-12','Pakistan','-','Bangladesh','-','Asia Cup 2026 Super 4','Dubai International Stadium','upcoming');
+    add('cricket','2026-09-14','India','-','Bangladesh','-','Asia Cup 2026 Super 4','Dubai International Stadium','upcoming');
+    add('cricket','2026-09-14','Pakistan','-','Sri Lanka','-','Asia Cup 2026 Super 4','Dubai International Stadium','upcoming');
+    add('cricket','2026-09-17','TBA','-','TBA','-','Asia Cup 2026 Final','Dubai International Stadium','upcoming');
+
+    // === CRICKET — Pakistan Tour of England 3rd Test (Sep 9-13) ===
+    add('cricket','2026-09-09','England','-','Pakistan','-','3rd Test, Pakistan Tour of England','Old Trafford, Manchester','upcoming');
+    add('cricket','2026-09-10','England','-','Pakistan','-','3rd Test, Pakistan Tour of England','Old Trafford, Manchester','upcoming');
+    add('cricket','2026-09-11','England','-','Pakistan','-','3rd Test, Pakistan Tour of England','Old Trafford, Manchester','upcoming');
+    add('cricket','2026-09-12','England','-','Pakistan','-','3rd Test, Pakistan Tour of England','Old Trafford, Manchester','upcoming');
+    add('cricket','2026-09-13','England','-','Pakistan','-','3rd Test, Pakistan Tour of England','Old Trafford, Manchester','upcoming');
+
+    // === CRICKET — Australia vs South Africa ODI Series (Sep 19-28) ===
+    add('cricket','2026-09-19','Australia','-','South Africa','-','1st ODI','The Oval, London','upcoming');
+    add('cricket','2026-09-22','Australia','-','South Africa','-','2nd ODA','Edgbaston, Birmingham','upcoming');
+    add('cricket','2026-09-25','Australia','-','South Africa','-','3rd ODI','Lord\'s, London','upcoming');
+    add('cricket','2026-09-28','Australia','-','South Africa','-','4th ODI','Headingley, Leeds','upcoming');
+
+    // === TENNIS — US Open (Sep 10-14 finals) + remaining ===
+    add('tennis','2026-09-10','TBA','-','TBA','-','US Open Women Final','Flushing Meadows, New York','upcoming');
+    add('tennis','2026-09-11','TBA','-','TBA','-','US Open Men Final','Flushing Meadows, New York','upcoming');
+
+    // === TENNIS — Davis Cup Finals (Sep 15-21) ===
+    add('tennis','2026-09-15','TBA','-','TBA','-','Davis Cup Finals QF','Valencia, Spain','upcoming');
+    add('tennis','2026-09-16','TBA','-','TBA','-','Davis Cup Finals QF','Valencia, Spain','upcoming');
+    add('tennis','2026-09-19','TBA','-','TBA','-','Davis Cup Finals SF','Valencia, Spain','upcoming');
+    add('tennis','2026-09-21','TBA','-','TBA','-','Davis Cup Finals Final','Valencia, Spain','upcoming');
+
+    // === UFC (Late September) ===
+    add('ufc','2026-09-20','Ilia Topuria','-','Charles Oliveira','-','UFC Abu Dhabi','Etihad Arena, Abu Dhabi','upcoming');
+    add('ufc','2026-09-27','Jon Jones','-','Tom Aspinall','-','UFC 332','Madison Square Garden, New York','upcoming');
+
     return m;
 }
 
