@@ -451,7 +451,8 @@ function renderNotifList() {
     container.innerHTML = notifs.map(n => {
         const time = n.time ? new Date(n.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         const ago = n.time ? getTimeAgo(new Date(n.time)) : '';
-        return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="handleNotifClick(${n.matchId})">
+        const mid = String(n.matchId).replace(/'/g, "\\'");
+        return `<div class="notif-item ${n.read ? '' : 'unread'}" onclick="handleNotifClick('${mid}')">
             <div class="notif-icon">${n.title.includes('LIVE') ? '🔴' : '✅'}</div>
             <div class="notif-content">
                 <div class="notif-title">${escHtml ? escHtml(n.title) : n.title}</div>
@@ -485,8 +486,13 @@ function handleNotifClick(matchId) {
     localStorage.setItem('ls_notifications', JSON.stringify(all));
     updateNotifBadge();
     renderNotifList();
-    if (matchId && typeof selectMatch === 'function') {
-        selectMatch(matchId);
+    if (matchId) {
+        const allMatches = typeof getAllMatches === 'function' ? getAllMatches() : [];
+        const m = allMatches.find(x => String(x.id) === String(matchId) || String(x.id).includes(String(matchId)));
+        if (m && typeof showBlogView === 'function') {
+            const s = m.score || {};
+            showBlogView(cleanDisplayName(m.team1?.name||'TBD')+' vs '+cleanDisplayName(m.team2?.name||'TBD'), m.date||'', m.time||'', m.league||'', m.sport||'football', getMatchStatus(m));
+        }
     }
 }
 

@@ -131,7 +131,6 @@
                 <div id="search-results" class="search-results"></div>
             </div>
             <a href="/admin.html" class="header-admin-link" title="Admin Panel">⚙</a>
-            <div class="header-icon" onclick="toggleThemePanel && toggleThemePanel()" title="Settings"></div>
         </div>
     </header>
 
@@ -286,10 +285,10 @@
             <div class="top-leagues-card">
                 <div class="top-leagues-header"><div class="top-leagues-title">Top Leagues</div></div>
                 <div class="top-leagues-list" id="top-leagues-list">
-                    <div class="top-league-item" onclick="switchSport('football')">Premier League <span class="top-league-arrow">›</span></div>
-                    <div class="top-league-item" onclick="switchSport('football')">La Liga <span class="top-league-arrow">›</span></div>
-                    <div class="top-league-item" onclick="switchSport('football')">Serie A <span class="top-league-arrow">›</span></div>
-                    <div class="top-league-item" onclick="switchSport('football')">Bundesliga <span class="top-league-arrow">›</span></div>
+                    <div class="top-league-item" onclick="switchSport('football');setTimeout(function(){filterByLeague('Premier League')},300)">Premier League <span class="top-league-arrow">›</span></div>
+                    <div class="top-league-item" onclick="switchSport('football');setTimeout(function(){filterByLeague('La Liga')},300)">La Liga <span class="top-league-arrow">›</span></div>
+                    <div class="top-league-item" onclick="switchSport('football');setTimeout(function(){filterByLeague('Serie A')},300)">Serie A <span class="top-league-arrow">›</span></div>
+                    <div class="top-league-item" onclick="switchSport('football');setTimeout(function(){filterByLeague('Bundesliga')},300)">Bundesliga <span class="top-league-arrow">›</span></div>
                 </div>
             </div>
             <div class="ads-card">
@@ -316,7 +315,7 @@
                 <span class="nav-icon">⌂</span>
                 <span class="nav-label">Home</span>
             </button>
-            <button class="bottom-nav-item" onclick="document.getElementById('match-list').scrollIntoView({behavior:'smooth'})">
+            <button class="bottom-nav-item" onclick="hideBlogView();setTimeout(function(){document.getElementById('match-list').scrollIntoView({behavior:'smooth'})},200)">
                 <span class="nav-icon">📅</span>
                 <span class="nav-label">Schedule</span>
             </button>

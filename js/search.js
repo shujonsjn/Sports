@@ -108,10 +108,11 @@ function selectMatchFromSearch(matchId) {
     if (mobileSearchResults) mobileSearchResults.classList.remove('active');
     if (mobileSearchInput) mobileSearchInput.value = '';
 
-    selectMatch(matchId);
-
-    const matchCard = document.querySelector(`[data-match-id="${CSS.escape(matchId)}"]`);
-    if (matchCard) {
-        matchCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const allMatches = (typeof getMatchesForDate === 'function' ? getMatchesForDate(currentDate) : []) || currentRenderedMatches || [];
+    const m = allMatches.find(x => String(x.id) === String(matchId));
+    if (m && typeof showBlogView === 'function') {
+        showBlogView(cleanDisplayName(m.team1?.name||'TBD')+' vs '+cleanDisplayName(m.team2?.name||'TBD'), m.date||'', m.time||'', m.league||'', m.sport||'football', getMatchStatus(m));
+    } else if (typeof selectMatch === 'function') {
+        selectMatch(matchId);
     }
 }
