@@ -1,7 +1,0 @@
-[     511ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:389
-[     548ms] [LOG] 🚀 Live Streaming initialized @ http://localhost:8080/js/app.js?v=3:175
-[     581ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ http://localhost:8080/:0
-[   25834ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:389
-[   25857ms] [LOG] 🚀 Live Streaming initialized @ http://localhost:8080/js/app.js?v=3:175
-[   25889ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ http://localhost:8080/:0
-[   29177ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:389

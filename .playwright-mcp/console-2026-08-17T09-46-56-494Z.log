@@ -1,3 +1,0 @@
-[     284ms] [LOG] 🚫 Auto-fetch disabled — no match data @ http://localhost:8080/js/api.js?v=3:389
-[     306ms] [LOG] 🚀 Live Streaming initialized @ http://localhost:8080/js/app.js?v=3:175
-[     337ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ http://localhost:8080/:0
