@@ -268,6 +268,12 @@
 
         <!-- Center - Match Schedule -->
         <section class="center-content" aria-label="Match schedule">
+            <div class="status-filters" id="status-filters">
+                <button class="status-filter-btn active" data-status="all" onclick="filterByStatus('all')">All</button>
+                <button class="status-filter-btn" data-status="live" onclick="filterByStatus('live')"><span class="status-dot-live"></span>Live</button>
+                <button class="status-filter-btn" data-status="upcoming" onclick="filterByStatus('upcoming')">Upcoming</button>
+                <button class="status-filter-btn" data-status="finished" onclick="filterByStatus('finished')">Finished</button>
+            </div>
             <div id="match-list" class="match-list" role="list" aria-label="Match list"></div>
         </section>
 

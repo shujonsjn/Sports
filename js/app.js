@@ -353,6 +353,8 @@ function switchSport(sport, updateUrlFlag = true) {
     showAllPills();
     var df = document.getElementById('date-filters');
     if (df) df.style.display = '';
+    var sf = document.getElementById('status-filters');
+    if (sf) sf.style.display = '';
 
     // Update desktop nav links
     document.querySelectorAll('.nav-link').forEach(btn => {
@@ -1165,7 +1167,7 @@ function filterLiveMatches() {
 function updateLiveFilterBtn() {
     const matches = getMatchesForDate(currentDate);
     const liveCount = matches.filter(m => getMatchStatus(m) === 'live').length;
-    const liveBtn = document.querySelector('.status-filter-btn.live');
+    const liveBtn = document.querySelector('.status-filter-btn[data-status="live"]');
     if (liveBtn) {
         liveBtn.style.display = liveCount > 0 ? '' : 'none';
     }
@@ -1493,6 +1495,8 @@ function showBlogView(name, date, time, league, sport, status) {
     hideAllPills();
     var df = document.getElementById('date-filters');
     if (df) df.style.display = 'none';
+    var sf = document.getElementById('status-filters');
+    if (sf) sf.style.display = 'none';
 
     var t1 = name || 'Team 1', t2 = 'Team 2';
     if (name && name.toLowerCase().includes(' vs ')) {
@@ -1712,6 +1716,8 @@ function hideBlogView() {
     showAllPills();
     var df = document.getElementById('date-filters');
     if (df) df.style.display = '';
+    var sf = document.getElementById('status-filters');
+    if (sf) sf.style.display = '';
     updateUrl(currentSport, currentDate, null);
     initNavigation();
     window.scrollTo(0, 0);
