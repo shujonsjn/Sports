@@ -244,9 +244,16 @@ const TEAM_LOGO_URLS = {
     'sporting cp': 'https://r2.thesportsdb.com/images/media/team/badge/uvxuqq1448813341.png'
 };
 
+const CUSTOM_LOGOS_KEY = 'sportslive_custom_logos';
+function getCustomLogos() { try { return JSON.parse(localStorage.getItem(CUSTOM_LOGOS_KEY) || '{}'); } catch(e) { return {}; } }
+function setCustomLogo(name, url) { const c = getCustomLogos(); c[name.toLowerCase().trim()] = url; localStorage.setItem(CUSTOM_LOGOS_KEY, JSON.stringify(c)); }
+function removeCustomLogo(name) { const c = getCustomLogos(); delete c[name.toLowerCase().trim()]; localStorage.setItem(CUSTOM_LOGOS_KEY, JSON.stringify(c)); }
+
 function fetchTeamLogo(teamName) {
     const key = (teamName || '').toLowerCase().trim();
     if (!key || key === '-' || key === 'tba') return '';
+    const custom = getCustomLogos();
+    if (custom[key]) return custom[key];
     if (teamLogoCache[key] && teamLogoCache[key] !== '_NOT_FOUND_') return teamLogoCache[key];
     const direct = TEAM_LOGO_URLS[key];
     if (direct && direct !== '') {

@@ -332,7 +332,80 @@
 
         <!-- Placeholders for new pages -->
         <div class="page" id="page-leagues"><div class="card"><div class="card-head"><h3>Leagues Management</h3></div><div class="card-body"><p>Coming soon.</p></div></div></div>
-        <div class="page" id="page-teams"><div class="card"><div class="card-head"><h3>Teams Management</h3></div><div class="card-body"><p>Coming soon.</p></div></div></div>
+        <div class="page" id="page-teams">
+            <div class="card">
+                <div class="card-head">
+                    <h3>Missing Team Logos</h3>
+                    <button class="btn btn-accent" onclick="scanMissingLogos()">↻ Scan</button>
+                </div>
+                <p style="padding:0 1.25rem;color:#747A84;font-size:0.85rem">Teams from today's matches that have no logo. Paste a logo URL and save.</p>
+                <div class="table-wrap">
+                    <table class="dt">
+                        <thead>
+                            <tr>
+                                <th>Team Name</th>
+                                <th>Sport</th>
+                                <th>Current Logo</th>
+                                <th>New Logo URL</th>
+                                <th>Preview</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="missing-logos-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="missing-logos-empty" style="padding:2rem;text-align:center;color:#747A84;display:none;">All teams have logos!</div>
+            </div>
+            <div class="card" style="margin-top:1rem;">
+                <div class="card-head">
+                    <h3>Custom Logo Overrides</h3>
+                    <button class="btn btn-sm" onclick="exportCustomLogos()">Export</button>
+                </div>
+                <p style="padding:0 1.25rem;color:#747A84;font-size:0.85rem">Manually added logo overrides stored in localStorage.</p>
+                <div class="table-wrap">
+                    <table class="dt">
+                        <thead>
+                            <tr>
+                                <th>Team Name</th>
+                                <th>Logo URL</th>
+                                <th>Preview</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="custom-logos-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="custom-logos-empty" style="padding:2rem;text-align:center;color:#747A84;display:none;">No custom logos yet.</div>
+            </div>
+            <div class="card" style="margin-top:1rem;">
+                <div class="card-head">
+                    <h3>Add Custom Logo</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Team Name</label>
+                            <input type="text" id="add-logo-team" class="form-input" placeholder="e.g. Brighton">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Logo URL</label>
+                            <input type="url" id="add-logo-url" class="form-input" placeholder="https://r2.thesportsdb.com/images/media/team/badge/...">
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Preview</label>
+                            <div id="add-logo-preview" style="width:48px;height:48px;border-radius:50%;border:1px solid #E4E7EB;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f5f6f8">
+                                <span style="color:#747A84;font-size:1.2rem">?</span>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:flex-end;">
+                            <button class="btn btn-accent" onclick="addCustomLogo()">Save Logo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="page" id="page-streams"><div class="card"><div class="card-head"><h3>Streams Management</h3></div><div class="card-body"><p>Coming soon.</p></div></div></div>
         <div class="page" id="page-news"><div class="card"><div class="card-head"><h3>News Management</h3></div><div class="card-body"><p>Coming soon.</p></div></div></div>
         <div class="page" id="page-users"><div class="card"><div class="card-head"><h3>Users Management</h3></div><div class="card-body"><p>Coming soon.</p></div></div></div>

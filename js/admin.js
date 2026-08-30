@@ -115,6 +115,7 @@ function showPage(page) {
     const t = { dashboard: 'Dashboard', matches: 'Matches', settings: 'Settings', apis: 'API Status', leagues: 'Leagues', teams: 'Teams', streams: 'Streams', news: 'News', users: 'Users', analytics: 'Analytics' };
     document.getElementById('page-title').textContent = t[page] || 'Dashboard';
     if (page === 'settings') loadSettings();
+    if (page === 'teams') { scanMissingLogos(); renderCustomLogosList(); }
 }
 
 // ===== Logging =====
@@ -454,3 +455,157 @@ async function checkAllAPIs() {
     }).join('');
     addLog('API check complete: ' + results.filter(r => r.ok).length + '/' + results.length + ' OK');
 }
+
+// ===== Logo Management =====
+
+function scanMissingLogos() {
+    const allMatches = (typeof currentRenderedMatches !== 'undefined' && currentRenderedMatches) ? currentRenderedMatches : [];
+    const custom = getCustomLogos();
+    const seen = new Set();
+    const missing = [];
+
+    allMatches.forEach(m => {
+        [m.team1, m.team2].forEach(t => {
+            const name = (t?.name || '').trim();
+            if (!name || name === '-' || name === 'TBA') return;
+            const key = name.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            const logo = fetchTeamLogo(name);
+            if (!logo) {
+                missing.push({ name, sport: m.sport || 'football' });
+            }
+        });
+    });
+
+    const tbody = document.getElementById('missing-logos-tbody');
+    const emptyEl = document.getElementById('missing-logos-empty');
+    if (!tbody) return;
+
+    if (missing.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'block';
+        return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+    tbody.innerHTML = missing.map(t => {
+        const escName = t.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<tr>
+            <td><strong>${t.name}</strong></td>
+            <td>${t.sport}</td>
+            <td><span style="color:#747A84">No logo</span></td>
+            <td><input type="url" class="form-input input-sm" id="logo-url-${escName}" placeholder="Paste logo URL..."></td>
+            <td><div id="logo-preview-${escName}" style="width:36px;height:36px;border-radius:50%;border:1px solid #E4E7EB;display:flex;align-items:center;justify-content:center;background:#f5f6f8"><span style="color:#aaa">?</span></div></td>
+            <td><button class="btn btn-sm btn-accent" onclick="saveMissingLogo('${escName}')">Save</button></td>
+        </tr>`;
+    }).join('');
+
+    missing.forEach(t => {
+        const input = document.getElementById('logo-url-' + t.name);
+        const preview = document.getElementById('logo-preview-' + t.name);
+        if (input && preview) {
+            input.addEventListener('input', function() {
+                const url = this.value.trim();
+                if (url) {
+                    preview.innerHTML = `<img src="${url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onload="this.style.display='';this.nextElementSibling.style.display='none'"><span style="display:none;color:#aaa">?</span>`;
+                } else {
+                    preview.innerHTML = '<span style="color:#aaa">?</span>';
+                }
+            });
+        }
+    });
+
+    addLog('Scanned: ' + missing.length + ' teams missing logos');
+}
+
+function saveMissingLogo(teamName) {
+    const input = document.getElementById('logo-url-' + teamName);
+    if (!input) return;
+    const url = input.value.trim();
+    if (!url) { alert('Please paste a logo URL'); return; }
+    setCustomLogo(teamName, url);
+    input.value = '';
+    addLog('Logo saved for: ' + teamName);
+    scanMissingLogos();
+    renderCustomLogosList();
+}
+
+function renderCustomLogosList() {
+    const custom = getCustomLogos();
+    const keys = Object.keys(custom);
+    const tbody = document.getElementById('custom-logos-tbody');
+    const emptyEl = document.getElementById('custom-logos-empty');
+    if (!tbody) return;
+
+    if (keys.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'block';
+        return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+    tbody.innerHTML = keys.map(key => {
+        const url = custom[key];
+        return `<tr>
+            <td><strong>${key}</strong></td>
+            <td><span style="font-size:0.75rem;color:#747A84;word-break:break-all">${url}</span></td>
+            <td><img src="${url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #E4E7EB" onerror="this.style.display='none'" onload="this.style.display=''"></td>
+            <td><button class="btn btn-sm btn-red" onclick="deleteCustomLogoAdmin('${key}')">Delete</button></td>
+        </tr>`;
+    }).join('');
+
+    addLog('Custom logos: ' + keys.length + ' entries');
+}
+
+function deleteCustomLogoAdmin(teamName) {
+    if (!confirm('Delete logo for "' + teamName + '"?')) return;
+    removeCustomLogo(teamName);
+    addLog('Deleted custom logo: ' + teamName);
+    renderCustomLogosList();
+    scanMissingLogos();
+}
+
+function addCustomLogo() {
+    const nameInput = document.getElementById('add-logo-team');
+    const urlInput = document.getElementById('add-logo-url');
+    if (!nameInput || !urlInput) return;
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    if (!name) { alert('Enter team name'); return; }
+    if (!url) { alert('Enter logo URL'); return; }
+    setCustomLogo(name, url);
+    nameInput.value = '';
+    urlInput.value = '';
+    document.getElementById('add-logo-preview').innerHTML = '<span style="color:#747A84;font-size:1.2rem">?</span>';
+    addLog('Custom logo added: ' + name);
+    renderCustomLogosList();
+    scanMissingLogos();
+}
+
+function exportCustomLogos() {
+    const custom = getCustomLogos();
+    const blob = new Blob([JSON.stringify(custom, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'custom-logos.json';
+    a.click();
+    addLog('Exported custom logos');
+}
+
+// Live preview for "Add Custom Logo" form
+document.addEventListener('DOMContentLoaded', function() {
+    const urlInput = document.getElementById('add-logo-url');
+    const preview = document.getElementById('add-logo-preview');
+    if (urlInput && preview) {
+        urlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) {
+                preview.innerHTML = `<img src="${url}" style="width:48px;height:48px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" onload="this.style.display='';this.nextElementSibling.style.display='none'"><span style="display:none;color:#747A84;font-size:1.2rem">?</span>`;
+            } else {
+                preview.innerHTML = '<span style="color:#747A84;font-size:1.2rem">?</span>';
+            }
+        });
+    }
+    renderCustomLogosList();
+});
