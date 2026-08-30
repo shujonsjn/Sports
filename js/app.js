@@ -322,7 +322,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     console.log('🚀 SportsLive initialized');
-    setTimeout(startScoreChecker, 5000);
 });
 
 // Initialize navigation
@@ -1604,7 +1603,7 @@ function showBlogView(name, date, time, league, sport, status) {
 
     pvTab(document.querySelector('.pv-tab'), 'preview');
 
-    window.history.pushState({ blog: true }, '', '/blog.html?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || ''));
+    window.history.pushState({ blog: true }, '', '/?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || ''));
     window.scrollTo(0, 0);
 }
 

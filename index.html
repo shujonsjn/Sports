@@ -90,7 +90,10 @@
     <!-- Mobile Toolbar -->
     <div class="mobile-logo-bar" id="mobile-toolbar">
         <div class="mobile-logo">Sports<span>Live</span></div>
-        <div class="mobile-search-icon" onclick="document.getElementById('mobile-search-input').focus()">⌕</div>
+        <div class="search-bar" style="flex:1;margin:0 0.5rem">
+            <input type="text" id="mobile-search-input" placeholder="Search teams..." autocomplete="off" aria-label="Search teams">
+            <div id="mobile-search-results" class="search-results"></div>
+        </div>
     </div>
 
     <!-- Mobile Nav Pills (sport filters) -->

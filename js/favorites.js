@@ -519,8 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestNotifPermission();
     document.addEventListener('click', (e) => {
         const panel = document.getElementById('notif-panel');
-        const btn = document.querySelector('.notif-btn');
-        if (panel && panel.style.display === 'block' && !panel.contains(e.target) && !btn.contains(e.target)) {
+        if (panel && panel.style.display === 'block' && !panel.contains(e.target)) {
             panel.style.display = 'none';
         }
     });

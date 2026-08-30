@@ -635,7 +635,7 @@ const NFLPage = (() => {
 
     hide() {
       const nflPage = document.getElementById('nfl-page');
-      const mainContainer = document.querySelector('.main-container');
+    const mainContainer = document.getElementById('main-content');
       if (nflPage) nflPage.classList.remove('active');
       if (mainContainer) mainContainer.style.display = '';
     },

@@ -13,35 +13,19 @@ const SPORTSRC_URL = IS_LOCAL ? '/api/sportsrc' : SPORTSRC_BASE;
 const APIFOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const THESPORTSDB_BASE = 'https://www.thesportsdb.com/api/v1/json/3';
 
-try {
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-        const k = localStorage.key(i);
-        if (k && (k.startsWith('sportsrc_v') || k.startsWith('schedule_60d'))) localStorage.removeItem(k);
-    }
-    const logoRaw = localStorage.getItem(LOGO_CACHE_KEY);
-    if (logoRaw) {
-        const logoData = JSON.parse(logoRaw);
-        let changed = false;
-        Object.keys(logoData).forEach(k => {
-            if (logoData[k] === '_NOT_FOUND_' || logoData[k] === '') {
-                delete logoData[k];
-                changed = true;
-            }
-        });
-        if (changed) localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(logoData));
-    }
-} catch (e) {}
-
-let APIFOOTBALL_KEY = '';
-let CRICKET_API_KEY = '';
-const CRICKET_API_BASE = 'https://api.cricapi.com/v1';
-
 // ===== Team Logo Cache =====
 const LOGO_CACHE_KEY = 'team_logos_v5';
 let teamLogoCache = {};
 try { teamLogoCache = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || '{}'); } catch(e) {}
 Object.keys(teamLogoCache).forEach(k => { if (teamLogoCache[k] === '_NOT_FOUND_') delete teamLogoCache[k]; });
 try { localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(teamLogoCache)); } catch(e) {}
+
+try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('sportsrc_v') || k.startsWith('schedule_60d'))) localStorage.removeItem(k);
+    }
+} catch (e) {}
 
 // Static logo mappings — reliable CDN URLs (no API calls needed)
 const TEAM_LOGO_URLS = {
@@ -623,16 +607,16 @@ async function fetchAllSports() {
                         }
                         if (m.team1?.logo && !ex.team1?.logo) ex.team1.logo = m.team1.logo;
                         if (m.team2?.logo && !ex.team2?.logo) ex.team2.logo = m.team2.logo;
+                    } else {
+                        results.cricket.push(m);
+                    }
+                });
             } else if (sport === 'espn_football') {
                 mergeFallbackIntoResults(results, matches, 'football');
             } else if (sport === 'espn_basketball') {
                 mergeFallbackIntoResults(results, matches, 'basketball');
             } else if (sport === 'espn_nfl') {
                 mergeFallbackIntoResults(results, matches, 'nfl');
-            } else {
-                        results.cricket.push(m);
-                    }
-                });
             } else {
                 results[sport] = matches;
             }
