@@ -1562,12 +1562,16 @@ function showBlogView(name, date, time, league, sport, status) {
     }
 
     var watchBtn = document.getElementById('pv-watch-btn');
+    var watchText = watchBtn ? watchBtn.querySelector('.pv-watch-text') : null;
+    var watchCd = document.getElementById('pv-watch-countdown');
     if (watchBtn) {
         if (st === 'live' || st === 'in') {
-            watchBtn.textContent = 'Watch Live ▶';
+            if (watchText) watchText.textContent = 'Watch Live ▶';
+            if (watchCd) watchCd.textContent = '';
             watchBtn.className = 'pv-watch-btn live';
         } else if (st === 'finished' || st === 'post') {
-            watchBtn.textContent = 'Watch Highlights ▶';
+            if (watchText) watchText.textContent = 'Watch Highlights ▶';
+            if (watchCd) watchCd.textContent = '';
             watchBtn.className = 'pv-watch-btn';
         } else {
             // Upcoming - start countdown
@@ -1576,7 +1580,8 @@ function showBlogView(name, date, time, league, sport, status) {
             var countdownTime = time;
             function updateWatchCountdown() {
                 if (!countdownDate || !countdownTime || countdownTime === 'TBA') {
-                    watchBtn.textContent = 'Watch Live ▶';
+                    if (watchText) watchText.textContent = 'Watch Live ▶';
+                    if (watchCd) watchCd.textContent = '';
                     return;
                 }
                 var now = new Date();
@@ -1585,7 +1590,8 @@ function showBlogView(name, date, time, league, sport, status) {
                 var match_dt = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), parseInt(tParts[0]||0), parseInt(tParts[1]||0), 0);
                 var diff = match_dt - now;
                 if (diff <= 0) {
-                    watchBtn.textContent = 'Watch Live ▶';
+                    if (watchText) watchText.textContent = 'Watch Live ▶';
+                    if (watchCd) watchCd.textContent = '';
                     watchBtn.className = 'pv-watch-btn live';
                     return;
                 }
@@ -1593,9 +1599,12 @@ function showBlogView(name, date, time, league, sport, status) {
                 var h = Math.floor((diff % 86400000) / 3600000);
                 var m = Math.floor((diff % 3600000) / 60000);
                 var s = Math.floor((diff % 60000) / 1000);
-                var label = d > 0 ? d + 'd ' : '';
-                label += String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-                watchBtn.textContent = 'Watch Live ▶ ' + label;
+                if (watchText) watchText.textContent = 'Watch Live ▶';
+                if (watchCd) {
+                    var cd = d > 0 ? d + 'd ' : '';
+                    cd += String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+                    watchCd.textContent = cd;
+                }
                 requestAnimationFrame(() => setTimeout(updateWatchCountdown, 1000));
             }
             updateWatchCountdown();

@@ -787,11 +787,13 @@ body{
 .pv-time{font-size:1.8rem;font-weight:800;letter-spacing:-0.02em}
 .pv-time-label{font-size:0.75rem;color:var(--muted)}
 .pv-watch-btn{
-  display:block;width:100%;max-width:200px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;width:100%;max-width:200px;margin:0 auto;
   padding:0.7rem 1.5rem;border:none;border-radius:9px;
   background:var(--accent);color:#fff;font-size:0.9rem;font-weight:700;
-  font-family:var(--font);cursor:pointer;transition:var(--transition);
+  font-family:var(--font);cursor:pointer;transition:var(--transition);gap:2px;
 }
+.pv-watch-text{font-size:0.9rem;font-weight:700}
+.pv-watch-countdown{font-size:0.82rem;font-weight:600;opacity:0.95}
 .pv-watch-btn:hover{background:var(--accent-hover);transform:translateY(-1px)}
 .pv-watch-btn.live{animation:pulse 2s infinite}
 .pv-tabs{
