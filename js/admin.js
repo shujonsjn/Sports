@@ -146,6 +146,7 @@ async function refreshDashboard() {
             ...(data.basketball || []),
             ...(data.tennis || []),
             ...(data.mma || []),
+            ...(data.ufc || []),
             ...(data.nfl || [])
         ];
 
@@ -232,6 +233,7 @@ function renderMatchTable(matches, tbodyId) {
         tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem;">No matches</td></tr>';
         return;
     }
+    var isFull = tbodyId === 'matches-tbody-full';
     tb.innerHTML = matches.map((x, i) => {
         var s = (x.status || '').toLowerCase();
         var live = s === 'live' || s === 'in';
@@ -240,11 +242,14 @@ function renderMatchTable(matches, tbodyId) {
         var tt = live ? 'LIVE' : ft ? 'FINISHED' : 'UPCOMING';
         var timeOrScore = live ? (x.time || 'LIVE') : ft ? (x.score?.team1 || '-') + ' - ' + (x.score?.team2 || '-') : (x.time || 'TBD');
         var origIdx = allAdminMatches.indexOf(x);
+        var sportEmoji = {football:'⚽',cricket:'🏏',basketball:'🏀',tennis:'🎾',mma:'🥊',ufc:'🥋',nfl:'🏈'}[x.sport] || '🏟️';
+        var cols = isFull
+            ? `<td>${sportEmoji} ${x.sport || '-'}</td><td>${x.team1?.name || '-'}</td><td>${x.team2?.name || '-'}</td><td>${x.score?.team1 || '-'} - ${x.score?.team2 || '-'}</td><td>${x.league || '-'}</td><td>${x.date || '-'}</td>`
+            : `<td>${x.team1?.name || '-'} vs ${x.team2?.name || '-'}</td><td>${x.league || '-'}</td>`;
         return `<tr>
-            <td>${x.team1?.name || '-'} vs ${x.team2?.name || '-'}</td>
-            <td>${x.league || '-'}</td>
+            ${cols}
             <td><span class="tag ${tc}">${tt}</span></td>
-            <td>${timeOrScore}</td>
+            <td>${isFull ? (x.date || '-') : timeOrScore}</td>
             <td><button class="action-btn" onclick="editMatch(${origIdx})">Edit</button> <button class="action-btn del" onclick="deleteMatch(${origIdx})">Delete</button></td>
         </tr>`;
     }).join('');
@@ -404,6 +409,7 @@ async function loadAdminMatches() {
             ...(result.basketball || []).map(m => ({ ...m, sport: 'basketball' })),
             ...(result.tennis || []).map(m => ({ ...m, sport: 'tennis' })),
             ...(result.mma || []).map(m => ({ ...m, sport: 'mma' })),
+            ...(result.ufc || []).map(m => ({ ...m, sport: 'ufc' })),
             ...(result.nfl || []).map(m => ({ ...m, sport: 'nfl' }))
         ];
         var customs = getCustomMatches();
@@ -413,4 +419,38 @@ async function loadAdminMatches() {
     } catch (e) {
         addLog('Error: ' + e.message, 'err');
     }
+}
+
+// ===== API Status Check =====
+async function checkAllAPIs() {
+    var container = document.getElementById('api-list');
+    if (!container) return;
+    container.innerHTML = '<div class="status-row"><span class="status-name">Checking APIs...</span></div>';
+    var endpoints = [
+        { name: 'SportSRC (Football)', url: '/api/sportsrc?category=football&limit=1' },
+        { name: 'ESPN Scores (Football)', url: '/api/espn-scores?sport=football' },
+        { name: 'ESPN Scores (Basketball)', url: '/api/espn-scores?sport=basketball' },
+        { name: 'ESPN Scores (NFL)', url: '/api/espn-scores?sport=nfl' },
+        { name: 'CricketData.org', url: '/api/cricketdata' },
+        { name: 'nfldata.org', url: '/api/nfldata?season=2026&season_type=2' },
+        { name: 'TheSportsDB (Logos)', url: '/api/thesportsdb?path=searchteams.php&t=Arsenal' },
+        { name: 'Admin Auth', url: '/api/admin?action=status' }
+    ];
+    var results = [];
+    for (var ep of endpoints) {
+        var start = Date.now();
+        try {
+            var r = await fetch(ep.url, { signal: AbortSignal.timeout(8000) });
+            var ms = Date.now() - start;
+            results.push({ name: ep.name, ok: r.ok, status: r.status, ms: ms });
+        } catch (e) {
+            results.push({ name: ep.name, ok: false, status: 'Error', ms: Date.now() - start, error: e.message });
+        }
+    }
+    container.innerHTML = results.map(r => {
+        var cls = r.ok ? 'green' : 'red';
+        var label = r.ok ? `${r.status} (${r.ms}ms)` : `${r.status} ${r.error || ''}`;
+        return `<div class="status-row"><span class="status-dot ${cls}"></span><span class="status-name">${r.name}</span><span class="status-val ${cls}">${label}</span></div>`;
+    }).join('');
+    addLog('API check complete: ' + results.filter(r => r.ok).length + '/' + results.length + ' OK');
 }
