@@ -350,6 +350,8 @@ function switchSport(sport, updateUrlFlag = true) {
     if (mc) mc.style.display = '';
     if (nfl) nfl.style.display = 'none';
     showAllPills();
+    var df = document.getElementById('date-filters');
+    if (df) df.style.display = '';
 
     // Update desktop nav links
     document.querySelectorAll('.nav-link').forEach(btn => {
