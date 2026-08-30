@@ -154,7 +154,27 @@ async function refreshDashboard() {
         const live = all.filter(m => ['live', 'in'].includes((m.status || '').toLowerCase())).length;
 
         document.getElementById('stat-total').textContent = all.length.toLocaleString();
+        const totalSub = document.getElementById('stat-total-sub');
+        if (totalSub) {
+            const sports = {};
+            all.forEach(m => { sports[m.sport] = (sports[m.sport] || 0) + 1; });
+            totalSub.textContent = Object.keys(sports).length + ' sports';
+        }
         document.getElementById('stat-live').textContent = live;
+
+        try {
+            const users = JSON.parse(localStorage.getItem('ls_users') || '[]');
+            document.getElementById('stat-users').textContent = users.length.toLocaleString();
+            const usersSub = document.getElementById('stat-users-sub');
+            if (usersSub) usersSub.textContent = users.length + ' accounts';
+        } catch(e) { document.getElementById('stat-users').textContent = '0'; }
+
+        try {
+            const views = parseInt(localStorage.getItem('sl_page_views') || '0');
+            document.getElementById('stat-views').textContent = views >= 1000 ? (views / 1000).toFixed(1) + 'K' : String(views);
+            const viewsSub = document.getElementById('stat-views-sub');
+            if (viewsSub) viewsSub.textContent = views + ' total visits';
+        } catch(e) {}
 
         addLog(`Loaded: ${all.length} matches, ${live} live`);
     } catch (e) {

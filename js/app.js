@@ -271,6 +271,7 @@ function initTheme() {
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async function() {
+    try { var v = parseInt(localStorage.getItem('sl_page_views') || '0') + 1; localStorage.setItem('sl_page_views', String(v)); } catch(e) {}
     // Check for blog URL FIRST - before ANY init
     const urlParams = new URLSearchParams(window.location.search);
     const blogName = urlParams.get('match') || '';
