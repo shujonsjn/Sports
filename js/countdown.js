@@ -47,7 +47,8 @@ function getMatchStatus(match) {
     if (!match) return 'upcoming';
     const explicit = String(match.status || '').toLowerCase();
     const text = String(match.statusText || '').toLowerCase();
-    if (['finished','final','post','cancelled','canceled'].includes(explicit) || /\b(final|finished|ft|ended|cancelled|canceled)\b/.test(text)) return 'finished';
+    if (['cancelled','canceled'].includes(explicit) || /\b(cancelled|canceled)\b/.test(text)) return 'finished';
+    if (['finished','final','post'].includes(explicit) || /\b(final|finished|ft|ended)\b/.test(text)) return 'finished';
     if (['live','in','in_progress','in-progress','suspended','halftime'].includes(explicit) || /\b(live|in progress|halftime|quarter|period)\b/.test(text)) {
         const hasInnings = match.innings && match.innings.length >= 2 && match.innings.some(arr => arr && arr.length > 0 && arr.some(i => i && i.runs && i.runs !== '-'));
         const s1 = String(match.score?.team1 || '').trim();
@@ -59,6 +60,8 @@ function getMatchStatus(match) {
     const now = new Date();
     if (!dt || isNaN(dt.getTime())) return 'upcoming';
     if (dt > now) return 'upcoming';
+    const todayStr = now.toISOString().split('T')[0];
+    if (match.date < todayStr) return 'finished';
     if (now > new Date(dt.getTime() + 24 * 60 * 60 * 1000)) return 'finished';
     const hasInnings = match.innings && match.innings.length >= 2 && match.innings.some(arr => arr && arr.length > 0 && arr.some(i => i && i.runs && i.runs !== '-'));
     const s1 = String(match.score?.team1 || '').trim();
