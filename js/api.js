@@ -37,7 +37,7 @@ let CRICKET_API_KEY = '';
 const CRICKET_API_BASE = 'https://api.cricapi.com/v1';
 
 // ===== Team Logo Cache =====
-const LOGO_CACHE_KEY = 'team_logos_v4';
+const LOGO_CACHE_KEY = 'team_logos_v5';
 let teamLogoCache = {};
 try { teamLogoCache = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || '{}'); } catch(e) {}
 Object.keys(teamLogoCache).forEach(k => { if (teamLogoCache[k] === '_NOT_FOUND_') delete teamLogoCache[k]; });
@@ -164,6 +164,26 @@ const TEAM_LOGO_URLS = {
     'malaysia': 'https://img.thesports.com/basketball/team/d580436ffcf5531ff33500bb724315da.png',
     'slovenia': 'https://img.thesports.com/basketball/team/35ddc4d975ebf4ca72e69c453bc89d44.png',
     'latvia': 'https://img.thesports.com/basketball/team/4b626c0ef3e30f8f4954927d1d8b0edc.png',
+    'vietnam': 'https://r2.thesportsdb.com/images/media/team/badge/gux95f1651458848.png',
+    'thailand': 'https://r2.thesportsdb.com/images/media/team/badge/dbpt9n1624098160.png',
+    'philippines': 'https://r2.thesportsdb.com/images/media/team/badge/3yw3jn1560688980.png',
+    'indonesia': 'https://r2.thesportsdb.com/images/media/team/badge/9u0qty1623866518.png',
+    'japan': 'https://r2.thesportsdb.com/images/media/team/badge/kkwe6m1560684468.png',
+    'south korea': 'https://r2.thesportsdb.com/images/media/team/badge/qg049x1560685144.png',
+    'chinese taipei': 'https://r2.thesportsdb.com/images/media/team/badge/jbuizh1623866816.png',
+    'china': 'https://r2.thesportsdb.com/images/media/team/badge/33fzmy1704629844.png',
+    'australia': 'https://r2.thesportsdb.com/images/media/team/badge/zvm8581646775132.png',
+    'iran': 'https://r2.thesportsdb.com/images/media/team/badge/y2y0cb1654115132.png',
+    'jordan': 'https://r2.thesportsdb.com/images/media/team/badge/u2sa4p1560689157.png',
+    'lebanon': 'https://r2.thesportsdb.com/images/media/team/badge/ejglj51704636514.png',
+    'saudi arabia': 'https://r2.thesportsdb.com/images/media/team/badge/jrf2li1623431445.png',
+    'qatar': 'https://r2.thesportsdb.com/images/media/team/badge/6wgu1h1623430086.png',
+    'bahrain': 'https://r2.thesportsdb.com/images/media/team/badge/w7joaw1704652571.png',
+    'kuwait': 'https://r2.thesportsdb.com/images/media/team/badge/t7w87a1654112747.png',
+    'iraq': 'https://r2.thesportsdb.com/images/media/team/badge/raitff1708775163.png',
+    'united arab emirates': 'https://r2.thesportsdb.com/images/media/team/badge/zcrlcv1708717076.png',
+    'uae': 'https://r2.thesportsdb.com/images/media/team/badge/zcrlcv1708717076.png',
+    'india': 'https://r2.thesportsdb.com/images/media/team/badge/ufgtdx1629833092.png',
     'new zealand women': 'https://img.thesports.com/basketball/team/d4b2bfd0db89e9b41d44239a404d045d.jpg',
     'brazil women': 'https://img.thesports.com/basketball/team/e40030a18efa3acc6922527b8807b0d7.png',
     'canada women': 'https://img.thesports.com/basketball/team/3d3669fffad83128ecbf257f2db7c65a.png',
