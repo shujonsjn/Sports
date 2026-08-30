@@ -1183,7 +1183,7 @@ function getAugust2026Data() {
 }
 
 function filterAugust2026(dateStr, sport) {
-    if (!dateStr.startsWith('2026-08')) return [];
+    if (!dateStr.startsWith('2026-08') && !dateStr.startsWith('2026-09')) return [];
     const all = getAugust2026Data();
     if (sport) return all.filter(m => m.date === dateStr && m.sport === sport);
     return all.filter(m => m.date === dateStr);
