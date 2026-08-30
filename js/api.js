@@ -342,6 +342,60 @@ function refreshLogosInDOM(matches) {
     });
 }
 
+// ===== Lineup System =====
+const LINEUP_CACHE_KEY = 'sportslive_lineups_v1';
+function getLineupCache() { try { return JSON.parse(localStorage.getItem(LINEUP_CACHE_KEY) || '{}'); } catch(e) { return {}; } }
+function saveLineupCache(c) { try { localStorage.setItem(LINEUP_CACHE_KEY, JSON.stringify(c)); } catch(e) {} }
+
+function getLineupForMatch(matchName) {
+    const cache = getLineupCache();
+    const key = (matchName || '').toLowerCase().trim();
+    return cache[key] || null;
+}
+
+function saveLineupForMatch(matchName, lineup) {
+    const cache = getLineupCache();
+    const key = (matchName || '').toLowerCase().trim();
+    cache[key] = lineup;
+    saveLineupCache(cache);
+}
+
+async function fetchLineupFromAPI(team1, team2, league) {
+    const query = (team1 + ' vs ' + team2).replace(/\s+/g, '_');
+    const key = (team1 + ' vs ' + team2).toLowerCase().trim();
+    const cache = getLineupCache();
+    if (cache[key]) return cache[key];
+
+    try {
+        const res = await fetch(`/api/thesportsdb?path=searchevents.php&e=${encodeURIComponent(query)}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data.events || data.events.length === 0) return null;
+
+        const event = data.events[0];
+        const eventId = event.idEvent;
+        if (!eventId) return null;
+
+        const lr = await fetch(`/api/thesportsdb?path=lookuplineup.php&id=${eventId}`);
+        if (!lr.ok) return null;
+        const ld = await lr.json();
+        if (!ld.lineup || ld.lineup.length === 0) return null;
+
+        const home = [], away = [];
+        ld.lineup.forEach(p => {
+            const player = { name: p.strPlayer || 'Unknown', position: p.strPosition || '', number: p.intJerseyNumber || '', photo: p.strThumb || '' };
+            if (p.strTeam === event.strHomeTeam) home.push(player);
+            else away.push(player);
+        });
+
+        const lineup = { home, away, formation: event.strFormation || '', source: 'thesportsdb', timestamp: Date.now() };
+        saveLineupForMatch(key, lineup);
+        return lineup;
+    } catch(e) {
+        return null;
+    }
+}
+
 function updateLastUpdated() {
     const el = document.getElementById('last-updated');
     if (el && LAST_UPDATED) {

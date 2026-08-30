@@ -1616,10 +1616,92 @@ function showBlogView(name, date, time, league, sport, status) {
     if (formDots1) formDots1.innerHTML = ['w','w','w','d','w'].map(r => '<span class="pv-form-dot '+r+'">'+r.toUpperCase()+'</span>').join('');
     if (formDots2) formDots2.innerHTML = ['w','l','w','d','d'].map(r => '<span class="pv-form-dot '+r+'">'+r.toUpperCase()+'</span>').join('');
 
+    loadLineupForPreview(t1, t2, league, sport, st);
+
     pvTab(document.querySelector('.pv-tab'), 'preview');
 
     window.history.pushState({ blog: true }, '', '/?match=' + encodeURIComponent(name || '') + '&date=' + encodeURIComponent(date || '') + '&time=' + encodeURIComponent(time || '') + '&league=' + encodeURIComponent(league || '') + '&sport=' + encodeURIComponent(sport || ''));
     window.scrollTo(0, 0);
+}
+
+function loadLineupForPreview(t1, t2, league, sport, status) {
+    var container = document.getElementById('pv-tab-lineups');
+    if (!container) return;
+
+    if (sport !== 'football' && sport !== 'soccer') {
+        container.innerHTML = '<div class="pv-card"><h2 class="pv-section-title">Lineups</h2><p class="pv-text">Lineups are available for football matches only.</p></div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="pv-card"><h2 class="pv-section-title">Lineups</h2><p class="pv-text" id="lineup-status">Loading lineups...</p></div>';
+
+    var matchName = (t1 || '') + ' vs ' + (t2 || '');
+
+    // Try cached data first
+    var cached = typeof getLineupForMatch === 'function' ? getLineupForMatch(matchName) : null;
+    if (cached) {
+        renderLineupData(container, cached, t1, t2);
+        return;
+    }
+
+    // Try API fetch
+    if (typeof fetchLineupFromAPI === 'function') {
+        fetchLineupFromAPI(t1, t2, league).then(function(lineup) {
+            if (lineup) {
+                renderLineupData(container, lineup, t1, t2);
+            } else {
+                container.innerHTML = '<div class="pv-card"><h2 class="pv-section-title">Lineups</h2><p class="pv-text">Lineups will be announced before kickoff.</p></div>';
+            }
+        });
+    } else {
+        container.innerHTML = '<div class="pv-card"><h2 class="pv-section-title">Lineups</h2><p class="pv-text">Lineups will be announced before kickoff.</p></div>';
+    }
+}
+
+function renderLineupData(container, lineup, t1, t2) {
+    var html = '<div class="pv-card"><h2 class="pv-section-title">Lineups</h2>';
+    if (lineup.formation) html += '<p class="pv-text" style="margin-bottom:0.8rem"><strong>Formation:</strong> ' + lineup.formation + '</p>';
+
+    if (lineup.home && lineup.home.length > 0) {
+        html += '<h3 style="font-size:0.85rem;font-weight:600;margin:0.8rem 0 0.4rem;color:var(--text)">' + escHtml(t1) + '</h3>';
+        html += '<div class="lineup-grid">';
+        lineup.home.forEach(function(p) {
+            html += '<div class="lineup-player">';
+            if (p.photo) {
+                html += '<img src="' + escHtml(p.photo) + '" class="lineup-player-img" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="lineup-player-fallback" style="display:none">' + escHtml((p.name || '?')[0]) + '</span>';
+            } else {
+                html += '<span class="lineup-player-fallback">' + escHtml((p.name || '?')[0]) + '</span>';
+            }
+            html += '<div class="lineup-player-info">';
+            if (p.number) html += '<span class="lineup-player-num">#' + escHtml(p.number) + '</span>';
+            html += '<span class="lineup-player-name">' + escHtml(p.name) + '</span>';
+            if (p.position) html += '<span class="lineup-player-pos">' + escHtml(p.position) + '</span>';
+            html += '</div></div>';
+        });
+        html += '</div>';
+    }
+
+    if (lineup.away && lineup.away.length > 0) {
+        html += '<h3 style="font-size:0.85rem;font-weight:600;margin:0.8rem 0 0.4rem;color:var(--text)">' + escHtml(t2) + '</h3>';
+        html += '<div class="lineup-grid">';
+        lineup.away.forEach(function(p) {
+            html += '<div class="lineup-player">';
+            if (p.photo) {
+                html += '<img src="' + escHtml(p.photo) + '" class="lineup-player-img" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="lineup-player-fallback" style="display:none">' + escHtml((p.name || '?')[0]) + '</span>';
+            } else {
+                html += '<span class="lineup-player-fallback">' + escHtml((p.name || '?')[0]) + '</span>';
+            }
+            html += '<div class="lineup-player-info">';
+            if (p.number) html += '<span class="lineup-player-num">#' + escHtml(p.number) + '</span>';
+            html += '<span class="lineup-player-name">' + escHtml(p.name) + '</span>';
+            if (p.position) html += '<span class="lineup-player-pos">' + escHtml(p.position) + '</span>';
+            html += '</div></div>';
+        });
+        html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 function hideBlogView() {
