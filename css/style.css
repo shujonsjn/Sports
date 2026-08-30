@@ -781,6 +781,8 @@ body{
 }
 .pv-status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .pv-status-badge.live .pv-status-dot{background:#16A34A;animation:pulse 1.5s infinite}
+
+.live-pulse-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#16A34A;animation:pulse 1.5s infinite;vertical-align:middle;margin-right:3px}
 .pv-status-badge.live{background:rgba(22,163,74,0.1);color:#16A34A}
 .pv-status-badge.finished{background:rgba(22,163,74,0.1);color:#16A34A}
 .pv-match-title{font-size:1.4rem;font-weight:800;margin-bottom:0.3rem;letter-spacing:-0.02em}

@@ -71,7 +71,53 @@ function getMatchStatus(match) {
     return 'upcoming';
 }
 
-// Start countdown for a match
+// Real-time football match minute calculator
+const _liveMinuteState = {};
+
+function getLiveMinute(match) {
+    if (!match || !match.sport) return null;
+    if (match.sport !== 'football') return null;
+
+    const status = getMatchStatus(match);
+    if (status !== 'live') return null;
+
+    // Try ESPN displayClock first (e.g. "45'" or "2'")  
+    if (match.displayClock) {
+        const clock = String(match.displayClock).trim();
+        const parsed = parseInt(clock);
+        if (!isNaN(parsed) && parsed > 0) {
+            const period = match.period || 1;
+            const base = (period >= 3) ? 90 : (period >= 2) ? 45 : 0;
+            const minute = base + parsed;
+            _liveMinuteState[match.id] = { minute: minute, ts: Date.now(), period: period };
+            return minute + "'";
+        }
+    }
+
+    // Fallback: calculate from kickoff time
+    if (match.kickoff) {
+        const kickoff = new Date(match.kickoff);
+        const now = new Date();
+        const elapsedMs = now - kickoff;
+        if (elapsedMs < 0) return null;
+        let elapsedMin = Math.floor(elapsedMs / 60000);
+        // Account for ~15 min halftime break after 45 min
+        if (elapsedMin > 45) elapsedMin = Math.min(elapsedMin, 45) + Math.max(0, elapsedMin - 60);
+        if (elapsedMin > 110) elapsedMin = 110;
+        _liveMinuteState[match.id] = { minute: elapsedMin, ts: Date.now(), period: 1 };
+        return elapsedMin + "'";
+    }
+
+    // Check cache for last known minute
+    const cached = _liveMinuteState[match.id];
+    if (cached) {
+        const diff = Math.floor((Date.now() - cached.ts) / 60000);
+        return (cached.minute + diff) + "'";
+    }
+
+    return null;
+}
+
 function startCountdown(matchId, date, time) {
     const matchDateTime = getMatchDateTime(date, time);
 

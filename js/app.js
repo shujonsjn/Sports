@@ -550,7 +550,8 @@ function updateLiveNowSidebar() {
         const s1 = scoreValue(match.score?.team1);
         const s2 = scoreValue(match.score?.team2);
         const league = match.league || '';
-        const minute = match.statusText || '';
+        const liveMin = getLiveMinute(match);
+        const minute = liveMin || match.statusText || '';
 
         return `<div class="live-mini-card" onclick="showBlogView('${esc(t1 + ' vs ' + t2)}','${esc(match.date||'')}','${esc(match.time||'')}','${esc(match.league||'')}','${esc(match.sport||currentSport)}','live')">
             <div class="live-mini-league">${escHtml(league)}</div>
@@ -815,8 +816,9 @@ function renderMatchList(matches, container) {
                     <div class="mc-time-label">UPCOMING</div>
                 </div>`;
             } else if (status === 'live') {
+                const liveMinute = getLiveMinute(match);
                 statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
-                    <div class="mc-status-text">LIVE</div>
+                    <div class="mc-status-text">${liveMinute ? '<span class="live-pulse-dot"></span> ' + escHtml(liveMinute) : 'LIVE'}</div>
                 </div>`;
             } else {
                 statusBoxHtml = `<div class="mc-status-box" onclick="event.stopPropagation();${pvCall}">
@@ -1217,6 +1219,73 @@ document.addEventListener('click', function(e) {
 
 // ===== Live Score Auto-Refresh Agent (every 60 seconds) =====
 let _liveAgentInterval = null;
+let _liveMinuteInterval = null;
+
+function startLiveMinuteUpdater() {
+    stopLiveMinuteUpdater();
+    _liveMinuteInterval = setInterval(() => {
+        // Update live minute badges on match cards
+        document.querySelectorAll('.match-card.live').forEach(card => {
+            const matchId = card.getAttribute('data-match-id');
+            if (!matchId) return;
+            const match = currentRenderedMatches.find(m => String(m.id) === String(matchId));
+            if (!match) return;
+            const liveMin = getLiveMinute(match);
+            if (!liveMin) return;
+            const statusText = card.querySelector('.mc-status-text');
+            if (statusText) {
+                statusText.innerHTML = '<span class="live-pulse-dot"></span> ' + escHtml(liveMin);
+            }
+        });
+
+        // Update preview page badge if live
+        var badge = document.getElementById('pv-status-badge');
+        if (badge && badge.classList.contains('live')) {
+            var pvMatch = currentRenderedMatches.find(m => {
+                var pvVs = document.getElementById('pv-vs');
+                if (!pvVs) return false;
+                var vsText = pvVs.textContent || '';
+                var parts = vsText.split(/\s+vs\s+/i);
+                if (parts.length < 2) return false;
+                var tn1 = parts[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+                var tn2 = parts[1].toLowerCase().replace(/[^a-z0-9]/g, '');
+                var mn1 = (m.team1?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                var mn2 = (m.team2?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return (mn1.includes(tn1) && mn2.includes(tn2)) || (mn1.includes(tn2) && mn2.includes(tn1));
+            });
+            if (pvMatch) {
+                var liveMin = getLiveMinute(pvMatch);
+                if (liveMin) {
+                    badge.innerHTML = '<span class="pv-status-dot"></span> LIVE ' + escHtml(liveMin);
+                    setText('pv-detail-status', 'Live ' + liveMin);
+                }
+            }
+        }
+
+        // Update live now sidebar minute
+        document.querySelectorAll('.live-mini-minute').forEach(el => {
+            var card = el.closest('.live-mini-card');
+            if (!card) return;
+            var onclick = card.getAttribute('onclick') || '';
+            var match = currentRenderedMatches.find(m => {
+                var mn1 = (m.team1?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                var mn2 = (m.team2?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                return onclick.includes(mn1) || onclick.includes(mn2);
+            });
+            if (match) {
+                var liveMin = getLiveMinute(match);
+                if (liveMin) el.textContent = liveMin;
+            }
+        });
+    }, 30000);
+}
+
+function stopLiveMinuteUpdater() {
+    if (_liveMinuteInterval) {
+        clearInterval(_liveMinuteInterval);
+        _liveMinuteInterval = null;
+    }
+}
 let _lastRefreshTime = 0;
 
 function startLiveAgent() {
@@ -1317,13 +1386,16 @@ function stopLiveAgent() {
 
 document.addEventListener('DOMContentLoaded', () => {
     startLiveAgent();
+    startLiveMinuteUpdater();
 });
 
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         stopLiveAgent();
+        stopLiveMinuteUpdater();
     } else {
         startLiveAgent();
+        startLiveMinuteUpdater();
     }
 });
 
@@ -1551,9 +1623,17 @@ function showBlogView(name, date, time, league, sport, status) {
     var badge = document.getElementById('pv-status-badge');
     if (badge) {
         if (st === 'live' || st === 'in') {
+            var pvMatch = currentRenderedMatches.find(m => {
+                var mn1 = (m.team1?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                var mn2 = (m.team2?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                var tn1 = t1.toLowerCase().replace(/[^a-z0-9]/g, '');
+                var tn2 = t2.toLowerCase().replace(/[^a-z0-9]/g, '');
+                return (mn1.includes(tn1) && mn2.includes(tn2)) || (mn1.includes(tn2) && mn2.includes(tn1));
+            });
+            var liveMin = pvMatch ? getLiveMinute(pvMatch) : null;
             badge.className = 'pv-status-badge live';
-            badge.innerHTML = '<span class="pv-status-dot"></span> LIVE';
-            setText('pv-detail-status', 'Live');
+            badge.innerHTML = '<span class="pv-status-dot"></span> ' + (liveMin ? 'LIVE ' + escHtml(liveMin) : 'LIVE');
+            setText('pv-detail-status', liveMin ? 'Live ' + liveMin : 'Live');
         } else if (st === 'finished' || st === 'post') {
             badge.className = 'pv-status-badge finished';
             badge.innerHTML = '<span class="pv-status-dot"></span> FINISHED';

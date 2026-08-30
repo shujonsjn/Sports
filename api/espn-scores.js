@@ -61,8 +61,11 @@ export default async function handler(req, res) {
                     venue: comp.venue?.fullName || '',
                     date: matchDate,
                     time: matchTime,
+                    kickoff: ev.date || '',
                     status: status,
                     statusText: comp.status?.type?.detail || statusType,
+                    displayClock: comp.status?.displayClock || '',
+                    period: comp.status?.period || 0,
                     score: {
                         team1: home.score || '-',
                         team2: away.score || '-'
