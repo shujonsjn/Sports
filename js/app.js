@@ -1469,6 +1469,8 @@ function showBlogView(name, date, time, league, sport, status) {
     if (mainContent) mainContent.style.display = 'none';
     if (nflPage) nflPage.style.display = 'none';
     hideAllPills();
+    var df = document.getElementById('date-filters');
+    if (df) df.style.display = 'none';
 
     var t1 = name || 'Team 1', t2 = 'Team 2';
     if (name && name.toLowerCase().includes(' vs ')) {
@@ -1595,6 +1597,8 @@ function hideBlogView() {
     if (pv) pv.style.display = 'none';
     if (mainContent) mainContent.style.display = '';
     showAllPills();
+    var df = document.getElementById('date-filters');
+    if (df) df.style.display = '';
     updateUrl(currentSport, currentDate, null);
     initNavigation();
     window.scrollTo(0, 0);
