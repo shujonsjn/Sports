@@ -458,8 +458,13 @@ async function checkAllAPIs() {
 
 // ===== Logo Management =====
 
-function scanMissingLogos() {
-    const allMatches = (typeof currentRenderedMatches !== 'undefined' && currentRenderedMatches) ? currentRenderedMatches : [];
+async function scanMissingLogos() {
+    addLog('Scanning for missing logos...');
+    if (!allAdminMatches || allAdminMatches.length === 0) {
+        addLog('Loading match data first...');
+        await loadAdminMatches();
+    }
+    const allMatches = allAdminMatches || [];
     const custom = getCustomLogos();
     const seen = new Set();
     const missing = [];
