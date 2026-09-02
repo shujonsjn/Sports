@@ -1799,6 +1799,7 @@ function hideBlogView() {
     if (df) df.style.display = '';
     var sf = document.getElementById('status-filters');
     if (sf) sf.style.display = '';
+    stopStatsInterval();
     updateUrl(currentSport, currentDate, null);
     initNavigation();
     window.scrollTo(0, 0);
@@ -1811,6 +1812,7 @@ function pvTab(el, tab) {
     var content = document.getElementById('pv-tab-' + tab);
     if (content) content.style.display = 'block';
     if (tab === 'news') loadMatchNews();
+    if (tab === 'stats') loadMatchStats();
 }
 
 function loadMatchNews() {
@@ -1860,4 +1862,93 @@ function copyBlogLink() {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(url);
     }
+}
+
+let _statsInterval = null;
+
+function loadMatchStats() {
+    var vsEl = document.getElementById('pv-vs');
+    if (!vsEl) return;
+    var vsText = vsEl.textContent || '';
+    var parts = vsText.split(/\s+vs\s+/i);
+    if (parts.length < 2) return;
+    var t1 = parts[0].trim();
+    var t2 = parts[1].trim();
+    var sportEl = document.getElementById('pv-sport');
+    var sport = sportEl ? sportEl.textContent.trim().toLowerCase() : 'football';
+
+    var container = document.getElementById('pv-stats-content');
+    if (!container) return;
+    container.innerHTML = '<p class="pv-text">Loading statistics...</p>';
+
+    if (_statsInterval) { clearInterval(_statsInterval); _statsInterval = null; }
+
+    function fetchStats() {
+        fetch('/api/stats?team1=' + encodeURIComponent(t1) + '&team2=' + encodeURIComponent(t2) + '&sport=' + encodeURIComponent(sport))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var stats = data.stats || [];
+                var isLive = data.status === 'live';
+                var homeName = data.homeTeam?.name || t1;
+                var awayName = data.awayTeam?.name || t2;
+                var homeScore = data.homeTeam?.score || '-';
+                var awayScore = data.awayTeam?.score || '-';
+
+                if (stats.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:1rem">' +
+                        '<div style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem">' + escHtml(homeScore) + ' - ' + escHtml(awayScore) + '</div>' +
+                        '<p class="pv-text">No detailed statistics available for this match.</p></div>';
+                    if (!isLive && _statsInterval) { clearInterval(_statsInterval); _statsInterval = null; }
+                    return;
+                }
+
+                var html = '';
+                if (isLive) {
+                    html += '<div style="text-align:center;margin-bottom:1rem;padding:0.5rem;background:rgba(22,163,74,0.08);border-radius:8px">' +
+                        '<span class="live-pulse-dot"></span> <span style="font-size:0.85rem;font-weight:600;color:#16A34A">Live Statistics</span></div>';
+                }
+
+                html += '<div style="display:flex;justify-content:space-between;padding:0.5rem 0;font-size:0.8rem;font-weight:600;color:var(--text)">' +
+                    '<span style="flex:1;text-align:center">' + escHtml(homeName) + '</span>' +
+                    '<span style="flex:1"></span>' +
+                    '<span style="flex:1;text-align:center">' + escHtml(awayName) + '</span></div>';
+
+                stats.forEach(function(s) {
+                    var hVal = String(s.home || '0');
+                    var aVal = String(s.away || '0');
+                    var hNum = parseFloat(hVal);
+                    var aNum = parseFloat(aVal);
+                    var total = (!isNaN(hNum) && !isNaN(aNum)) ? hNum + aNum : 0;
+                    var hPct = total > 0 ? Math.round((hNum / total) * 100) : 50;
+                    var aPct = total > 0 ? 100 - hPct : 50;
+
+                    html += '<div style="padding:0.4rem 0">' +
+                        '<div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:3px">' +
+                        '<span style="font-weight:600;color:var(--text);flex:1;text-align:center">' + escHtml(hVal) + '</span>' +
+                        '<span style="font-size:0.72rem;color:var(--muted);flex:1;text-align:center">' + escHtml(s.name) + '</span>' +
+                        '<span style="font-weight:600;color:var(--text);flex:1;text-align:center">' + escHtml(aVal) + '</span>' +
+                        '</div>' +
+                        '<div style="display:flex;gap:4px;height:4px">' +
+                        '<div style="flex:' + hPct + ';background:#16A34A;border-radius:2px"></div>' +
+                        '<div style="flex:' + aPct + ';background:var(--accent);border-radius:2px"></div>' +
+                        '</div></div>';
+                });
+
+                container.innerHTML = html;
+            })
+            .catch(function() {
+                container.innerHTML = '<p class="pv-text">Failed to load statistics.</p>';
+            });
+    }
+
+    fetchStats();
+
+    var badge = document.getElementById('pv-status-badge');
+    if (badge && badge.classList.contains('live')) {
+        _statsInterval = setInterval(fetchStats, 30000);
+    }
+}
+
+function stopStatsInterval() {
+    if (_statsInterval) { clearInterval(_statsInterval); _statsInterval = null; }
 }
