@@ -1646,6 +1646,24 @@ function showBlogView(name, date, time, league, sport, status) {
         }
     }
 
+    // Inject ads in preview sidebar
+    var pvSidebar = document.querySelector('.preview-sidebar');
+    if (pvSidebar && !document.getElementById('pv-sidebar-ad')) {
+        var adHtml = '<div id="pv-sidebar-ad" style="position:relative;min-height:250px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center">' +
+            '<span style="position:absolute;top:6px;left:8px;font-size:0.6rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px">Ad</span>' +
+            '<div style="text-align:center;padding:1.5rem 1rem">' +
+            '<div style="font-size:2rem;margin-bottom:0.5rem">📢</div>' +
+            '<div style="font-size:0.85rem;font-weight:600;color:#1a1d23;margin-bottom:0.3rem">Advertisement</div>' +
+            '<div style="font-size:0.72rem;color:#6b7280">Your ad could be here</div>' +
+            '</div></div>';
+        var matchDetailsCard = pvSidebar.querySelector('.pv-card.pv-sidebar-card');
+        if (matchDetailsCard) {
+            matchDetailsCard.insertAdjacentHTML('afterend', adHtml);
+        } else {
+            pvSidebar.insertAdjacentHTML('afterbegin', adHtml);
+        }
+    }
+
     var watchBtn = document.getElementById('pv-watch-btn');
     var watchText = watchBtn ? watchBtn.querySelector('.pv-watch-text') : null;
     var watchCd = document.getElementById('pv-watch-countdown');
