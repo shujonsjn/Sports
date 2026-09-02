@@ -799,14 +799,15 @@ function renderMatchList(matches, container) {
 
             // Score/time values
             let t1Score = '', t2Score = '';
-            if (status === 'live' || status === 'finished') {
+            const hasRealScore = (s1 && s1 !== '-') || (s2 && s2 !== '-');
+            if ((status === 'live' || status === 'finished') && hasRealScore) {
                 t1Score = (s1 && s1 !== '-') ? escHtml(s1) : '-';
                 t2Score = (s2 && s2 !== '-') ? escHtml(s2) : '-';
             }
 
-            // Score boxes (live/finished only)
+            // Score boxes (live/finished only when real scores exist)
             const scoreBoxHtml = (score) => `<div class="mc-score-box">${score}</div>`;
-            const scoreRow = (status === 'live' || status === 'finished');
+            const scoreRow = (status === 'live' || status === 'finished') && hasRealScore;
 
             // Status box on right side
             let statusBoxHtml = '';
