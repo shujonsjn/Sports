@@ -53,8 +53,10 @@ body{
 .logo{
   font-size:1.4rem;font-weight:800;color:var(--text);
   letter-spacing:-0.5px;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;gap:0.4rem;
 }
 .logo span{color:var(--accent)}
+.logo-icon{width:30px;height:30px;flex-shrink:0}
 
 /* Desktop Nav */
 .desktop-nav{
@@ -599,8 +601,9 @@ body{
   border-bottom:1px solid rgba(232,235,240,0.6);
   padding:0.75rem 1rem;align-items:center;justify-content:space-between;
 }
-.mobile-logo{font-size:1.2rem;font-weight:700;color:var(--text)}
+.mobile-logo{font-size:1.2rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:0.35rem;cursor:pointer}
 .mobile-logo span{color:var(--accent)}
+.mobile-logo .logo-icon{width:26px;height:26px}
 .mobile-search-icon{
   width:32px;height:32px;display:flex;align-items:center;justify-content:center;
   cursor:pointer;color:var(--text);font-size:1.1rem;

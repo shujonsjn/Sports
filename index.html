@@ -89,7 +89,10 @@
 
     <!-- Mobile Toolbar -->
     <div class="mobile-logo-bar" id="mobile-toolbar">
-        <div class="mobile-logo">Sports<span>Live</span></div>
+        <div class="mobile-logo" onclick="switchSport('all')">
+            <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="15" fill="#F22D55"/><path d="M18 7l-5 9h5l-3 9 8-11h-5.5L18 7z" fill="#fff"/></svg>
+            Sports<span>Live</span>
+        </div>
         <div class="search-bar" style="flex:1;margin:0 0.5rem">
             <input type="text" id="mobile-search-input" placeholder="Search teams..." autocomplete="off" aria-label="Search teams">
             <div id="mobile-search-results" class="search-results"></div>
@@ -114,7 +117,10 @@
     <!-- Header -->
     <header class="header desktop-header" role="banner">
         <div class="header-content">
-            <div class="logo" onclick="switchSport('all')">Sports<span>Live</span></div>
+            <div class="logo" onclick="switchSport('all')">
+                <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="15" fill="#F22D55"/><path d="M10 20.5c0-3.5 2-5.5 4.5-7.5l1.5-1.2c1-0.8 2-1.8 2-3.3 0-1.9-1.5-3.5-3.5-3.5S11 7.5 11 9.4" stroke="#fff" stroke-width="0" fill="none"/><path d="M18 7l-5 9h5l-3 9 8-11h-5.5L18 7z" fill="#fff"/></svg>
+                Sports<span>Live</span>
+            </div>
             <nav class="desktop-nav" role="tablist">
                 <button class="nav-link" onclick="window.location.href='/'">Home</button>
                 <button class="nav-link active" data-sport="all" onclick="switchSport('all')">All Sports</button>
