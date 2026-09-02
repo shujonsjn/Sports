@@ -1,3 +1,34 @@
+function decodeEntities(str) {
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#x27;/g, "'")
+        .replace(/&#x2F;/g, '/');
+}
+
+function extractCDATA(str) {
+    const m = str.match(/<!\[CDATA\[([\s\S]*?)\]\]>/);
+    return m ? m[1] : str;
+}
+
+function extractUrl(str) {
+    const cleaned = decodeEntities(extractCDATA(str));
+    const hrefMatch = cleaned.match(/href="([^"]+)"/);
+    if (hrefMatch) return hrefMatch[1];
+    const httpMatch = cleaned.match(/https?:\/\/[^\s<"']+/);
+    if (httpMatch) return httpMatch[0];
+    return cleaned.trim();
+}
+
+function cleanText(str) {
+    let s = decodeEntities(extractCDATA(str));
+    s = s.replace(/<[^>]*>/g, '');
+    return s.trim();
+}
+
 export default async function handler(req, res) {
     const team1 = req.query.team1 || '';
     const team2 = req.query.team2 || '';
@@ -24,19 +55,18 @@ export default async function handler(req, res) {
 
         while ((match = itemRegex.exec(xml)) && count < 10) {
             const block = match[1];
-            const title = (block.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '';
-            const link = (block.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '';
+            const title = cleanText((block.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || '');
+            const linkRaw = (block.match(/<link>([\s\S]*?)<\/link>/) || [])[1] || '';
+            const link = extractUrl(linkRaw);
             const pubDate = (block.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || '';
-            const source = (block.match(/<source[^>]*>([\s\S]*?)<\/source>/) || [])[1] || '';
-            const description = (block.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || '';
+            const source = cleanText((block.match(/<source[^>]*>([\s\S]*?)<\/source>/) || [])[1] || '');
 
-            if (title && link) {
+            if (title && link && link.startsWith('http')) {
                 items.push({
-                    title: title.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
-                    link: link.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1'),
+                    title,
+                    link,
                     pubDate,
-                    source: source.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1'),
-                    description: description.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, '').trim()
+                    source
                 });
                 count++;
             }

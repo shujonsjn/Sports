@@ -1844,10 +1844,8 @@ function loadMatchNews() {
                         dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     } catch(e) {}
                 }
-                var desc = item.description ? item.description.slice(0, 160) : '';
                 return '<a href="' + escHtml(item.link) + '" target="_blank" rel="noopener" style="display:block;padding:0.7rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit">' +
                     '<div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:0.25rem">' + escHtml(item.title) + '</div>' +
-                    (desc ? '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.2rem">' + escHtml(desc) + '...</div>' : '') +
                     '<div style="font-size:0.72rem;color:var(--muted)">' + (item.source ? escHtml(item.source) + ' • ' : '') + escHtml(dateStr) + '</div>' +
                     '</a>';
             }).join('');
