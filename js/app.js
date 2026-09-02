@@ -1810,6 +1810,51 @@ function pvTab(el, tab) {
     if (el) el.classList.add('active');
     var content = document.getElementById('pv-tab-' + tab);
     if (content) content.style.display = 'block';
+    if (tab === 'news') loadMatchNews();
+}
+
+function loadMatchNews() {
+    var vsEl = document.getElementById('pv-vs');
+    if (!vsEl) return;
+    var vsText = vsEl.textContent || '';
+    var parts = vsText.split(/\s+vs\s+/i);
+    if (parts.length < 2) return;
+    var t1 = parts[0].trim();
+    var t2 = parts[1].trim();
+    var sportEl = document.getElementById('pv-sport');
+    var sport = sportEl ? sportEl.textContent.trim() : '';
+
+    var list = document.getElementById('pv-news-list');
+    if (!list) return;
+    list.innerHTML = '<p class="pv-text">Loading news...</p>';
+
+    fetch('/api/news?team1=' + encodeURIComponent(t1) + '&team2=' + encodeURIComponent(t2) + '&sport=' + encodeURIComponent(sport))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var news = data.news || [];
+            if (news.length === 0) {
+                list.innerHTML = '<p class="pv-text">No related news at this time.</p>';
+                return;
+            }
+            list.innerHTML = news.map(function(item) {
+                var dateStr = '';
+                if (item.pubDate) {
+                    try {
+                        var d = new Date(item.pubDate);
+                        dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    } catch(e) {}
+                }
+                var desc = item.description ? item.description.slice(0, 160) : '';
+                return '<a href="' + escHtml(item.link) + '" target="_blank" rel="noopener" style="display:block;padding:0.7rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit">' +
+                    '<div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:0.25rem">' + escHtml(item.title) + '</div>' +
+                    (desc ? '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.2rem">' + escHtml(desc) + '...</div>' : '') +
+                    '<div style="font-size:0.72rem;color:var(--muted)">' + (item.source ? escHtml(item.source) + ' • ' : '') + escHtml(dateStr) + '</div>' +
+                    '</a>';
+            }).join('');
+        })
+        .catch(function() {
+            list.innerHTML = '<p class="pv-text">Failed to load news.</p>';
+        });
 }
 
 function copyBlogLink() {
