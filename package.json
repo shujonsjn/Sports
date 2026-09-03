@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "powershell -ExecutionPolicy Bypass -File server.ps1",
-    "check": "node scripts/schedule-checker.js",
-    "check:fix": "node scripts/schedule-checker.js --fix",
+    "dev": "echo 'Use Vercel CLI: vercel dev'",
     "generate-admin-hash": "node -e \"const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync(process.argv[1] || 'change-me', 10))\""
   },
   "dependencies": {

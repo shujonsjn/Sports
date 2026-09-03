@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const OTP_EXPIRY = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
@@ -11,7 +12,9 @@ const otpStore = new Map();
 const rateLimit = new Map();
 
 function generateOtp() {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    const bytes = crypto.randomBytes(3);
+    const num = parseInt(bytes.toString('hex'), 16) % 900000 + 100000;
+    return String(num);
 }
 
 function hashOtp(otp) {
@@ -76,7 +79,8 @@ export default async function handler(req, res) {
             attempts: 0
         });
 
-        console.log(`OTP for ${normalizedContact}: ${code}`);
+        // OTP sent — do NOT log or return plaintext in production
+        // In production, integrate with SMS/email provider here
         return res.json({ success: true, message: 'OTP sent successfully' });
     }
 

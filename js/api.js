@@ -507,13 +507,7 @@ const SPORT_MAP = {
     'tennis': 'tennis'
 };
 
-function getTodayString() {
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const d = String(today.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
+// getTodayString() is defined in js/date-utils.js (loaded first)
 
 function convertSportScoreMatch(match, sport) {
     const statusMap = {
@@ -589,18 +583,15 @@ async function fetchSportScore(sport, limit = 20) {
         const url = isLocal 
             ? `https://sportscore.com/api/widget/matches/?sport=${sport}&limit=${limit}`
             : `/api/sportscore?sport=${sport}&limit=${limit}`;
-        console.log(`🌐 Fetching ${sport}...`);
 
         const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!response.ok) {
-            console.log(`ℹ️ ${sport} not available from SportScore API`);
             return [];
         }
 
         const data = await response.json();
         return (data.matches || []).map(m => convertSportScoreMatch(m, sport));
     } catch (error) {
-        console.log(`ℹ️ ${sport}: ${error.message}`);
         return [];
     }
 }

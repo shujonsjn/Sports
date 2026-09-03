@@ -6,7 +6,6 @@ let _scoreCheckerInterval = null;
 function startScoreChecker() {
     stopScoreChecker();
     _scoreCheckerInterval = setInterval(checkAndFixEmptyScores, 60000);
-    console.log('🔍 Score Checker: started (every 60s)');
 }
 
 function stopScoreChecker() {
@@ -38,21 +37,17 @@ async function checkAndFixEmptyScores() {
 
             if (needsFix.length === 0) continue;
 
-            console.log(`🔍 Score Checker: ${needsFix.length} finished match(es) without score on ${dateStr}`);
-
             for (const match of needsFix) {
                 await fetchAndUpdateMatchScore(match);
             }
         }
     } catch (e) {
-        console.log('🔍 Score Checker error:', e.message);
+        // Score check error
     }
 }
 
 function getYesterdayString() {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toLocaleDateString('en-CA');
+    return getDateOffset(-1);
 }
 
 async function fetchAndUpdateMatchScore(match) {
@@ -60,7 +55,6 @@ async function fetchAndUpdateMatchScore(match) {
         const t1 = match.team1?.name || '';
         const t2 = match.team2?.name || '';
         const sport = match.sport || '';
-        console.log(`  ↳ Fetching score: ${t1} vs ${t2} (${sport})`);
 
         let updated = false;
 
@@ -75,7 +69,6 @@ async function fetchAndUpdateMatchScore(match) {
         }
 
         if (updated) {
-            console.log(`  ✓ Score updated: ${match.team1?.name} ${match.score?.team1} - ${match.score?.team2} ${match.team2?.name}`);
             if (typeof currentDate !== 'undefined' && match.date === currentDate) {
                 const container = document.getElementById('match-list');
                 if (container) {
@@ -86,7 +79,7 @@ async function fetchAndUpdateMatchScore(match) {
             }
         }
     } catch (e) {
-        console.log(`  ✗ Score fetch failed: ${match.team1?.name} vs ${match.team2?.name}: ${e.message}`);
+        // Score fetch failed silently
     }
 }
 
@@ -165,7 +158,7 @@ async function fetchCricketMatchScore(match) {
                     return true;
                 }
             }
-        } catch (e) { console.log('CricketData API error:', e.message); }
+        } catch (e) { /* CricketData API error */ }
         
         // Fallback to DATE_CACHE
         const day = DATE_CACHE[match.date] || {};

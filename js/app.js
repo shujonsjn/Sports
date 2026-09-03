@@ -1241,9 +1241,10 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ===== Live Score Auto-Refresh Agent (every 60 seconds) =====
+// ===== Live Score Auto-Refresh Agent =====
 let _liveAgentInterval = null;
 let _liveMinuteInterval = null;
+let _liveAgentAbort = null;
 
 function startLiveMinuteUpdater() {
     stopLiveMinuteUpdater();
@@ -1319,10 +1320,12 @@ function startLiveAgent() {
         if (currentDate !== today) return;
 
         const now = Date.now();
-        if (now - _lastRefreshTime < 14000) return;
+        if (now - _lastRefreshTime < 25000) return;
         _lastRefreshTime = now;
 
-        console.log('🔄 Live Agent: refreshing scores...');
+        if (_liveAgentAbort) _liveAgentAbort.abort();
+        _liveAgentAbort = new AbortController();
+
         try {
             const result = await autoFetchMatches();
             if (currentDate !== today) return;
@@ -1394,17 +1397,20 @@ function startLiveAgent() {
                     }
                 }
             }
-            console.log('✅ Live Agent: refresh complete');
         } catch (e) {
-            console.log('⚠️ Live Agent refresh failed:', e.message);
+            if (e.name !== 'AbortError') console.error('Live Agent error:', e.message);
         }
-    }, 5000);
+    }, 30000);
 }
 
 function stopLiveAgent() {
     if (_liveAgentInterval) {
         clearInterval(_liveAgentInterval);
         _liveAgentInterval = null;
+    }
+    if (_liveAgentAbort) {
+        _liveAgentAbort.abort();
+        _liveAgentAbort = null;
     }
 }
 
