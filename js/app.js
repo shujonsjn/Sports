@@ -677,8 +677,31 @@ async function loadMatchesForDate(dateStr) {
         return;
     } else {
         const cached = getMatchesForDate(dateStr);
-        await enrichMatchLogos(cached);
-        filterAndRender(cached, container);
+        if (cached.length > 0) {
+            await enrichMatchLogos(cached);
+            filterAndRender(cached, container);
+            return;
+        }
+        renderLoadingSkeleton(container);
+        try {
+            const results = await fetchMatchesForDate(dateStr);
+            if (currentDate === dateStr) {
+                if (results && Object.values(results).some(arr => arr && arr.length > 0)) {
+                    DATE_CACHE[dateStr] = results;
+                    applyAdminOverrides(dateStr);
+                    const fresh = getMatchesForDate(dateStr);
+                    await enrichMatchLogos(fresh);
+                    filterAndRender(fresh, container);
+                } else {
+                    filterAndRender([], container);
+                }
+            }
+        } catch (err) {
+            console.error('Past date fetch error:', err);
+            if (currentDate === dateStr) {
+                filterAndRender([], container);
+            }
+        }
         return;
     }
 }
