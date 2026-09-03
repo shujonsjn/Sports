@@ -1,15 +1,15 @@
+// OTP API — persistent storage via Vercel KV.
+// OTPs survive across serverless cold starts when Vercel KV is configured.
+
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { setCors, errorResponse } from './_lib/response.js';
+import { getOtp, setOtp, deleteOtp, getRateLimit, setRateLimit } from './_lib/storage.js';
 
-const OTP_EXPIRY = 5 * 60 * 1000;
+const OTP_EXPIRY_SECONDS = 300; // 5 minutes
 const MAX_ATTEMPTS = 3;
-const RATE_LIMIT_WINDOW = 60 * 1000;
-
-// NOTE: In-memory Map is lost between Vercel serverless invocations.
-// OTP will NOT work in production without a shared store (Redis, KV, DB).
-// This is a known limitation — requires external storage for multi-invocation persistence.
-const otpStore = new Map();
-const rateLimit = new Map();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 
 function generateOtp() {
     const bytes = crypto.randomBytes(3);
@@ -17,103 +17,102 @@ function generateOtp() {
     return String(num);
 }
 
-function hashOtp(otp) {
-    return bcrypt.hashSync(otp, 10);
-}
-
-function verifyOtp(input, hash) {
-    return bcrypt.compareSync(input, hash);
-}
-
-function checkRateLimit(ip) {
-    const now = Date.now();
-    const record = rateLimit.get(ip);
-    if (!record || now - record.windowStart > RATE_LIMIT_WINDOW) {
-        rateLimit.set(ip, { windowStart: now, attempts: 1 });
-        return true;
-    }
-    record.attempts++;
-    return record.attempts <= 5;
-}
-
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-
-function setCors(res, req) {
-    const origin = req.headers?.origin || '';
-    if (ALLOWED_ORIGINS.length > 0 && ALLOWED_ORIGINS.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (ALLOWED_ORIGINS.length === 0) {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-}
-
 export default async function handler(req, res) {
-    setCors(res, req);
+    setCors(res, req, 'POST, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (req.method !== 'POST') return errorResponse(res, 405, 'Method not allowed');
 
     const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
-    if (!checkRateLimit(ip)) {
-        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+
+    // Rate limiting
+    try {
+        const rl = await getRateLimit(ip);
+        if (rl && rl.attempts >= RATE_LIMIT_MAX) {
+            return errorResponse(res, 429, 'Too many requests. Please try again later.');
+        }
+    } catch (e) {
+        console.error('[otp] Rate limit check failed:', e.message);
     }
 
     const { action, contact, otp } = req.body || {};
 
     if (action === 'generate') {
         if (!contact || typeof contact !== 'string' || contact.trim().length < 3) {
-            return res.status(400).json({ error: 'Valid contact required' });
+            return errorResponse(res, 400, 'Valid contact required');
         }
 
         const code = generateOtp();
-        const hash = hashOtp(code);
+        const hash = bcrypt.hashSync(code, 10);
         const normalizedContact = contact.trim().toLowerCase();
 
-        otpStore.set(normalizedContact, {
+        await setOtp(normalizedContact, {
             hash,
-            expires: Date.now() + OTP_EXPIRY,
+            expires: Date.now() + OTP_EXPIRY_SECONDS * 1000,
             attempts: 0
-        });
+        }, OTP_EXPIRY_SECONDS);
 
-        // OTP sent — do NOT log or return plaintext in production
-        // In production, integrate with SMS/email provider here
-        return res.json({ success: true, message: 'OTP sent successfully' });
+        // Update rate limit
+        try {
+            const rl = await getRateLimit(ip);
+            const now = Date.now();
+            if (!rl || now - rl.windowStart > RATE_LIMIT_WINDOW_SECONDS * 1000) {
+                await setRateLimit(ip, { windowStart: now, attempts: 1 }, RATE_LIMIT_WINDOW_SECONDS);
+            } else {
+                await setRateLimit(ip, { ...rl, attempts: rl.attempts + 1 }, RATE_LIMIT_WINDOW_SECONDS);
+            }
+        } catch (e) {
+            console.error('[otp] Rate limit update failed:', e.message);
+        }
+
+        // In production, integrate with SMS/email provider here.
+        // OTP is NOT logged or returned in the response.
+        return res.status(200).json({ success: true, message: 'OTP sent successfully' });
     }
 
     if (action === 'verify') {
         if (!contact || !otp || typeof otp !== 'string') {
-            return res.status(400).json({ error: 'Contact and OTP required' });
+            return errorResponse(res, 400, 'Contact and OTP required');
         }
 
         const normalizedContact = contact.trim().toLowerCase();
-        const stored = otpStore.get(normalizedContact);
+        const stored = await getOtp(normalizedContact);
 
         if (!stored) {
-            return res.status(400).json({ error: 'OTP expired or not found. Please request a new one.' });
+            return errorResponse(res, 400, 'OTP expired or not found. Please request a new one.');
         }
 
         if (Date.now() > stored.expires) {
-            otpStore.delete(normalizedContact);
-            return res.status(400).json({ error: 'OTP expired. Please request a new one.' });
+            await deleteOtp(normalizedContact);
+            return errorResponse(res, 400, 'OTP expired. Please request a new one.');
         }
 
         stored.attempts++;
         if (stored.attempts > MAX_ATTEMPTS) {
-            otpStore.delete(normalizedContact);
-            return res.status(429).json({ error: 'Too many failed attempts. Please request a new OTP.' });
+            await deleteOtp(normalizedContact);
+            return errorResponse(res, 429, 'Too many failed attempts. Please request a new OTP.');
         }
 
-        if (!verifyOtp(otp.trim(), stored.hash)) {
-            return res.status(400).json({ error: `Invalid OTP. ${MAX_ATTEMPTS - stored.attempts} attempts remaining.` });
+        // Update attempt count
+        await setOtp(normalizedContact, stored, OTP_EXPIRY_SECONDS);
+
+        let valid = false;
+        try {
+            valid = await bcrypt.compare(otp.trim(), stored.hash);
+        } catch (e) {
+            console.error('[otp] bcrypt compare failed:', e.message);
+            return errorResponse(res, 500, 'Verification system error');
         }
 
-        otpStore.delete(normalizedContact);
-        return res.json({ success: true });
+        if (!valid) {
+            return errorResponse(res, 400, `Invalid OTP. ${MAX_ATTEMPTS - stored.attempts} attempts remaining.`);
+        }
+
+        // OTP verified — delete it (one-time use)
+        await deleteOtp(normalizedContact);
+        return res.status(200).json({ success: true });
     }
 
-    return res.status(400).json({ error: 'Invalid action' });
+    return errorResponse(res, 400, 'Invalid action');
 }

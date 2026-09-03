@@ -319,17 +319,101 @@ function clearAllStorage() {
 }
 
 // ===== Match Edit / New Match =====
-const OVERRIDES_KEY = 'admin_match_overrides';
-const CUSTOM_MATCHES_KEY = 'admin_custom_matches';
+// Uses server-side /api/admin-matches for persistent storage (survives cold starts).
 
+function getAuthToken() {
+    try { return localStorage.getItem('admin_token'); } catch { return null; }
+}
+
+async function serverGetOverrides() {
+    const token = getAuthToken();
+    if (!token) return {};
+    try {
+        const r = await fetch('/api/admin-matches?action=get-overrides', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) return {};
+        const d = await r.json();
+        return d.overrides || {};
+    } catch { return {}; }
+}
+
+async function serverSetOverride(matchId, data) {
+    const token = getAuthToken();
+    if (!token) return false;
+    try {
+        const r = await fetch('/api/admin-matches?action=set-override', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ matchId, data })
+        });
+        return r.ok;
+    } catch { return false; }
+}
+
+async function serverDeleteOverride(matchId) {
+    const token = getAuthToken();
+    if (!token) return false;
+    try {
+        const r = await fetch('/api/admin-matches?action=delete-override', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ matchId })
+        });
+        return r.ok;
+    } catch { return false; }
+}
+
+async function serverGetCustoms() {
+    const token = getAuthToken();
+    if (!token) return [];
+    try {
+        const r = await fetch('/api/admin-matches?action=get-customs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) return [];
+        const d = await r.json();
+        return d.customs || [];
+    } catch { return []; }
+}
+
+async function serverAddCustom(matchData) {
+    const token = getAuthToken();
+    if (!token) return null;
+    try {
+        const r = await fetch('/api/admin-matches?action=add-custom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ matchData })
+        });
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d.id;
+    } catch { return null; }
+}
+
+async function serverDeleteCustom(matchId) {
+    const token = getAuthToken();
+    if (!token) return false;
+    try {
+        const r = await fetch('/api/admin-matches?action=delete-custom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ matchId })
+        });
+        return r.ok;
+    } catch { return false; }
+}
+
+// Legacy localStorage fallback (for when server is unavailable)
 function getOverrides() {
-    try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || '{}'); } catch { return {}; }
+    try { return JSON.parse(localStorage.getItem('admin_match_overrides') || '{}'); } catch { return {}; }
 }
-function saveOverrides(o) { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(o)); }
+function saveOverrides(o) { localStorage.setItem('admin_match_overrides', JSON.stringify(o)); }
 function getCustomMatches() {
-    try { return JSON.parse(localStorage.getItem(CUSTOM_MATCHES_KEY) || '[]'); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem('admin_custom_matches') || '[]'); } catch { return []; }
 }
-function saveCustomMatches(m) { localStorage.setItem(CUSTOM_MATCHES_KEY, JSON.stringify(m)); }
+function saveCustomMatches(m) { localStorage.setItem('admin_custom_matches', JSON.stringify(m)); }
 
 function editMatch(idx) {
     var m = allAdminMatches[idx];
@@ -371,7 +455,7 @@ function closeEditModal() {
     document.getElementById('edit-modal').style.display = 'none';
 }
 
-function saveEditMatch(e) {
+async function saveEditMatch(e) {
     e.preventDefault();
     var idx = document.getElementById('edit-match-idx').value;
     var sport = document.getElementById('edit-sport').value;
@@ -390,35 +474,55 @@ function saveEditMatch(e) {
     };
 
     if (idx === 'new') {
-        matchData.id = 'admin_' + Date.now();
-        var customs = getCustomMatches();
-        customs.push(matchData);
-        saveCustomMatches(customs);
-        addLog('NEW MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name + ' (' + sport + ')');
+        // Add via server API
+        const id = await serverAddCustom(matchData);
+        if (id) {
+            matchData.id = id;
+            addLog('NEW MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name + ' (' + sport + ')');
+        } else {
+            // Fallback to localStorage
+            matchData.id = 'admin_' + Date.now();
+            var customs = getCustomMatches();
+            customs.push(matchData);
+            saveCustomMatches(customs);
+            addLog('NEW MATCH (local): ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+        }
     } else {
         var orig = allAdminMatches[idx];
         if (orig) {
-            var overrides = getOverrides();
             var matchId = orig.id || 'override_' + idx;
-            overrides[matchId] = matchData;
-            saveOverrides(overrides);
-            addLog('EDIT MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+            const success = await serverSetOverride(matchId, matchData);
+            if (success) {
+                addLog('EDIT MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+            } else {
+                // Fallback to localStorage
+                var overrides = getOverrides();
+                overrides[matchId] = matchData;
+                saveOverrides(overrides);
+                addLog('EDIT MATCH (local): ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+            }
         }
     }
     closeEditModal();
     loadAdminMatches();
 }
 
-function deleteMatch(idx) {
+async function deleteMatch(idx) {
     if (!confirm('Delete this match?')) return;
     var m = allAdminMatches[idx];
     if (m && m.id && m.id.startsWith('admin_')) {
-        var customs = getCustomMatches().filter(c => c.id !== m.id);
-        saveCustomMatches(customs);
+        const success = await serverDeleteCustom(m.id);
+        if (!success) {
+            var customs = getCustomMatches().filter(c => c.id !== m.id);
+            saveCustomMatches(customs);
+        }
     } else if (m) {
-        var overrides = getOverrides();
-        overrides[m.id] = { _deleted: true };
-        saveOverrides(overrides);
+        const success = await serverDeleteOverride(m.id);
+        if (!success) {
+            var overrides = getOverrides();
+            overrides[m.id] = { _deleted: true };
+            saveOverrides(overrides);
+        }
     }
     addLog('DELETE MATCH: ' + (m?.team1?.name || '') + ' vs ' + (m?.team2?.name || ''));
     loadAdminMatches();
@@ -437,7 +541,9 @@ async function loadAdminMatches() {
             ...(result.ufc || []).map(m => ({ ...m, sport: 'ufc' })),
             ...(result.nfl || []).map(m => ({ ...m, sport: 'nfl' }))
         ];
-        var customs = getCustomMatches();
+        // Load custom matches from server (persistent across cold starts)
+        var customs = await serverGetCustoms();
+        if (customs.length === 0) customs = getCustomMatches(); // fallback
         if (customs.length > 0) allAdminMatches.push(...customs);
         filterAdminMatches();
         addLog('Loaded ' + allAdminMatches.length + ' matches');

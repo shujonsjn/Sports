@@ -4,14 +4,62 @@ let LIVE_MATCHES = {};
 let DATE_CACHE = {};
 let LAST_UPDATED = null;
 
-const SPORTSCORE_BASE = window.location.hostname === 'localhost' 
-    ? '/api' 
-    : 'https://sportscore.com/api/widget';
-const SPORTSRC_BASE = 'https://api.sportsrc.org';
 const IS_LOCAL = window.location.hostname === 'localhost';
-const SPORTSRC_URL = IS_LOCAL ? '/api/sportsrc' : SPORTSRC_BASE;
 const APIFOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const THESPORTSDB_BASE = 'https://www.thesportsdb.com/api/v1/json/3';
+
+// ===== Central API: consume /api/matches instead of direct provider calls =====
+// All match data fetching goes through the backend for:
+//   - Single source of truth
+//   - Server-side provider priority
+//   - Persistent admin overrides
+//   - Score validation
+//   - Server-side caching
+
+async function fetchFromCentralAPI(dateStr, sport, live) {
+    const params = new URLSearchParams();
+    if (dateStr) params.set('date', dateStr);
+    if (sport && sport !== 'all') params.set('sport', sport);
+    if (live) params.set('live', 'true');
+    try {
+        const res = await fetch(`/api/matches?${params.toString()}`, { signal: AbortSignal.timeout(15000) });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.matches || []).map(m => ({
+            id: m.id,
+            sport: m.sport || sport || 'football',
+            icon: getSportIcon(m.sport),
+            team1: {
+                name: m.team1?.name || 'TBA',
+                short: m.team1?.short || m.team1?.name?.slice(0, 3)?.toUpperCase() || 'TBA',
+                logo: m.team1?.logo || '',
+                flag: m.team1?.flag || ''
+            },
+            team2: {
+                name: m.team2?.name || 'TBA',
+                short: m.team2?.short || m.team2?.name?.slice(0, 3)?.toUpperCase() || 'TBA',
+                logo: m.team2?.logo || '',
+                flag: m.team2?.flag || ''
+            },
+            league: m.league || '',
+            competitionLogo: m.competitionLogo || '',
+            venue: m.venue || '',
+            date: m.date,
+            time: m.time,
+            status: m.status,
+            statusText: m.statusText || '',
+            score: m.score || { team1: '-', team2: '-' },
+            overs: m.overs || undefined,
+            innings: m.innings || undefined,
+            target: m.target || undefined,
+            result: m.result || undefined,
+            source: m.source || 'central'
+        }));
+    } catch (e) {
+        console.log('⚠️ Central API failed:', e.message);
+        return [];
+    }
+}
 
 // ===== Team Logo Cache =====
 const LOGO_CACHE_KEY = 'team_logos_v6';
@@ -685,76 +733,17 @@ function mergeFallbackIntoResults(results, espnMatches, sport) {
 }
 
 async function fetchAllSports() {
-    const sports = ['football', 'cricket', 'basketball', 'tennis'];
-    const results = {
-        football: [],
-        cricket: [],
-        basketball: [],
-        mma: [],
-        ufc: [],
-        nfl: []
-    };
-
-    const promises = sports.map(async (sport) => {
-        const matches = await fetchSportScore(sport, 30);
-        return { sport, matches };
-    });
-    promises.push(
-        fetchESPNCricketData().then(matches => ({ sport: 'espn_cricket', matches })),
-        fetchCricAPIMatches().then(matches => ({ sport: 'cricapi_cricket', matches })),
-        fetchCricketDataOrg().then(matches => ({ sport: 'cricketdata_cricket', matches })),
-        fetchESPNFallback('football').then(matches => ({ sport: 'espn_football', matches })),
-        fetchESPNFallback('basketball').then(matches => ({ sport: 'espn_basketball', matches })),
-        fetchESPNFallback('nfl').then(matches => ({ sport: 'espn_nfl', matches }))
-    );
-
-    const allResults = await Promise.allSettled(promises);
-
-    allResults.forEach(result => {
-        if (result.status === 'fulfilled') {
-            const { sport, matches } = result.value;
-            if (sport === 'tennis') {
-                results.tennis = matches;
-            } else if (sport === 'espn_cricket' || sport === 'cricapi_cricket' || sport === 'google_cricket' || sport === 'cricketdata_cricket') {
-                matches.forEach(m => {
-                    const existingIdx = results.cricket.findIndex(e => {
-                        const n = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const eT1 = n(e.team1?.name), eT2 = n(e.team2?.name);
-                        const mT1 = n(m.team1?.name), mT2 = n(m.team2?.name);
-                        return (eT1 === mT1 && eT2 === mT2) || (eT1 === mT2 && eT2 === mT1);
-                    });
-                    if (existingIdx >= 0) {
-                        const ex = results.cricket[existingIdx];
-                        const hasScore = (v) => v && v !== '-' && v !== '';
-                        if (m.status === 'live') ex.status = 'live';
-                        if (m.statusText && m.statusText.length > (ex.statusText || '').length) ex.statusText = m.statusText;
-                        if (hasScore(m.score?.team1)) { ex.score = ex.score || {}; ex.score.team1 = m.score.team1; }
-                        if (hasScore(m.score?.team2)) { ex.score = ex.score || {}; ex.score.team2 = m.score.team2; }
-                        if (m.overs?.team1) { ex.overs = ex.overs || {}; ex.overs.team1 = m.overs.team1; }
-                        if (m.overs?.team2) { ex.overs = ex.overs || {}; ex.overs.team2 = m.overs.team2; }
-                        if (m.innings && m.innings.some(arr => arr && arr.length > 0)) {
-                            if (!ex.innings || !ex.innings.some(arr => arr && arr.length > 0)) {
-                                ex.innings = m.innings;
-                            }
-                        }
-                        if (m.team1?.logo && !ex.team1?.logo) ex.team1.logo = m.team1.logo;
-                        if (m.team2?.logo && !ex.team2?.logo) ex.team2.logo = m.team2.logo;
-                    } else {
-                        results.cricket.push(m);
-                    }
-                });
-            } else if (sport === 'espn_football') {
-                mergeFallbackIntoResults(results, matches, 'football');
-            } else if (sport === 'espn_basketball') {
-                mergeFallbackIntoResults(results, matches, 'basketball');
-            } else if (sport === 'espn_nfl') {
-                mergeFallbackIntoResults(results, matches, 'nfl');
-            } else {
-                results[sport] = matches;
-            }
-        }
-    });
-
+    const results = { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
+    try {
+        const matches = await fetchFromCentralAPI(getTodayString());
+        matches.forEach(m => {
+            const s = m.sport || 'football';
+            if (results[s]) results[s].push(m);
+            else results.football.push(m);
+        });
+    } catch (e) {
+        console.log('⚠️ fetchAllSports central API failed:', e.message);
+    }
     return results;
 }
 
@@ -1287,47 +1276,22 @@ function convertSportSRCMatch(match, category) {
 async function fetchSportSRC(dateStr) {
     const cached = getCachedData(dateStr);
     if (cached) {
-        console.log(`📦 Using cached data for ${dateStr}`);
         return cached;
     }
 
-    const categories = ['football', 'cricket', 'basketball', 'tennis'];
-    const results = { football: [], cricket: [], basketball: [], tennis: [], mma: [], ufc: [], nfl: [] };
-
-    for (const cat of categories) {
-        try {
-            const url = `${SPORTSRC_URL}?data=matches&category=${cat}`;
-            const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-            if (!res.ok) continue;
-            const json = await res.json();
-            const items = json.data || json.items || json || [];
-            const dayMatches = items.filter(m => {
-                const d = new Date(m.date).toLocaleDateString('en-CA');
-                return d === dateStr;
-            }).map(m => convertSportSRCMatch(m, cat));
-
-            if (cat === 'tennis') {
-                results.tennis = dayMatches;
-            } else {
-                results[cat] = dayMatches;
-            }
-        } catch (e) {
-            console.log(`⚠️ SportSRC ${cat} failed: ${e.message}`);
-        }
+    const results = { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
+    try {
+        const matches = await fetchFromCentralAPI(dateStr);
+        matches.forEach(m => {
+            const s = m.sport || 'football';
+            if (results[s]) results[s].push(m);
+            else results.football.push(m);
+        });
+        results.source = 'central';
+        setCachedData(dateStr, results);
+    } catch (e) {
+        console.log('⚠️ fetchSportSRC failed:', e.message);
     }
-
-    // Fetch NFL from nfldata.org
-    const nflMatches = await fetchNFLData(dateStr);
-    
-    // Fetch UFC/MMA from TheSportsDB
-    const ufcMatches = await fetchTheSportsDB('ufc', dateStr);
-    
-    results.nfl = nflMatches;
-    results.ufc = ufcMatches;
-    results.mma = [];
-
-    results.source = 'sportsrc';
-    setCachedData(dateStr, results);
     return results;
 }
 
@@ -1340,9 +1304,14 @@ function _mergePrevLiveMatches(today, matches) {
 }
 
 function applyOverridesToDate(matches, dateStr) {
+    // Admin overrides are now applied server-side via /api/matches.
+    // This client-side function is only a fallback for demo data
+    // that doesn't go through the API.
     try {
-        const overrides = JSON.parse(localStorage.getItem('admin_match_overrides') || '{}');
-        const customs = JSON.parse(localStorage.getItem('admin_custom_matches') || '[]');
+        const raw = localStorage.getItem('admin_match_overrides');
+        if (!raw) return matches;
+        const overrides = JSON.parse(raw);
+        if (!overrides || Object.keys(overrides).length === 0) return matches;
         const result = [...matches];
         result.forEach(m => {
             if (m.id && overrides[m.id]) {
@@ -1357,9 +1326,6 @@ function applyOverridesToDate(matches, dateStr) {
                 if (o.result) m.result = o.result;
                 if (o.time) m.time = o.time;
             }
-        });
-        customs.forEach(c => {
-            if (c.date === dateStr && !result.find(x => x.id === c.id)) result.push(c);
         });
         return result.filter(m => !m._deleted);
     } catch (e) { return matches; }
@@ -1427,63 +1393,13 @@ function getMatchesForDate(dateStr) {
 
 async function fetchMatchesForDate(dateStr) {
     try {
+        const matches = await fetchFromCentralAPI(dateStr);
         const results = { football:[], cricket:[], basketball:[], tennis:[], mma:[], ufc:[], nfl:[] };
-
-        const sports = ['football', 'cricket', 'basketball', 'tennis'];
-        const promises = sports.map(async (sport) => {
-            try {
-                const matches = await fetchSportScore(sport, 30);
-                const dayMatches = matches.filter(m => m.date === dateStr);
-                return { sport, matches: dayMatches };
-            } catch(e) {
-                return { sport, matches: [] };
-            }
+        matches.forEach(m => {
+            const s = m.sport || 'football';
+            if (results[s]) results[s].push(m);
+            else results.football.push(m);
         });
-
-        const allResults = await Promise.allSettled(promises);
-        allResults.forEach(result => {
-            if (result.status === 'fulfilled') {
-                const { sport, matches } = result.value;
-                if (sport === 'tennis') {
-                    results.tennis = matches;
-                } else {
-                    results[sport] = matches;
-                }
-            }
-        });
-
-        try {
-            const nflMatches = await fetchNFLData(dateStr);
-            results.nfl = nflMatches;
-        } catch(e) {}
-
-        const espnSports = ['football', 'basketball', 'nfl'];
-        const espnPromises = espnSports.map(async (sport) => {
-            try {
-                const espnMatches = await fetchESPNFallback(sport, dateStr);
-                return { sport, matches: espnMatches };
-            } catch(e) {
-                return { sport, matches: [] };
-            }
-        });
-        espnResults = await Promise.allSettled(espnPromises);
-        espnResults.forEach(result => {
-            if (result.status === 'fulfilled') {
-                const { sport, matches } = result.value;
-                if (sport === 'nfl') {
-                    mergeFallbackIntoResults(results, matches, 'nfl');
-                } else {
-                    mergeFallbackIntoResults(results, matches, sport);
-                }
-            }
-        });
-
-        try {
-            const espnCricket = await fetchESPNCricketData(dateStr);
-            const dayCricket = espnCricket.filter(m => m.date === dateStr);
-            if (dayCricket.length) mergeFallbackIntoResults(results, dayCricket, 'cricket');
-        } catch(e) {}
-
         return results;
     } catch(e) {
         console.log('⚠️ fetchMatchesForDate failed:', e.message);

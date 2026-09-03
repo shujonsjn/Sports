@@ -7,6 +7,7 @@
     "generate-admin-hash": "node -e \"const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync(process.argv[1] || 'change-me', 10))\""
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
     "bcryptjs": "^2.4.3"
   }
 }

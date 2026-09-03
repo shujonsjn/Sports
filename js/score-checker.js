@@ -1,5 +1,5 @@
-// ===== Score Checker Agent =====
-// Runs every 60s — finds finished matches with empty scores, fetches real data, updates them.
+// Score Checker Agent
+// Runs every 60s — finds finished matches with empty scores, fetches from central API, updates them.
 
 let _scoreCheckerInterval = null;
 
@@ -18,7 +18,7 @@ function stopScoreChecker() {
 async function checkAndFixEmptyScores() {
     try {
         const today = getTodayString();
-        const yesterday = getYesterdayString();
+        const yesterday = getDateOffset(-1);
         const datesToCheck = [today, yesterday];
 
         for (const dateStr of datesToCheck) {
@@ -37,39 +37,48 @@ async function checkAndFixEmptyScores() {
 
             if (needsFix.length === 0) continue;
 
-            for (const match of needsFix) {
-                await fetchAndUpdateMatchScore(match);
+            // Fetch from central API to get updated scores
+            try {
+                const freshMatches = await fetchFromCentralAPI(dateStr);
+                const freshMap = new Map();
+                freshMatches.forEach(fm => {
+                    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const key1 = `${norm(fm.team1?.name)}_vs_${norm(fm.team2?.name)}`;
+                    const key2 = `${norm(fm.team2?.name)}_vs_${norm(fm.team1?.name)}`;
+                    freshMap.set(key1, fm);
+                    freshMap.set(key2, fm);
+                });
+
+                for (const match of needsFix) {
+                    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const key = `${norm(match.team1?.name)}_vs_${norm(match.team2?.name)}`;
+                    const fresh = freshMap.get(key);
+                    if (fresh) {
+                        const hasScore = v => v && v !== '-' && v !== '';
+                        if (hasScore(fresh.score?.team1)) {
+                            match.score = { ...match.score, team1: fresh.score.team1 };
+                            match.team1 = match.team1 || {};
+                            match.team1.score = fresh.score.team1;
+                        }
+                        if (hasScore(fresh.score?.team2)) {
+                            match.score = { ...match.score, team2: fresh.score.team2 };
+                            match.team2 = match.team2 || {};
+                            match.team2.score = fresh.score.team2;
+                        }
+                        if (fresh.innings && fresh.innings.some(arr => arr && arr.length > 0)) {
+                            match.innings = fresh.innings;
+                        }
+                        if (fresh.result) match.result = fresh.result;
+                        if (fresh.team1?.logo && !match.team1?.logo) match.team1.logo = fresh.team1.logo;
+                        if (fresh.team2?.logo && !match.team2?.logo) match.team2.logo = fresh.team2.logo;
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Score checker central API failed:', e.message);
             }
-        }
-    } catch (e) {
-        // Score check error
-    }
-}
 
-function getYesterdayString() {
-    return getDateOffset(-1);
-}
-
-async function fetchAndUpdateMatchScore(match) {
-    try {
-        const t1 = match.team1?.name || '';
-        const t2 = match.team2?.name || '';
-        const sport = match.sport || '';
-
-        let updated = false;
-
-        if (sport === 'nfl') {
-            updated = await fetchNFLMatchScore(match);
-            if (!updated) updated = await fetchESPNMatchScore(match);
-        } else if (sport === 'cricket') {
-            updated = await fetchCricketMatchScore(match);
-        } else if (sport === 'football' || sport === 'basketball') {
-            updated = await fetchSportMatchScore(match);
-            if (!updated) updated = await fetchESPNMatchScore(match);
-        }
-
-        if (updated) {
-            if (typeof currentDate !== 'undefined' && match.date === currentDate) {
+            // Re-render if on this date
+            if (dateStr === currentDate) {
                 const container = document.getElementById('match-list');
                 if (container) {
                     const fresh = getMatchesForDate(currentDate);
@@ -79,177 +88,8 @@ async function fetchAndUpdateMatchScore(match) {
             }
         }
     } catch (e) {
-        // Score fetch failed silently
+        console.log('⚠️ Score check error:', e.message);
     }
-}
-
-async function fetchNFLMatchScore(match) {
-    try {
-        const t1 = match.team1?.name || '';
-        const t2 = match.team2?.name || '';
-        const year = new Date(match.date).getFullYear();
-        const res = await fetch(`/api/nfldata?season=${year}&season_type=2`, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) return false;
-        const json = await res.json();
-        const games = json?.data || [];
-        const norm = s => (s || '').toLowerCase().replace(/[^a-z]/g, '');
-        const game = games.find(g => {
-            const h = norm(g.home_team);
-            const a = norm(g.away_team);
-            return (norm(t1).includes(h) || h.includes(norm(t1))) &&
-                   (norm(t2).includes(a) || a.includes(norm(t2))) ||
-                   (norm(t1).includes(a) || a.includes(norm(t1))) &&
-                   (norm(t2).includes(h) || h.includes(norm(t2)));
-        });
-        if (!game) return false;
-        if (game.home_score == null || game.away_score == null) return false;
-        const home = norm(t1);
-        const homeAbbr = norm(game.home_team);
-        const isHome = home.includes(homeAbbr) || homeAbbr.includes(home);
-        match.score = { team1: isHome ? String(game.home_score) : String(game.away_score), team2: isHome ? String(game.away_score) : String(game.home_score) };
-        match.team1 = match.team1 || {};
-        match.team2 = match.team2 || {};
-        match.team1.score = match.score.team1;
-        match.team2.score = match.score.team2;
-        return true;
-    } catch (e) { return false; }
-}
-
-async function fetchCricketMatchScore(match) {
-    try {
-        const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const t1n = norm(match.team1?.name);
-        const t2n = norm(match.team2?.name);
-        
-        // Try cricketdata.org API first
-        try {
-            const res = await fetch('/api/cricketdata', { signal: AbortSignal.timeout(8000) });
-            if (res.ok) {
-                const apiData = await res.json();
-                const found = apiData.find(m => {
-                    const m1 = norm(m.t1n || m.t1);
-                    const m2 = norm(m.t2n || m.t2);
-                    return (m1.includes(t1n) || t1n.includes(m1)) && (m2.includes(t2n) || t2n.includes(m2)) ||
-                           (m1.includes(t2n) || t2n.includes(m1)) && (m2.includes(t1n) || t1n.includes(m2));
-                });
-                if (found) {
-                    const parseScore = (raw) => {
-                        if (!raw) return '-';
-                        const cleaned = raw.replace(/\?/g, '').trim();
-                        return cleaned || '-';
-                    };
-                    const s1 = parseScore(found.t1s);
-                    const s2 = parseScore(found.t2s);
-                    if (s1 !== '-' || s2 !== '-') {
-                        match.score = { team1: s1, team2: s2 };
-                        match.team1.score = s1;
-                        match.team2.score = s2;
-                    }
-                    if (found.ms === 'live') {
-                        match.status = 'live';
-                        match.statusText = found.s || 'Live';
-                    } else if (found.ms === 'result') {
-                        match.status = 'finished';
-                        match.statusText = found.s || 'Finished';
-                    }
-                    if (found.s) match.statusText = found.s;
-                    if (found.t1i) match.team1.logo = found.t1i;
-                    if (found.t2i) match.team2.logo = found.t2i;
-                    return true;
-                }
-            }
-        } catch (e) { /* CricketData API error */ }
-        
-        // Fallback to DATE_CACHE
-        const day = DATE_CACHE[match.date] || {};
-        const cricket = day.cricket || [];
-        const existing = cricket.find(m => {
-            const e1 = norm(m.team1?.name);
-            const e2 = norm(m.team2?.name);
-            return (e1 === t1n && e2 === t2n) || (e1 === t2n && e2 === t1n);
-        });
-        if (existing && existing.innings && existing.innings.some(arr => arr && arr.length > 0)) {
-            const inn = existing.innings;
-            const t1inn = inn[0] || [];
-            const t2inn = inn[1] || [];
-            const last1 = t1inn.filter(i => i && i.runs && i.runs !== '-');
-            const last2 = t2inn.filter(i => i && i.runs && i.runs !== '-');
-            if (last1.length > 0 || last2.length > 0) {
-                match.innings = inn;
-                match.score = {
-                    team1: last1.length > 0 ? last1[last1.length - 1].runs : '-',
-                    team2: last2.length > 0 ? last2[last2.length - 1].runs : '-'
-                };
-                if (existing.result) match.result = existing.result;
-                return true;
-            }
-        }
-        return false;
-    } catch (e) { return false; }
-}
-
-async function fetchSportMatchScore(match) {
-    try {
-        const sportKey = match.sport === 'football' ? 'football' : match.sport === 'basketball' ? 'basketball' : '';
-        if (!sportKey) return false;
-        const isLocal = window.location.hostname === 'localhost';
-        const url = isLocal
-            ? `https://sportscore.com/api/widget/matches/?sport=${sportKey}&limit=30`
-            : `/api/sportscore?sport=${sportKey}&limit=30`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) return false;
-        const json = await res.json();
-        const apiMatches = json?.matches || json?.data || [];
-        const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const t1n = norm(match.team1?.name);
-        const t2n = norm(match.team2?.name);
-        const found = apiMatches.find(m => {
-            const m1 = norm(m.teams?.home?.name || m.home_team || m.home);
-            const m2 = norm(m.teams?.away?.name || m.away_team || m.away);
-            return (m1 === t1n && m2 === t2n) || (m1 === t2n && m2 === t1n);
-        });
-        if (!found) return false;
-        const hs = found.home_score ?? found.score?.home;
-        const as = found.away_score ?? found.score?.away;
-        if (hs == null || as == null) return false;
-        match.score = { team1: String(hs), team2: String(as) };
-        match.team1 = match.team1 || {};
-        match.team2 = match.team2 || {};
-        match.team1.score = match.score.team1;
-        match.team2.score = match.score.team2;
-        return true;
-    } catch (e) { return false; }
-}
-
-async function fetchESPNMatchScore(match) {
-    try {
-        const sportKey = match.sport === 'nfl' ? 'nfl' : match.sport;
-        const espnSport = match.sport === 'nfl' ? 'nfl' : match.sport;
-        const url = `/api/espn-scores?sport=${espnSport}`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-        if (!res.ok) return false;
-        const json = await res.json();
-        const espnMatches = json?.matches || [];
-        const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        const t1n = norm(match.team1?.name);
-        const t2n = norm(match.team2?.name);
-        const found = espnMatches.find(m => {
-            const m1 = norm(m.team1?.name);
-            const m2 = norm(m.team2?.name);
-            return (m1 === t1n && m2 === t2n) || (m1 === t2n && m2 === t1n);
-        });
-        if (!found) return false;
-        const hasScore = v => v && v !== '-' && v !== '';
-        if (!hasScore(found.score?.team1) && !hasScore(found.score?.team2)) return false;
-        match.score = { team1: found.score.team1 || '-', team2: found.score.team2 || '-' };
-        match.team1 = match.team1 || {};
-        match.team2 = match.team2 || {};
-        match.team1.score = match.score.team1;
-        match.team2.score = match.score.team2;
-        if (found.team1?.logo && !match.team1?.logo) match.team1.logo = found.team1.logo;
-        if (found.team2?.logo && !match.team2?.logo) match.team2.logo = found.team2.logo;
-        return true;
-    } catch (e) { return false; }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
