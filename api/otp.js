@@ -25,18 +25,22 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return errorResponse(res, 405, 'Method not allowed');
 
     const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL_ENV;
 
     try {
-        // Rate limiting
+        // Rate limiting — fail closed in production
         try {
             const rl = await getRateLimit(ip);
             if (rl && rl.attempts >= RATE_LIMIT_MAX) {
                 return errorResponse(res, 429, 'Too many requests. Please try again later.');
             }
         } catch (e) {
-            // Rate limit check failure is non-fatal — continue
             if (e instanceof StorageError) {
-                console.error('[otp] Storage unavailable for rate limit check:', e.message);
+                if (isProduction) {
+                    console.error('[otp] Storage unavailable for rate limit check — failing closed:', e.message);
+                    return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+                }
+                console.error('[otp] Rate limit check failed (dev, non-fatal):', e.message);
             }
         }
 
@@ -51,11 +55,22 @@ export default async function handler(req, res) {
         const hash = bcrypt.hashSync(code, 10);
         const normalizedContact = contact.trim().toLowerCase();
 
-        await setOtp(normalizedContact, {
-            hash,
-            expires: Date.now() + OTP_EXPIRY_SECONDS * 1000,
-            attempts: 0
-        }, OTP_EXPIRY_SECONDS);
+        try {
+            await setOtp(normalizedContact, {
+                hash,
+                expires: Date.now() + OTP_EXPIRY_SECONDS * 1000,
+                attempts: 0
+            }, OTP_EXPIRY_SECONDS);
+        } catch (e) {
+            if (e instanceof StorageError) {
+                if (isProduction) {
+                    return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+                }
+                console.error('[otp] OTP storage failed (dev):', e.message);
+            } else {
+                throw e;
+            }
+        }
 
         // Update rate limit
         try {
@@ -67,11 +82,12 @@ export default async function handler(req, res) {
                 await setRateLimit(ip, { ...rl, attempts: rl.attempts + 1 }, RATE_LIMIT_WINDOW_SECONDS);
             }
         } catch (e) {
+            if (e instanceof StorageError && isProduction) {
+                return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+            }
             console.error('[otp] Rate limit update failed:', e.message);
         }
 
-        // In production, integrate with SMS/email provider here.
-        // OTP is NOT logged or returned in the response.
         return res.status(200).json({ success: true, message: 'OTP sent successfully' });
     }
 
@@ -81,25 +97,44 @@ export default async function handler(req, res) {
         }
 
         const normalizedContact = contact.trim().toLowerCase();
-        const stored = await getOtp(normalizedContact);
+        let stored;
+        try {
+            stored = await getOtp(normalizedContact);
+        } catch (e) {
+            if (e instanceof StorageError) {
+                if (isProduction) {
+                    return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+                }
+                console.error('[otp] OTP storage read failed (dev):', e.message);
+                stored = null;
+            } else {
+                throw e;
+            }
+        }
 
         if (!stored) {
             return errorResponse(res, 400, 'OTP expired or not found. Please request a new one.');
         }
 
         if (Date.now() > stored.expires) {
-            await deleteOtp(normalizedContact);
+            try { await deleteOtp(normalizedContact); } catch (e) { /* best effort */ }
             return errorResponse(res, 400, 'OTP expired. Please request a new one.');
         }
 
         stored.attempts++;
         if (stored.attempts > MAX_ATTEMPTS) {
-            await deleteOtp(normalizedContact);
+            try { await deleteOtp(normalizedContact); } catch (e) { /* best effort */ }
             return errorResponse(res, 429, 'Too many failed attempts. Please request a new OTP.');
         }
 
         // Update attempt count
-        await setOtp(normalizedContact, stored, OTP_EXPIRY_SECONDS);
+        try {
+            await setOtp(normalizedContact, stored, OTP_EXPIRY_SECONDS);
+        } catch (e) {
+            if (e instanceof StorageError && isProduction) {
+                return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+            }
+        }
 
         let valid = false;
         try {
@@ -114,7 +149,7 @@ export default async function handler(req, res) {
         }
 
         // OTP verified — delete it (one-time use)
-        await deleteOtp(normalizedContact);
+        try { await deleteOtp(normalizedContact); } catch (e) { /* best effort */ }
         return res.status(200).json({ success: true });
     }
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "echo 'Use Vercel CLI: vercel dev'",
+    "dev": "echo 'Start local server with: npx vercel'",
     "generate-admin-hash": "node -e \"const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync(process.argv[1] || 'change-me', 10))\""
   },
   "dependencies": {

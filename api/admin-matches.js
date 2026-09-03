@@ -1,6 +1,7 @@
 // Admin match overrides API — persistent storage via Vercel KV.
 // Admin edits survive: page refresh, logout/login, deployment, cold start, different device.
 
+import crypto from 'crypto';
 import { checkAuth, setCors, errorResponse } from './_lib/auth.js';
 import {
     getAllOverrides, setOverride, deleteOverride,
@@ -90,7 +91,7 @@ export default async function handler(req, res) {
             if (!matchData) return errorResponse(res, 400, 'matchData required');
             const validationError = validateOverrideData(matchData);
             if (validationError) return errorResponse(res, 400, validationError);
-            const id = matchData.id || 'admin_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            const id = matchData.id || 'admin_' + crypto.randomUUID();
             matchData.id = id;
             await setCustom(id, matchData);
             try { await invalidateMatchCache(matchData.date); } catch (e) { console.error('[admin-matches] cache invalidation failed:', e.message); }
