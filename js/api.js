@@ -644,9 +644,10 @@ function mapLeagueName(id) {
     return map[id] || id.split('.').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-async function fetchESPNFallback(sport) {
+async function fetchESPNFallback(sport, dateStr) {
     try {
-        const url = `/api/espn-scores?sport=${sport}`;
+        let url = `/api/espn-scores?sport=${sport}`;
+        if (dateStr) url += `&date=${dateStr}`;
         const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) return [];
         const data = await res.json();
@@ -1470,6 +1471,33 @@ async function fetchMatchesForDate(dateStr) {
             results.nfl = nflMatches;
         } catch(e) {}
 
+        const espnSports = ['football', 'basketball', 'nfl'];
+        const espnPromises = espnSports.map(async (sport) => {
+            try {
+                const espnMatches = await fetchESPNFallback(sport, dateStr);
+                return { sport, matches: espnMatches };
+            } catch(e) {
+                return { sport, matches: [] };
+            }
+        });
+        espnResults = await Promise.allSettled(espnPromises);
+        espnResults.forEach(result => {
+            if (result.status === 'fulfilled') {
+                const { sport, matches } = result.value;
+                if (sport === 'nfl') {
+                    mergeFallbackIntoResults(results, matches, 'nfl');
+                } else {
+                    mergeFallbackIntoResults(results, matches, sport);
+                }
+            }
+        });
+
+        try {
+            const espnCricket = await fetchESPNCricketData(dateStr);
+            const dayCricket = espnCricket.filter(m => m.date === dateStr);
+            if (dayCricket.length) mergeFallbackIntoResults(results, dayCricket, 'cricket');
+        } catch(e) {}
+
         return results;
     } catch(e) {
         console.log('⚠️ fetchMatchesForDate failed:', e.message);
@@ -1736,9 +1764,10 @@ async function fetchCricketDataOrg() {
 
 // ===== ESPN Cricket API (Personalized Header) =====
 
-async function fetchESPNCricketData() {
+async function fetchESPNCricketData(dateStr) {
     try {
-        const res = await fetch('/api/google-cricket', { signal: AbortSignal.timeout(8000) });
+        const url = dateStr ? `/api/google-cricket?date=${dateStr}` : '/api/google-cricket';
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) throw new Error(`ESPN Cricket HTTP ${res.status}`);
         const data = await res.json();
         

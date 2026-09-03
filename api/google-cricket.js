@@ -1,9 +1,11 @@
 export default async function handler(req, res) {
+    const date = req.query.date || '';
+    const dateParam = date ? `?dates=${date.replace(/-/g, '')}` : '';
     const endpoints = [
-        'https://site.api.espn.com/apis/site/v2/sports/cricket/scoreboard',
-        'https://site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket&region=in&tz=Asia/Calcutta',
-        'https://site.api.espn.com/apis/site/v2/sports/cricket/australia/scoreboard',
-        'https://site.api.espn.com/apis/site/v2/sports/cricket/england/scoreboard'
+        `https://site.api.espn.com/apis/site/v2/sports/cricket/scoreboard${dateParam}`,
+        `https://site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket&region=in&tz=Asia/Calcutta${date ? '&dates=' + date.replace(/-/g, '') : ''}`,
+        `https://site.api.espn.com/apis/site/v2/sports/cricket/australia/scoreboard${dateParam}`,
+        `https://site.api.espn.com/apis/site/v2/sports/cricket/england/scoreboard${dateParam}`
     ];
     const allData = { sports: [{ leagues: [] }] };
 
