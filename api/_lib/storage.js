@@ -1,12 +1,26 @@
 // Shared persistent storage layer for Vercel serverless.
-// Uses Vercel KV (Redis) when available, falls back to in-memory with documented limitations.
+// Production: Vercel KV REQUIRED. Falls back to in-memory ONLY for local development.
+// If KV env vars are missing in production, all write operations throw configuration errors.
 
 import { kv } from '@vercel/kv';
 
-const KV_AVAILABLE = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || !!process.env.VERCEL_ENV;
+const KV_REST_API_URL = process.env.KV_REST_API_URL;
+const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+const KV_AVAILABLE = !!(KV_REST_API_URL && KV_REST_API_TOKEN);
 
-// In-memory fallback (documented: does NOT persist across cold starts)
+if (IS_PRODUCTION && !KV_AVAILABLE) {
+    console.error('[storage] FATAL: Vercel KV not configured in production. Set KV_REST_API_URL and KV_REST_API_TOKEN.');
+}
+
+// In-memory fallback — LOCAL DEVELOPMENT ONLY. Never use in production.
 const memStore = new Map();
+
+function requireKV(operation) {
+    if (IS_PRODUCTION && !KV_AVAILABLE) {
+        throw new Error(`[storage] KV required in production for "${operation}". Configure KV_REST_API_URL and KV_REST_API_TOKEN.`);
+    }
+}
 
 // --- Generic get/set ---
 
@@ -16,12 +30,18 @@ export async function storeGet(key) {
             return await kv.get(key);
         } catch (e) {
             console.error(`[storage] KV get failed for ${key}:`, e.message);
+            return null;
         }
+    }
+    if (IS_PRODUCTION) {
+        console.error(`[storage] KV unavailable in production for get: ${key}`);
+        return null;
     }
     return memStore.get(key) ?? null;
 }
 
 export async function storeSet(key, value, ttlSeconds) {
+    requireKV(`set(${key})`);
     if (KV_AVAILABLE) {
         try {
             if (ttlSeconds) {
@@ -32,18 +52,21 @@ export async function storeSet(key, value, ttlSeconds) {
             return;
         } catch (e) {
             console.error(`[storage] KV set failed for ${key}:`, e.message);
+            return;
         }
     }
     memStore.set(key, value);
 }
 
 export async function storeDel(key) {
+    requireKV(`del(${key})`);
     if (KV_AVAILABLE) {
         try {
             await kv.del(key);
             return;
         } catch (e) {
             console.error(`[storage] KV del failed for ${key}:`, e.message);
+            return;
         }
     }
     memStore.delete(key);
@@ -55,6 +78,8 @@ const OVERRIDES_PREFIX = 'override:';
 const CUSTOMS_PREFIX = 'custom:';
 const RATE_LIMIT_PREFIX = 'ratelimit:';
 const OTP_PREFIX = 'otp:';
+const MATCH_PREFIX = 'match:';
+const MATCH_DATE_PREFIX = 'matchdate:';
 
 export async function getOverride(matchId) {
     return storeGet(OVERRIDES_PREFIX + matchId);
@@ -92,6 +117,7 @@ export async function getAllOverrides() {
             return {};
         }
     }
+    if (IS_PRODUCTION) return {};
     const overrides = {};
     memStore.forEach((val, key) => {
         if (key.startsWith(OVERRIDES_PREFIX)) {
@@ -135,6 +161,7 @@ export async function getAllCustoms() {
             return [];
         }
     }
+    if (IS_PRODUCTION) return [];
     const customs = [];
     memStore.forEach((val, key) => {
         if (key.startsWith(CUSTOMS_PREFIX)) customs.push(val);
@@ -143,6 +170,7 @@ export async function getAllCustoms() {
 }
 
 export async function clearAllAdmin() {
+    requireKV('clearAllAdmin');
     if (KV_AVAILABLE) {
         try {
             let cursor = 0;
@@ -195,25 +223,101 @@ export async function setRateLimit(ip, data, ttlSeconds) {
     await storeSet(RATE_LIMIT_PREFIX + ip, data, ttlSeconds || 60);
 }
 
-// --- Match cache (per-date, server-side) ---
+// --- Persistent normalized match storage ---
 
-const MATCH_CACHE_PREFIX = 'matches:';
-const MATCH_CACHE_TTL = 30; // 30 seconds for live data
+// Each match is stored as: match:{source}_{externalId}
+// Date index: matchdate:{date} → Set of match IDs for that date
 
-export async function getCachedMatches(dateStr) {
-    return storeGet(MATCH_CACHE_PREFIX + dateStr);
+export async function persistMatch(match) {
+    const id = match.id || `${match.source}_${match.externalId}`;
+    if (!id) return;
+    const record = {
+        ...match,
+        id,
+        source: match.source,
+        externalId: match.externalId || null,
+        sport: match.sport,
+        league: match.league || '',
+        team1: { name: match.team1?.name, short: match.team1?.short, logo: match.team1?.logo, flag: match.team1?.flag },
+        team2: { name: match.team2?.name, short: match.team2?.short, logo: match.team2?.logo, flag: match.team2?.flag },
+        date: match.date,
+        time: match.time || '00:00',
+        startTimeUtc: match.startTimeUtc || null,
+        status: match.status || 'upcoming',
+        statusText: match.statusText || '',
+        score: { team1: match.score?.team1 ?? null, team2: match.score?.team2 ?? null },
+        overs: match.overs || null,
+        innings: match.innings || null,
+        venue: match.venue || '',
+        metadata: match.metadata || null,
+        updatedAt: Date.now()
+    };
+    await storeSet(MATCH_PREFIX + id, record);
+    // Update date index
+    if (match.date) {
+        const dateKey = MATCH_DATE_PREFIX + match.date;
+        let ids = await storeGet(dateKey);
+        if (!ids || !Array.isArray(ids)) ids = [];
+        if (!ids.includes(id)) {
+            ids.push(id);
+            await storeSet(dateKey, ids, 86400 * 7); // 7-day TTL for date index
+        }
+    }
 }
 
-export async function setCachedMatches(dateStr, matches) {
-    await storeSet(MATCH_CACHE_PREFIX + dateStr, matches, MATCH_CACHE_TTL);
+export async function getPersistedMatch(matchId) {
+    return storeGet(MATCH_PREFIX + matchId);
+}
+
+export async function getPersistedMatchesByDate(dateStr) {
+    const ids = await storeGet(MATCH_DATE_PREFIX + dateStr);
+    if (!ids || !Array.isArray(ids)) return [];
+    const matches = [];
+    for (const id of ids) {
+        const m = await storeGet(MATCH_PREFIX + id);
+        if (m) matches.push(m);
+    }
+    return matches;
+}
+
+export async function invalidateMatchCache(dateStr) {
+    // Invalidate the server-side match cache for a specific date
+    const cacheKeys = [
+        `matches:${dateStr}_all`,
+        `matches:${dateStr}_football`,
+        `matches:${dateStr}_cricket`,
+        `matches:${dateStr}_basketball`,
+        `matches:${dateStr}_nfl`,
+        `matches:${dateStr}_tennis`,
+        `matches:${dateStr}_mma`,
+        `matches:${dateStr}_ufc`
+    ];
+    for (const key of cacheKeys) {
+        await storeDel(key);
+    }
+}
+
+// --- Match cache (per-date, server-side) ---
+
+const MATCH_CACHE_TTL = 30; // 30 seconds for live data
+
+export async function getCachedMatches(dateStr, sport) {
+    return storeGet(`matches:${dateStr}_${sport || 'all'}`);
+}
+
+export async function setCachedMatches(dateStr, matches, sport) {
+    await storeSet(`matches:${dateStr}_${sport || 'all'}`, matches, MATCH_CACHE_TTL);
 }
 
 // --- Status ---
 
 export function storageStatus() {
     return {
-        backend: KV_AVAILABLE ? 'vercel-kv' : 'in-memory (NOT persistent)',
+        backend: KV_AVAILABLE ? 'vercel-kv' : (IS_PRODUCTION ? 'ERROR: KV NOT CONFIGURED' : 'in-memory (development only)'),
         kvAvailable: KV_AVAILABLE,
-        warning: KV_AVAILABLE ? null : 'Data will NOT persist across cold starts. Set KV_REST_API_URL and KV_REST_API_TOKEN env vars.'
+        isProduction: IS_PRODUCTION,
+        warning: IS_PRODUCTION && !KV_AVAILABLE
+            ? 'CRITICAL: Vercel KV not configured. Data will NOT persist. Set KV_REST_API_URL and KV_REST_API_TOKEN env vars.'
+            : (!IS_PRODUCTION && !KV_AVAILABLE ? 'Using in-memory storage (development mode). KV not configured.' : null)
     };
 }

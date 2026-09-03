@@ -5,7 +5,7 @@ import { checkAuth, setCors, errorResponse } from './_lib/auth.js';
 import {
     getAllOverrides, setOverride, deleteOverride,
     getAllCustoms, setCustom, deleteCustom, clearAllAdmin,
-    storageStatus
+    storageStatus, invalidateMatchCache
 } from './_lib/storage.js';
 
 export default async function handler(req, res) {
@@ -30,6 +30,8 @@ export default async function handler(req, res) {
             const { matchId, data } = body;
             if (!matchId || !data) return errorResponse(res, 400, 'matchId and data required');
             await setOverride(matchId, data);
+            // Invalidate cached matches so next /api/matches request reflects the change
+            try { await invalidateMatchCache(data.date); } catch (e) { console.error('[admin-matches] cache invalidation failed:', e.message); }
             return res.status(200).json({ success: true });
         }
 
@@ -37,6 +39,8 @@ export default async function handler(req, res) {
             const { matchId } = body;
             if (!matchId) return errorResponse(res, 400, 'matchId required');
             await deleteOverride(matchId);
+            // Invalidate cached matches (date unknown, invalidate all recent)
+            try { const t = new Date().toISOString().slice(0, 10); await invalidateMatchCache(t); } catch (e) { console.error('[admin-matches] cache invalidation failed:', e.message); }
             return res.status(200).json({ success: true });
         }
 
@@ -51,6 +55,7 @@ export default async function handler(req, res) {
             const id = matchData.id || 'admin_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
             matchData.id = id;
             await setCustom(id, matchData);
+            try { await invalidateMatchCache(matchData.date); } catch (e) { console.error('[admin-matches] cache invalidation failed:', e.message); }
             return res.status(200).json({ success: true, id });
         }
 
@@ -58,6 +63,7 @@ export default async function handler(req, res) {
             const { matchId } = body;
             if (!matchId) return errorResponse(res, 400, 'matchId required');
             await deleteCustom(matchId);
+            try { const t = new Date().toISOString().slice(0, 10); await invalidateMatchCache(t); } catch (e) { console.error('[admin-matches] cache invalidation failed:', e.message); }
             return res.status(200).json({ success: true });
         }
 

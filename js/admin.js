@@ -405,15 +405,7 @@ async function serverDeleteCustom(matchId) {
     } catch { return false; }
 }
 
-// Legacy localStorage fallback (for when server is unavailable)
-function getOverrides() {
-    try { return JSON.parse(localStorage.getItem('admin_match_overrides') || '{}'); } catch { return {}; }
-}
-function saveOverrides(o) { localStorage.setItem('admin_match_overrides', JSON.stringify(o)); }
-function getCustomMatches() {
-    try { return JSON.parse(localStorage.getItem('admin_custom_matches') || '[]'); } catch { return []; }
-}
-function saveCustomMatches(m) { localStorage.setItem('admin_custom_matches', JSON.stringify(m)); }
+// v127: localStorage fallbacks removed — all admin data stored server-side via /api/admin-matches.
 
 function editMatch(idx) {
     var m = allAdminMatches[idx];
@@ -474,18 +466,12 @@ async function saveEditMatch(e) {
     };
 
     if (idx === 'new') {
-        // Add via server API
         const id = await serverAddCustom(matchData);
         if (id) {
             matchData.id = id;
             addLog('NEW MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name + ' (' + sport + ')');
         } else {
-            // Fallback to localStorage
-            matchData.id = 'admin_' + Date.now();
-            var customs = getCustomMatches();
-            customs.push(matchData);
-            saveCustomMatches(customs);
-            addLog('NEW MATCH (local): ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+            addLog('FAILED to add match (server error). Check /api/admin-matches logs.', 'err');
         }
     } else {
         var orig = allAdminMatches[idx];
@@ -495,11 +481,7 @@ async function saveEditMatch(e) {
             if (success) {
                 addLog('EDIT MATCH: ' + matchData.team1.name + ' vs ' + matchData.team2.name);
             } else {
-                // Fallback to localStorage
-                var overrides = getOverrides();
-                overrides[matchId] = matchData;
-                saveOverrides(overrides);
-                addLog('EDIT MATCH (local): ' + matchData.team1.name + ' vs ' + matchData.team2.name);
+                addLog('FAILED to edit match (server error). Check /api/admin-matches logs.', 'err');
             }
         }
     }
@@ -512,17 +494,10 @@ async function deleteMatch(idx) {
     var m = allAdminMatches[idx];
     if (m && m.id && m.id.startsWith('admin_')) {
         const success = await serverDeleteCustom(m.id);
-        if (!success) {
-            var customs = getCustomMatches().filter(c => c.id !== m.id);
-            saveCustomMatches(customs);
-        }
+        if (!success) addLog('FAILED to delete custom match (server error).', 'err');
     } else if (m) {
         const success = await serverDeleteOverride(m.id);
-        if (!success) {
-            var overrides = getOverrides();
-            overrides[m.id] = { _deleted: true };
-            saveOverrides(overrides);
-        }
+        if (!success) addLog('FAILED to delete override (server error).', 'err');
     }
     addLog('DELETE MATCH: ' + (m?.team1?.name || '') + ' vs ' + (m?.team2?.name || ''));
     loadAdminMatches();
@@ -543,7 +518,6 @@ async function loadAdminMatches() {
         ];
         // Load custom matches from server (persistent across cold starts)
         var customs = await serverGetCustoms();
-        if (customs.length === 0) customs = getCustomMatches(); // fallback
         if (customs.length > 0) allAdminMatches.push(...customs);
         filterAdminMatches();
         addLog('Loaded ' + allAdminMatches.length + ' matches');

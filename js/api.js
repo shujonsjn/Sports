@@ -1303,33 +1303,7 @@ function _mergePrevLiveMatches(today, matches) {
     return matches;
 }
 
-function applyOverridesToDate(matches, dateStr) {
-    // Admin overrides are now applied server-side via /api/matches.
-    // This client-side function is only a fallback for demo data
-    // that doesn't go through the API.
-    try {
-        const raw = localStorage.getItem('admin_match_overrides');
-        if (!raw) return matches;
-        const overrides = JSON.parse(raw);
-        if (!overrides || Object.keys(overrides).length === 0) return matches;
-        const result = [...matches];
-        result.forEach(m => {
-            if (m.id && overrides[m.id]) {
-                const o = overrides[m.id];
-                if (o._deleted) { m._deleted = true; return; }
-                if (o.team1) m.team1 = { ...m.team1, ...o.team1 };
-                if (o.team2) m.team2 = { ...m.team2, ...o.team2 };
-                if (o.score) m.score = o.score;
-                if (o.status) m.status = o.status;
-                if (o.league) m.league = o.league;
-                if (o.venue) m.venue = o.venue;
-                if (o.result) m.result = o.result;
-                if (o.time) m.time = o.time;
-            }
-        });
-        return result.filter(m => !m._deleted);
-    } catch (e) { return matches; }
-}
+// applyOverridesToDate removed in v127 — admin overrides applied server-side via /api/matches.
 
 function getMatchesForDate(dateStr) {
     const today = getTodayString();
@@ -1385,10 +1359,10 @@ function getMatchesForDate(dateStr) {
     const augData = filterAugust2026(dateStr);
     if (augData.length) {
         if (dateStr === today) _mergePrevLiveMatches(today, augData);
-        return applyOverridesToDate(augData, dateStr);
+        return augData;
     }
 
-    return applyOverridesToDate([], dateStr);
+    return [];
 }
 
 async function fetchMatchesForDate(dateStr) {
