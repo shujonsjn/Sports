@@ -52,16 +52,22 @@ export async function verifyPassword(password, hash) {
     return bcrypt.compare(password, hash);
 }
 
+// CORS for protected endpoints — requires ALLOWED_ORIGINS in production.
+// Never falls back to * for protected APIs.
 export function setCorsHeaders(res, req) {
     const origin = req.headers?.origin || '';
     if (ALLOWED_ORIGINS.length > 0 && ALLOWED_ORIGINS.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (ALLOWED_ORIGINS.length === 0) {
+    } else if (ALLOWED_ORIGINS.length === 0 && !IS_PRODUCTION) {
+        // Dev-only: allow all origins
         res.setHeader('Access-Control-Allow-Origin', '*');
     }
+    // Production with no ALLOWED_ORIGINS → no CORS header set (rejects cross-origin)
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
+
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || !!process.env.VERCEL_ENV;
 
 export function requireEnvVars() {
     if (!JWT_SECRET || !ADMIN_USER || !ADMIN_HASH) {

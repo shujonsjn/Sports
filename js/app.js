@@ -2,43 +2,7 @@
 
 const SPORTS = ['football','cricket','basketball','tennis','mma','ufc','nfl'];
 
-function applyAdminOverrides(dateStr) {
-    try {
-        const overrides = JSON.parse(localStorage.getItem('admin_match_overrides') || '{}');
-        const customs = JSON.parse(localStorage.getItem('admin_custom_matches') || '[]');
-        const day = DATE_CACHE[dateStr];
-        if (!day && customs.length === 0) return;
-        const data = day || {};
-        SPORTS.forEach(sport => {
-            if (!data[sport]) data[sport] = [];
-            data[sport].forEach(m => {
-                if (m.id && overrides[m.id] && !overrides[m.id]._deleted) {
-                    const o = overrides[m.id];
-                    if (o.team1) m.team1 = { ...m.team1, ...o.team1 };
-                    if (o.team2) m.team2 = { ...m.team2, ...o.team2 };
-                    if (o.score) m.score = o.score;
-                    if (o.status) m.status = o.status;
-                    if (o.league) m.league = o.league;
-                    if (o.venue) m.venue = o.venue;
-                    if (o.result) m.result = o.result;
-                    if (o.time) m.time = o.time;
-                    if (o.date) m.date = o.date;
-                } else if (m.id && overrides[m.id]?._deleted) {
-                    m._deleted = true;
-                }
-            });
-            data[sport] = data[sport].filter(m => !m._deleted);
-        });
-        customs.forEach(c => {
-            if (c.date === dateStr && c.sport) {
-                const cat = c.sport;
-                if (!data[cat]) data[cat] = [];
-                if (!data[cat].find(x => x.id === c.id)) data[cat].push(c);
-            }
-        });
-        DATE_CACHE[dateStr] = data;
-    } catch (e) {}
-}
+// v128: applyAdminOverrides removed — admin overrides applied server-side via /api/matches.
 
 function parseUrlPath() {
     const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
@@ -657,7 +621,6 @@ async function loadMatchesForDate(dateStr) {
                     }
                 });
                 DATE_CACHE[dateStr] = existing;
-                applyAdminOverrides(dateStr);
                 const ufcMma = [...(existing.ufc || []), ...(existing.mma || [])];
                 if (ufcMma.length > 0) applyUFCPhotos(ufcMma);
             }
@@ -688,7 +651,6 @@ async function loadMatchesForDate(dateStr) {
             if (currentDate === dateStr) {
                 if (results && Object.values(results).some(arr => arr && arr.length > 0)) {
                     DATE_CACHE[dateStr] = results;
-                    applyAdminOverrides(dateStr);
                     const fresh = getMatchesForDate(dateStr);
                     await enrichMatchLogos(fresh);
                     filterAndRender(fresh, container);
@@ -1242,6 +1204,11 @@ document.addEventListener('click', function(e) {
 });
 
 // ===== Live Score Auto-Refresh Agent =====
+// Single unified timer with tiered polling:
+//   - Live matches: 30s refresh
+//   - Upcoming matches (today only): 2 min refresh
+//   - Finished matches: no refresh (score-checker handles empty scores)
+
 let _liveAgentInterval = null;
 let _liveMinuteInterval = null;
 let _liveAgentAbort = null;
@@ -1312,6 +1279,7 @@ function stopLiveMinuteUpdater() {
     }
 }
 let _lastRefreshTime = 0;
+let _nextRefreshInterval = 30000; // Default 30s, adapts based on match status
 
 function startLiveAgent() {
     stopLiveAgent();
@@ -1320,7 +1288,7 @@ function startLiveAgent() {
         if (currentDate !== today) return;
 
         const now = Date.now();
-        if (now - _lastRefreshTime < 25000) return;
+        if (now - _lastRefreshTime < _nextRefreshInterval) return;
         _lastRefreshTime = now;
 
         if (_liveAgentAbort) _liveAgentAbort.abort();
@@ -1330,8 +1298,19 @@ function startLiveAgent() {
             const result = await autoFetchMatches();
             if (currentDate !== today) return;
 
-            const hasLive = Object.values(result).some(arr => arr && arr.length > 0);
+            // Determine tier for next refresh interval
+            const hasLive = Object.values(result).some(arr => arr && arr.length > 0 && arr.some(m => m.status === 'live'));
+            const hasUpcoming = Object.values(result).some(arr => arr && arr.length > 0 && arr.some(m => m.status === 'upcoming'));
+
             if (hasLive) {
+                _nextRefreshInterval = 30000; // 30s for live
+            } else if (hasUpcoming) {
+                _nextRefreshInterval = 120000; // 2 min for upcoming only
+            } else {
+                _nextRefreshInterval = 300000; // 5 min for finished-only
+            }
+
+            if (hasLive || hasUpcoming) {
                 const existing = DATE_CACHE[today] || {};
                 ['cricket','football','basketball','tennis','mma','ufc','nfl'].forEach(sport => {
                     if (result[sport] && result[sport].length > 0) {

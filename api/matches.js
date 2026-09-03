@@ -8,7 +8,7 @@
 
 import {
     getCachedMatches, setCachedMatches, getAllOverrides, getAllCustoms,
-    persistMatch, getPersistedMatch, invalidateMatchCache
+    persistMatch, getPersistedMatch, invalidateMatchCache, StorageError
 } from './_lib/storage.js';
 import { setCors, errorResponse } from './_lib/response.js';
 import { getTodayString, isValidDateString } from './_lib/date.js';
@@ -96,10 +96,12 @@ function applyProviderPriority(matches, sport) {
     return [...byKey.values()];
 }
 
-// Fetch from a provider with fallback chain
+// Fetch from a provider with fallback chain.
+// Returns { matches: [], providerErrors: [] }
 async function fetchWithFallback(sport, dateStr) {
     const providers = PROVIDER_PRIORITY[sport] || [];
     const allMatches = [];
+    const providerErrors = [];
 
     for (const provider of providers) {
         try {
@@ -120,12 +122,13 @@ async function fetchWithFallback(sport, dateStr) {
             // If primary provider returned results, use them (with fallback supplementation)
             if (provider === providers[0] && matches.length > 0) break;
         } catch (e) {
+            providerErrors.push({ provider, error: e.message });
             console.error(`[matches] ${provider} for ${sport} failed:`, e.message);
         }
     }
 
     // Apply provider priority within the sport
-    return applyProviderPriority(allMatches, sport);
+    return { matches: applyProviderPriority(allMatches, sport), providerErrors };
 }
 
 export default async function handler(req, res) {
@@ -156,17 +159,38 @@ export default async function handler(req, res) {
         const sportPromises = sportsToFetch.map(s => fetchWithFallback(s, targetDate));
         const sportResults = await Promise.allSettled(sportPromises);
 
-        // 4. Collect all matches
+        // 4. Collect all matches and track provider failures
         let allMatches = [];
-        for (const result of sportResults) {
+        const allProviderErrors = [];
+        const allSportErrors = [];
+        for (let i = 0; i < sportResults.length; i++) {
+            const result = sportResults[i];
+            const sport = sportsToFetch[i];
             if (result.status === 'fulfilled') {
-                allMatches.push(...result.value);
+                allMatches.push(...result.value.matches);
+                allProviderErrors.push(...result.value.providerErrors);
+                // If primary + fallback both failed for this sport, record it
+                const providers = PROVIDER_PRIORITY[sport] || [];
+                if (result.value.matches.length === 0 && result.value.providerErrors.length === providers.length) {
+                    allSportErrors.push(sport);
+                }
+            } else {
+                allSportErrors.push(sport);
+                allProviderErrors.push({ sport, error: result.reason?.message || 'Unknown error' });
             }
         }
 
-        // 5. Generate stable IDs for matches without external IDs
+        // If ALL providers for ALL sports failed, return 503
+        if (allMatches.length === 0 && allSportErrors.length === sportsToFetch.length) {
+            console.error('[matches] All providers failed for all sports:', allProviderErrors);
+            return errorResponse(res, 503, 'All data providers are currently unavailable. Please try again later.');
+        }
+
+        // 5. Generate stable IDs — prefer source+externalId when available
         allMatches.forEach(m => {
-            if (!m.id) {
+            if (m.externalId && m.source) {
+                m.id = `${m.source}_${m.externalId}`;
+            } else if (!m.id) {
                 m.id = `${m.source}_${normalizeTeamName(m.team1?.name)}_${normalizeTeamName(m.team2?.name)}_${m.date}`;
             }
             // Validate scores
@@ -177,15 +201,28 @@ export default async function handler(req, res) {
         for (const m of allMatches) {
             try {
                 const existing = await getPersistedMatch(m.id);
-                // Only persist if we have a real score to store, or this is a new match
-                if (hasScore(m.score?.team1) || hasScore(m.score?.team2) || !existing) {
+                if (!existing) {
+                    // New match — always persist
                     await persistMatch(m);
-                } else if (existing) {
-                    // Merge stored score into current data (score persistence)
-                    if (hasScore(existing.score?.team1)) m.score.team1 = existing.score.team1;
-                    if (hasScore(existing.score?.team2)) m.score.team2 = existing.score.team2;
-                    if (existing.status === 'finished') m.status = 'finished';
-                    if (existing.innings) m.innings = existing.innings;
+                } else {
+                    // Merge: only upgrade, never downgrade
+                    const merged = { ...m };
+                    // Keep existing real scores if current has none
+                    if (hasScore(existing.score?.team1) && !hasScore(m.score?.team1)) {
+                        merged.score = { ...merged.score, team1: existing.score.team1 };
+                    }
+                    if (hasScore(existing.score?.team2) && !hasScore(m.score?.team2)) {
+                        merged.score = { ...merged.score, team2: existing.score.team2 };
+                    }
+                    // Status transitions: upcoming→live→finished (never regress)
+                    if (existing.status === 'finished') merged.status = 'finished';
+                    else if (existing.status === 'live' && merged.status === 'upcoming') merged.status = 'live';
+                    // Keep existing innings/overs if current has none
+                    if (existing.innings && !merged.innings) merged.innings = existing.innings;
+                    if (existing.overs && !merged.overs) merged.overs = existing.overs;
+                    // Keep existing venue if current has none
+                    if (existing.venue && !merged.venue) merged.venue = existing.venue;
+                    await persistMatch(merged);
                 }
             } catch (e) {
                 console.error(`[matches] persist failed for ${m.id}:`, e.message);
@@ -243,6 +280,9 @@ export default async function handler(req, res) {
         });
     } catch (e) {
         console.error('[matches] Handler error:', e);
+        if (e instanceof StorageError) {
+            return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+        }
         return errorResponse(res, 500, 'Internal server error');
     }
 }

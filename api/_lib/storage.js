@@ -1,6 +1,11 @@
 // Shared persistent storage layer for Vercel serverless.
 // Production: Vercel KV REQUIRED. Falls back to in-memory ONLY for local development.
 // If KV env vars are missing in production, all write operations throw configuration errors.
+//
+// Error semantics:
+//   - "No data exists" → returns null (normal)
+//   - "Storage unavailable" → throws StorageError (infrastructure failure)
+//   The caller MUST distinguish these cases.
 
 import { kv } from '@vercel/kv';
 
@@ -16,9 +21,18 @@ if (IS_PRODUCTION && !KV_AVAILABLE) {
 // In-memory fallback — LOCAL DEVELOPMENT ONLY. Never use in production.
 const memStore = new Map();
 
+// Custom error class for storage infrastructure failures
+export class StorageError extends Error {
+    constructor(message, cause) {
+        super(message);
+        this.name = 'StorageError';
+        this.cause = cause;
+    }
+}
+
 function requireKV(operation) {
     if (IS_PRODUCTION && !KV_AVAILABLE) {
-        throw new Error(`[storage] KV required in production for "${operation}". Configure KV_REST_API_URL and KV_REST_API_TOKEN.`);
+        throw new StorageError(`KV required in production for "${operation}". Configure KV_REST_API_URL and KV_REST_API_TOKEN.`);
     }
 }
 
@@ -30,12 +44,11 @@ export async function storeGet(key) {
             return await kv.get(key);
         } catch (e) {
             console.error(`[storage] KV get failed for ${key}:`, e.message);
-            return null;
+            throw new StorageError(`Storage read failed for key "${key}"`, e);
         }
     }
     if (IS_PRODUCTION) {
-        console.error(`[storage] KV unavailable in production for get: ${key}`);
-        return null;
+        throw new StorageError(`KV unavailable in production for get: ${key}`);
     }
     return memStore.get(key) ?? null;
 }
@@ -52,7 +65,7 @@ export async function storeSet(key, value, ttlSeconds) {
             return;
         } catch (e) {
             console.error(`[storage] KV set failed for ${key}:`, e.message);
-            return;
+            throw new StorageError(`Storage write failed for key "${key}"`, e);
         }
     }
     memStore.set(key, value);
@@ -66,7 +79,7 @@ export async function storeDel(key) {
             return;
         } catch (e) {
             console.error(`[storage] KV del failed for ${key}:`, e.message);
-            return;
+            throw new StorageError(`Storage delete failed for key "${key}"`, e);
         }
     }
     memStore.delete(key);
@@ -95,29 +108,24 @@ export async function deleteOverride(matchId) {
 
 export async function getAllOverrides() {
     if (KV_AVAILABLE) {
-        try {
-            const keys = [];
-            let cursor = 0;
-            do {
-                const result = await kv.scan(cursor, { match: OVERRIDES_PREFIX + '*', count: 100 });
-                cursor = result[0];
-                keys.push(...result[1]);
-            } while (cursor !== 0);
+        const keys = [];
+        let cursor = 0;
+        do {
+            const result = await kv.scan(cursor, { match: OVERRIDES_PREFIX + '*', count: 100 });
+            cursor = result[0];
+            keys.push(...result[1]);
+        } while (cursor !== 0);
 
-            const overrides = {};
-            for (const key of keys) {
-                const val = await kv.get(key);
-                if (val) {
-                    overrides[key.slice(OVERRIDES_PREFIX.length)] = val;
-                }
+        const overrides = {};
+        for (const key of keys) {
+            const val = await kv.get(key);
+            if (val) {
+                overrides[key.slice(OVERRIDES_PREFIX.length)] = val;
             }
-            return overrides;
-        } catch (e) {
-            console.error('[storage] getAllOverrides scan failed:', e.message);
-            return {};
         }
+        return overrides;
     }
-    if (IS_PRODUCTION) return {};
+    if (IS_PRODUCTION) throw new StorageError('KV unavailable in production for getAllOverrides');
     const overrides = {};
     memStore.forEach((val, key) => {
         if (key.startsWith(OVERRIDES_PREFIX)) {
@@ -141,27 +149,22 @@ export async function deleteCustom(customId) {
 
 export async function getAllCustoms() {
     if (KV_AVAILABLE) {
-        try {
-            const keys = [];
-            let cursor = 0;
-            do {
-                const result = await kv.scan(cursor, { match: CUSTOMS_PREFIX + '*', count: 100 });
-                cursor = result[0];
-                keys.push(...result[1]);
-            } while (cursor !== 0);
+        const keys = [];
+        let cursor = 0;
+        do {
+            const result = await kv.scan(cursor, { match: CUSTOMS_PREFIX + '*', count: 100 });
+            cursor = result[0];
+            keys.push(...result[1]);
+        } while (cursor !== 0);
 
-            const customs = [];
-            for (const key of keys) {
-                const val = await kv.get(key);
-                if (val) customs.push(val);
-            }
-            return customs;
-        } catch (e) {
-            console.error('[storage] getAllCustoms scan failed:', e.message);
-            return [];
+        const customs = [];
+        for (const key of keys) {
+            const val = await kv.get(key);
+            if (val) customs.push(val);
         }
+        return customs;
     }
-    if (IS_PRODUCTION) return [];
+    if (IS_PRODUCTION) throw new StorageError('KV unavailable in production for getAllCustoms');
     const customs = [];
     memStore.forEach((val, key) => {
         if (key.startsWith(CUSTOMS_PREFIX)) customs.push(val);
@@ -172,22 +175,18 @@ export async function getAllCustoms() {
 export async function clearAllAdmin() {
     requireKV('clearAllAdmin');
     if (KV_AVAILABLE) {
-        try {
-            let cursor = 0;
-            do {
-                const result = await kv.scan(cursor, { match: OVERRIDES_PREFIX + '*', count: 100 });
-                cursor = result[0];
-                for (const key of result[1]) await kv.del(key);
-            } while (cursor !== 0);
-            cursor = 0;
-            do {
-                const result = await kv.scan(cursor, { match: CUSTOMS_PREFIX + '*', count: 100 });
-                cursor = result[0];
-                for (const key of result[1]) await kv.del(key);
-            } while (cursor !== 0);
-        } catch (e) {
-            console.error('[storage] clearAllAdmin scan failed:', e.message);
-        }
+        let cursor = 0;
+        do {
+            const result = await kv.scan(cursor, { match: OVERRIDES_PREFIX + '*', count: 100 });
+            cursor = result[0];
+            for (const key of result[1]) await kv.del(key);
+        } while (cursor !== 0);
+        cursor = 0;
+        do {
+            const result = await kv.scan(cursor, { match: CUSTOMS_PREFIX + '*', count: 100 });
+            cursor = result[0];
+            for (const key of result[1]) await kv.del(key);
+        } while (cursor !== 0);
     } else {
         const keysToDelete = [];
         memStore.forEach((val, key) => {
@@ -226,7 +225,8 @@ export async function setRateLimit(ip, data, ttlSeconds) {
 // --- Persistent normalized match storage ---
 
 // Each match is stored as: match:{source}_{externalId}
-// Date index: matchdate:{date} → Set of match IDs for that date
+// Date index: matchdate:{date} → array of match IDs for that date
+// Date index has NO TTL — persisted matches must remain discoverable.
 
 export async function persistMatch(match) {
     const id = match.id || `${match.source}_${match.externalId}`;
@@ -253,14 +253,14 @@ export async function persistMatch(match) {
         updatedAt: Date.now()
     };
     await storeSet(MATCH_PREFIX + id, record);
-    // Update date index
+    // Update date index — no TTL so matches stay discoverable
     if (match.date) {
         const dateKey = MATCH_DATE_PREFIX + match.date;
         let ids = await storeGet(dateKey);
         if (!ids || !Array.isArray(ids)) ids = [];
         if (!ids.includes(id)) {
             ids.push(id);
-            await storeSet(dateKey, ids, 86400 * 7); // 7-day TTL for date index
+            await storeSet(dateKey, ids);
         }
     }
 }

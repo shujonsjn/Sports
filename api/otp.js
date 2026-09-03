@@ -3,8 +3,8 @@
 
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { setCors, errorResponse } from './_lib/response.js';
-import { getOtp, setOtp, deleteOtp, getRateLimit, setRateLimit } from './_lib/storage.js';
+import { setCors, errorResponse } from './_lib/auth.js';
+import { getOtp, setOtp, deleteOtp, getRateLimit, setRateLimit, StorageError } from './_lib/storage.js';
 
 const OTP_EXPIRY_SECONDS = 300; // 5 minutes
 const MAX_ATTEMPTS = 3;
@@ -26,15 +26,19 @@ export default async function handler(req, res) {
 
     const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
 
-    // Rate limiting
     try {
-        const rl = await getRateLimit(ip);
-        if (rl && rl.attempts >= RATE_LIMIT_MAX) {
-            return errorResponse(res, 429, 'Too many requests. Please try again later.');
+        // Rate limiting
+        try {
+            const rl = await getRateLimit(ip);
+            if (rl && rl.attempts >= RATE_LIMIT_MAX) {
+                return errorResponse(res, 429, 'Too many requests. Please try again later.');
+            }
+        } catch (e) {
+            // Rate limit check failure is non-fatal — continue
+            if (e instanceof StorageError) {
+                console.error('[otp] Storage unavailable for rate limit check:', e.message);
+            }
         }
-    } catch (e) {
-        console.error('[otp] Rate limit check failed:', e.message);
-    }
 
     const { action, contact, otp } = req.body || {};
 
@@ -115,4 +119,11 @@ export default async function handler(req, res) {
     }
 
     return errorResponse(res, 400, 'Invalid action');
+    } catch (e) {
+        console.error('[otp] Handler error:', e);
+        if (e instanceof StorageError) {
+            return errorResponse(res, 503, 'Storage service unavailable. Please try again later.');
+        }
+        return errorResponse(res, 500, 'Internal server error');
+    }
 }
