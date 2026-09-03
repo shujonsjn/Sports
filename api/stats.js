@@ -1,4 +1,11 @@
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
     const team1 = req.query.team1 || '';
     const team2 = req.query.team2 || '';
     const sport = req.query.sport || 'football';
@@ -23,7 +30,10 @@ export default async function handler(req, res) {
     for (const lg of cfg.leagues) {
         try {
             const url = `https://site.api.espn.com/apis/site/v2/sports/${cfg.sport}/${lg}/scoreboard`;
-            const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } });
+            const r = await fetch(url, {
+                headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+                signal: AbortSignal.timeout(8000)
+            });
             if (!r.ok) continue;
             const data = await r.json();
             const events = data.events || [];
@@ -95,6 +105,7 @@ export default async function handler(req, res) {
                 }
             }
         } catch (e) {
+            console.error(`Stats fetch error for league ${lg}:`, e.message);
             continue;
         }
     }

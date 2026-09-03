@@ -1,4 +1,11 @@
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
     const sport = req.query.sport || 'soccer';
     const league = req.query.league || '';
     const date = req.query.date || '';
@@ -23,7 +30,8 @@ export default async function handler(req, res) {
             if (params.length) url += '?' + params.join('&');
 
             const r = await fetch(url, {
-                headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
+                headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+                signal: AbortSignal.timeout(8000)
             });
             if (!r.ok) continue;
             const data = await r.json();
@@ -39,7 +47,6 @@ export default async function handler(req, res) {
                 let status = 'upcoming';
                 if (statusType === 'STATUS_IN_PROGRESS' || statusType === 'STATUS_HALFTIME') status = 'live';
                 else if (statusType === 'STATUS_FINAL' || statusType === 'STATUS_FULL_TIME') status = 'finished';
-                else if (statusType === 'STATUS_POSTPONED') status = 'upcoming';
 
                 const matchDate = ev.date ? new Date(ev.date).toLocaleDateString('en-CA') : '';
                 const matchTime = ev.date ? new Date(ev.date).toTimeString().slice(0, 5) : '';
@@ -72,7 +79,10 @@ export default async function handler(req, res) {
                     }
                 });
             });
-        } catch (e) {}
+        } catch (e) {
+            console.error(`ESPN fetch error for league ${lg}:`, e.message);
+            continue;
+        }
     }
 
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');

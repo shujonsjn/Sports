@@ -1,10 +1,15 @@
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
     try {
         const r = await fetch('https://site.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket&region=in&tz=Asia/Calcutta', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json'
-            }
+            headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(8000)
         });
         if (!r.ok) return res.status(r.status).json({ error: `ESPN ${r.status}` });
         const data = await r.json();

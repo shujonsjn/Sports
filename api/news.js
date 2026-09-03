@@ -30,6 +30,13 @@ function cleanText(str) {
 }
 
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
     const team1 = req.query.team1 || '';
     const team2 = req.query.team2 || '';
     const sport = req.query.sport || '';
@@ -43,7 +50,8 @@ export default async function handler(req, res) {
 
     try {
         const r = await fetch(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: AbortSignal.timeout(10000)
         });
         if (!r.ok) throw new Error(`Google News RSS returned ${r.status}`);
 
@@ -62,12 +70,7 @@ export default async function handler(req, res) {
             const source = cleanText((block.match(/<source[^>]*>([\s\S]*?)<\/source>/) || [])[1] || '');
 
             if (title && link && link.startsWith('http')) {
-                items.push({
-                    title,
-                    link,
-                    pubDate,
-                    source
-                });
+                items.push({ title, link, pubDate, source });
                 count++;
             }
         }

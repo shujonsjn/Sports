@@ -449,14 +449,45 @@ async function enrichMatchesWithVenue(matches, dateStr) {
     });
 }
 
+const CACHE_KEY = 'sportslive_date_cache';
+const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes
+
 function getCachedData(dateStr) {
-    return null;
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const cache = JSON.parse(raw);
+        const entry = cache[dateStr];
+        if (!entry || !entry.timestamp) return null;
+        if (Date.now() - entry.timestamp > CACHE_MAX_AGE) return null;
+        return entry.data;
+    } catch (e) {
+        return null;
+    }
 }
 
-function setCachedData(dateStr, matches) {
+function setCachedData(dateStr, data) {
+    try {
+        let cache = {};
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) cache = JSON.parse(raw);
+        cache[dateStr] = { data, timestamp: Date.now() };
+        // Evict entries older than 30 minutes
+        const keys = Object.keys(cache);
+        if (keys.length > 100) {
+            keys.forEach(k => {
+                if (cache[k]?.timestamp && Date.now() - cache[k].timestamp > 30 * 60 * 1000) {
+                    delete cache[k];
+                }
+            });
+        }
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    } catch (e) {}
 }
 
 // ===== 60-Day Schedule Pre-Fetch Agent =====
+// Disabled: wastes bandwidth and DATE_CACHE is volatile.
+// Past dates now fetch from API on demand in loadMatchesForDate().
 let _schedulePrefetchRunning = false;
 
 function formatDateOffset(days) {
@@ -466,46 +497,7 @@ function formatDateOffset(days) {
 }
 
 async function prefetchSchedule() {
-    if (_schedulePrefetchRunning) return;
-    _schedulePrefetchRunning = true;
-
-    console.log('📅 Schedule agent: fetching next 60 days...');
-    const batchSize = 5;
-
-    for (let i = 0; i < 60; i += batchSize) {
-        const batch = [];
-        for (let j = i; j < Math.min(i + batchSize, 60); j++) {
-            const dateStr = formatDateOffset(j);
-            batch.push(
-                (async (ds) => {
-                    try {
-                        const data = await fetchMatchesForDate(ds);
-                        return { date: ds, data };
-                    } catch (e) {
-                        return { date: ds, data: null };
-                    }
-                })(dateStr)
-            );
-        }
-
-        const results = await Promise.allSettled(batch);
-        results.forEach(r => {
-            if (r.status === 'fulfilled' && r.value.data) {
-                const { date, data } = r.value;
-                const hasData = Object.values(data).some(arr => arr && arr.length > 0);
-                if (hasData) {
-                    DATE_CACHE[date] = data;
-                }
-            }
-        });
-
-        if (i + batchSize < 60) {
-            await new Promise(r => setTimeout(r, 800));
-        }
-    }
-
-    console.log(`✅ Schedule agent: fetched next 60 days`);
-    _schedulePrefetchRunning = false;
+    // Disabled — date-cache fills on demand now.
 }
 
 const SPORT_MAP = {
@@ -517,7 +509,10 @@ const SPORT_MAP = {
 
 function getTodayString() {
     const today = new Date();
-    return today.toLocaleDateString('en-CA');
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
 function convertSportScoreMatch(match, sport) {
@@ -1256,8 +1251,8 @@ async function autoFetchMatches() {
 }
 
 function convertSportSRCMatch(match, category) {
-    const matchDate = new Date(match.date).toLocaleDateString('en-CA');
-    const matchTime = new Date(match.date).toTimeString().slice(0, 5);
+    const matchDate = match.date ? new Date(match.date).toLocaleDateString('en-CA') : getTodayString();
+    const matchTime = match.date ? new Date(match.date).toTimeString().slice(0, 5) : '00:00';
     const t1name = cleanTeamName(match.teams?.home?.name || 'Home Team');
     const t2name = cleanTeamName(match.teams?.away?.name || 'Away Team');
     const stableId = match.id || `src-${category}-${matchDate}-${matchTime}-${t1name}-${t2name}`.toLowerCase().replace(/\s+/g,'-');

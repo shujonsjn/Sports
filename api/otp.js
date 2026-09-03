@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs';
 const OTP_EXPIRY = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
 const RATE_LIMIT_WINDOW = 60 * 1000;
+
+// NOTE: In-memory Map is lost between Vercel serverless invocations.
+// OTP will NOT work in production without a shared store (Redis, KV, DB).
+// This is a known limitation — requires external storage for multi-invocation persistence.
 const otpStore = new Map();
 const rateLimit = new Map();
 
@@ -29,20 +33,26 @@ function checkRateLimit(ip) {
     return record.attempts <= 5;
 }
 
-export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+
+function setCors(res, req) {
+    const origin = req.headers?.origin || '';
+    if (ALLOWED_ORIGINS.length > 0 && ALLOWED_ORIGINS.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (ALLOWED_ORIGINS.length === 0) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
+}
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+export default async function handler(req, res) {
+    setCors(res, req);
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
     if (!checkRateLimit(ip)) {
@@ -66,10 +76,7 @@ export default async function handler(req, res) {
             attempts: 0
         });
 
-        // In production: send OTP via email/SMS provider here
-        // For development: log to server only, never return in response
         console.log(`OTP for ${normalizedContact}: ${code}`);
-
         return res.json({ success: true, message: 'OTP sent successfully' });
     }
 

@@ -1,4 +1,11 @@
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
     const date = req.query.date || '';
     const dateParam = date ? `?dates=${date.replace(/-/g, '')}` : '';
     const endpoints = [
@@ -31,10 +38,12 @@ export default async function handler(req, res) {
                     }
                 }
             }
-        } catch (e) { continue; }
+        } catch (e) {
+            console.error('Cricket fetch error:', e.message);
+            continue;
+        }
     }
 
-    const total = allData.sports[0].leagues.reduce((sum, l) => sum + (l.events?.length || 0), 0);
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');
     return res.status(200).json(allData);
 }
